@@ -1,0 +1,69 @@
+---
+ELEMENT : Factory
+SUNSET :
+    type: beauty
+    lights :
+        - lg_sunset
+        - lg_sign
+    rgba : 
+        - sg_all
+NOON :
+    type: beauty
+    light :
+        - lg_noon
+        - lg_sign
+    rgba :
+        - sg_all
+NIGHT :
+    type: beauty
+    light :
+        - lg_night
+        - lg_sign
+    rgba :
+        - sg_all
+UTIL :
+    type: utility
+    aov :
+        - sg_all
+...
+---
+ELEMENT : CFB_Logo
+btyLogo :
+    type: cfb_logo
+    rgba :
+        - sg_cfb_logo
+    lights : 
+        - lg_cfb_logo
+utilLogo :
+    type: utility
+    aov :
+        - sg_cfb_logo
+...
+---
+ELEMENT: Home_Sign
+btyHomeSign:
+    type: sign
+    rgba:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMESIGN:lg_sign"
+utilHomeSign:
+    type: utility
+    aov:
+        - "HOMESIGN:sg_sign"
+...
+---
+ELEMENT: Home_Logo
+btyHomeLogo:
+    type: team_logo
+    rgba:
+        - "HOMELOGO:sg_logo"
+    aov:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_logo"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_logo"
+...
