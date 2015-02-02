@@ -18,28 +18,11 @@ TEMPLATES_DATABASE = "V:\\dev\\pipeline\\database\\cfb_templates.yaml"
 FACTORY_LIGHT_RIG = "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\001_3D_ASSETS\\000_FACTORY\\FACTORY.mb"
 # Folder structure
 FOLDER_STRUCTURE = {
-        'ae': '',
-        'maya': '',
-        'nuke': '',
-        'c4d': '',
-        'render_3d': '',
-        'render_2d': 'prerenders',
-        'qt': ''
+        'ae': [],
+        'maya': ['scenes', 'backup']
+        'nuke': [],
+        'c4d': [],
+        'render_3d': [],
+        'render_2d': ['prerenders'],
+        'qt': []
         }
-
-
-
-
-
-def _listAll(*a):
-    print " ===== Project Directories ====="
-    print "Project Base Directory: " + PROJECT_BASE_DIR
-    print "Main Asset Directory  : " + MAIN_ASSET_DIR
-    print "Team Asset Directory  : " + TEAMS_ASSET_DIR
-    print "Templates Directory   : " + TEMPLATE_ASSET_DIR
-    print " ======== YAML files ========"
-    print "Team Database Location: " + TEAM_DATABASE
-    print "Sorting Database      : " + SORTING_DATABASE
-    print "Templates Database    : " + TEMPLATES_DATABASE
-    print " ======= Factory file ======="
-    print "Factory Scene File    : " + FACTORY_LIGHT_RIG
