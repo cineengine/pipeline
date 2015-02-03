@@ -19,7 +19,7 @@ FACTORY_LIGHT_RIG = "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\0
 # Folder structure
 FOLDER_STRUCTURE = {
         'ae': [],
-        'maya': ['scenes', 'backup']
+        'maya': ['scenes', 'backup'],
         'nuke': [],
         'c4d': [],
         'render_3d': [],
