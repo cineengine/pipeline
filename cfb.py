@@ -18,13 +18,13 @@ TEMPLATES_DATABASE = "V:\\dev\\pipeline\\database\\cfb_templates.yaml"
 FACTORY_LIGHT_RIG = "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\001_3D_ASSETS\\000_FACTORY\\FACTORY.mb"
 # Folder structure
 FOLDER_STRUCTURE = {
-        'ae': '',
-        'maya': '',
-        'nuke': '',
-        'c4d': '',
-        'render_3d': '',
-        'render_2d': 'prerenders',
-        'qt': ''
+        'ae': [],
+        'maya': ['scenes', 'backup'],
+        'nuke': [],
+        'c4d': [],
+        'render_3d': [],
+        'render_2d': ['prerenders'],
+        'qt': []
         }
 NAMESPACES = [
         'CFB_LOGO',
