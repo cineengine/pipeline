@@ -26,6 +26,17 @@ FOLDER_STRUCTURE = {
         'render_2d': 'prerenders',
         'qt': ''
         }
+NAMESPACES = [
+        'CFB_LOGO',
+        'HOMELOGO',
+        'AWAYLOGO',
+        'HOMESIGN',
+        'AWAYSIGN',
+        'LAYOUT',
+        'CAM',
+        'CLOTH',
+        'FACTORY'
+        ]
 
 
 

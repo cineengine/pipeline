@@ -2,9 +2,6 @@ import pymel.core as pm
 import maya.cmds as cmds
 import os
 
-# CFB global variables
-import pipeline.cfb as cfb
-
 # ESPN external modules
 import wtools.rendering as rendering
 import wtools.selection as select
@@ -225,7 +222,76 @@ def importAsset( get_file=None, *a):
     return in_file
 
 
-def reference( get_file=None, *a ):
+def createNamespaces( reference_node_list, *a ):
+    created = []
+    pm.namespace(set=':')
+    for name in reference_node_list:
+        try: 
+            rn = pm.namespace(add=name)
+        except RuntimeError: 
+            if pm.namespace(exists=name):
+                continue
+            else:
+                pm.warning('WARNING :: Could not create a required namespace ('+name+'). Maybe an object with that name already exists?')
+        if rn: created.append(rn)
+    return created
+
+
+def reference( reference_node_list, start_folder, *a ):
+    def _select(*a):
+        ''' redesign this whole fucking thing when you're feeling more capable'''
+        # Get target namespace & asset file from UI
+        sel      = pm.textScrollList('selectNamespace', q=True, si=True)[0]
+        get_file = pm.fileDialog2(dir=start_folder, ds=1, fm=1)[0]
+
+        # Check that there's nothing already referenced into that namespace
+        if len(pm.namespaceInfo(sel, listNamespace=True)):
+            # If so, find the reference node and replace the referenced file
+            for ref in pm.listReferences():
+                if ref.namespace == sel:
+                    ref.replaceWith(get_file)
+        #try:
+            #pm.namespace(set=sel)
+            #pm.createReference(get_file, namespace=(':'+sel))
+            #pm.namespace(set=':')
+        cmds.file(get_file, reference=True, namespace=(':'+sel))
+        #except:
+        #    pm.warning('Could not reference '+str(get_file)+' into '+str(sel)+'.')
+
+    # Check that the required namespaces exist
+    createNamespaces( reference_node_list )
+
+    # UI for namespace selection
+    try: pm.deleteUI('refAsset')
+    except: pass
+    widget = pm.window(
+                'refAsset',
+                title='Reference Asset into Namespace',
+                tlb=True,
+                rtf=True
+                )
+    main = pm.formLayout(p=widget)
+    label = pm.text(label='What namespace will this reference into?')
+    ns_box = pm.textScrollList(
+                'selectNamespace', 
+                numberOfRows=10, 
+                parent=main,
+                ams=False, 
+                append=reference_node_list
+                )
+    rf_but = pm.button(l='Select Asset to Reference', p=main, c=_select)
+    main.redistribute(1,5,3)
+    widget.show()
+
+
+        
+
+
+    
+
+
+
+    '''
     if not get_file:
         get_file = pm.fileDialog2(dir=cfb.MAIN_ASSET_DIR, ds=1, fm=1)
         ui_mode = True
@@ -255,6 +321,7 @@ def reference( get_file=None, *a ):
 
     in_file = pm.createReference(get_file, namespace=namespace)
     return in_file
+    '''
 
 
 def swapImportWithReference( obj=None, *a ):
