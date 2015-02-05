@@ -8,25 +8,7 @@ import pymel.core.system as pmsys
 # ESPN-specific modules
 #import pipeline.maya.submit as submit
 
-class NameWindow(pm.uitypes.Window):
-    def __init__(self, *project_name):
-        self.wh = (480,210)
-        self.setTitle('Select a name for this scene')
-        self.setToolbox()
-        self.setResizeToFitChildren(1)
-        self.setSizeable(0)
-        self.setWidth(self.wh[0])
-        self.setHeight(self.wh[1])
 
-        self.project_name = project_name
-        print self.project_name
-
-        main_layout = pm.formLayout(p=self)
-        column      = pm.columnLayout(p=main_layout)
-        proj_text   = pm.text(label='seriously whta the fuck')
-
-        main_layout.redistribute()
-        self.show
 
 
 class SceneManager(object):
@@ -71,8 +53,34 @@ class SceneManager(object):
         print '\n'
         return ' '
 
+    class NameWindow(pm.uitypes.Window):
+        def __init__(self):
+            self.wh = (480,210)
+            self.setTitle('Select a name for this scene')
+            self.setToolbox()
+            self.setResizeToFitChildren(1)
+            self.setSizeable(0)
+            self.setWidth(self.wh[0])
+            self.setHeight(self.wh[1])
+
+            self.project_str = scene.project_name
+            print scene.project_name
+
+            main_layout = pm.formLayout(p=self)
+            column      = pm.columnLayout(p=main_layout)
+            proj_text   = pm.text(label='seriously whta the fuck')
+
+            main_layout.redistribute()
+            self.show()
+
     def _test(self, *a):
     	test = self.NameWindow(self)
+    def _nameDialog(self, *a):
+        window = pm.window(
+            'nameWindow',
+            title='Select a ',
+            tlb=True,
+            )
 
     def _initCheck(self, *a):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it updates the 

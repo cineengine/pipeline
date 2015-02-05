@@ -1,16 +1,13 @@
 import pymel.core as pm
 
 # CFB modules
-import cfb
-from cfb.db import Team
-#from cfb.db import SortDict
-#from cfb.maya.sort import sceneFromDb
 
-# ESPN modules
-import vrayUtils.renderElements as renderElements
-import vrayUtils.utils as utils
-import vrayUtils.mattes as mattes
-import wtools.rendering as rendering
+# Internal modules
+from pipeline.db import Team
+import pipeline.vray.renderElements as renderElements
+import pipeline.vray.utils as utils
+import pipeline.vray.mattes as mattes
+import cg.maya.rendering as rendering
 """
 
 def factory( *a ):

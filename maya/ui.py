@@ -1,18 +1,15 @@
 # Pymel (Maya commands module)
 import pymel.core as pm
 
-# CFB modules
-import cfb
-from cfb.maya import asset
-from cfb.maya import sort
-#from cfb.maya import build
-#from cfb.db import SortDict
+# Internal modules
+from pipeline.maya import asset
+from pipeline.maya import sort
+import pipeline.vray.utils
+import pipeline.vray.mattes
 
 # Other ESPN modules
-import wtools.rendering as rendering
-import wtools.selection as selection
-import vrayUtils.utils
-import vrayUtils.mattes
+import cg.maya.rendering as rendering
+import cg.maya.selection as selection
 
 main_width = 123
 emphasis = [0.1,0.38,0.52]

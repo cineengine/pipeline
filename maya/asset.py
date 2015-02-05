@@ -3,8 +3,8 @@ import maya.cmds as cmds
 import os
 
 # ESPN external modules
-import wtools.rendering as rendering
-import wtools.selection as select
+import cg.maya.rendering as rendering
+import cg.maya.selection as select
 
 
 def sanityCheck(report=True, model=False, shading=False, *a):

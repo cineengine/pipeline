@@ -37,20 +37,3 @@ NAMESPACES = [
         'CLOTH',
         'FACTORY'
         ]
-
-
-
-
-
-def _listAll(*a):
-    print " ===== Project Directories ====="
-    print "Project Base Directory: " + PROJECT_BASE_DIR
-    print "Main Asset Directory  : " + MAIN_ASSET_DIR
-    print "Team Asset Directory  : " + TEAMS_ASSET_DIR
-    print "Templates Directory   : " + TEMPLATE_ASSET_DIR
-    print " ======== YAML files ========"
-    print "Team Database Location: " + TEAM_DATABASE
-    print "Sorting Database      : " + SORTING_DATABASE
-    print "Templates Database    : " + TEMPLATES_DATABASE
-    print " ======= Factory file ======="
-    print "Factory Scene File    : " + FACTORY_LIGHT_RIG
