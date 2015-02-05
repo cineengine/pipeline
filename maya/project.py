@@ -51,27 +51,6 @@ class SceneManager(object):
         print '\n'
         return ' '
 
-    class NameWindow(pm.uitypes.Window):
-        def __init__(self):
-            self.wh = (480,210)
-            self.setTitle('Select a name for this scene')
-            self.setToolbox()
-            self.setResizeToFitChildren(1)
-            self.setSizeable(0)
-            self.setWidth(self.wh[0])
-            self.setHeight(self.wh[1])
-
-            self.project_str = scene.project_name
-            print scene.project_name
-
-            main_layout = pm.formLayout(p=self)
-            column      = pm.columnLayout(p=main_layout)
-            proj_text   = pm.text(label='seriously whta the fuck')
-
-            main_layout.redistribute()
-            self.show()
-
-
     def _initCheck(self, *a):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it updates the 
             pre-existing python SceneManager object.  (Such as when a pipeline scene is opened.)
@@ -257,7 +236,7 @@ class SceneManager(object):
 
         if os.path.exists(file_name):
             self.version += 1
-            file_name = _incrVersion()
+            file_name = self._incrVersion()
         
         if version_only:
             return self.version
@@ -273,26 +252,6 @@ class SceneManager(object):
             self.scene_name = self.project_name + '_' + self.custom_string
         else: 
             self.scene_name = self.project_name
-
-    def rename(self):
-        prompt = pm.promptDialog(
-                    title='Rename Scene',
-                    message='Enter new descriptor tag (i.e. PRIMETIME)',
-                    text='',
-                    button=['OK','Cancel'],
-                    db='OK',
-                    cb='Cancel',
-                    ds='Cancel'
-                    )
-
-        if prompt == 'OK':
-            self.custom_string = pm.promptDialog(q=True, text=True)
-            self._nameScene()
-            self._pushPull()
-            self.save()
-        else:
-            return False
-
 
     def _updateOut(self):
         ''' Updates the maya sceneControlObject with any internal changes made to the python SceneManager.'''
@@ -374,15 +333,34 @@ class SceneManager(object):
             cmds.file(rename=self.backup_path)
             cmds.file(save=True, type='mayaBinary')
         except:
-            pm.warning('Failed to save backup!!  Check your scene file name and save an emergency local backup.')
+            pm.warning('Failed to save backup!! Check your scene file name and save an emergency local backup.')
         # Save the master
         try:
             cmds.file(rename=self.full_path)
             cmds.file(save=True, type='mayaBinary')
         except:
-            pm.warning('Failed to save new master scene!  Save an emergency backup of this scene and let Mark know.')
+            pm.warning('Failed to save new master scene! Save an emergency backup of this scene and let Mark know.')
 
         return True
+
+    def rename(self):
+        prompt = pm.promptDialog(
+                    title='Rename Scene',
+                    message='Enter new descriptor tag (i.e. PRIMETIME)',
+                    text='',
+                    button=['OK','Cancel'],
+                    db='OK',
+                    cb='Cancel',
+                    ds='Cancel'
+                    )
+
+        if prompt == 'OK':
+            self.custom_string = pm.promptDialog(q=True, text=True)
+            self._nameScene()
+            self._pushPull()
+            self.save()
+        else:
+            return False
 
     def setProject(self, *a):
         ''' Sets the current workspace to the controlled scene's project path.'''
@@ -391,20 +369,35 @@ class SceneManager(object):
             print 'Set project to: ' + self.maya_project_folder
             return True
         except:
-            pm.warning('Failed to set the specified project.  It probably doesn\'t exist')
+            pm.warning('Failed to set the specified project. It probably doesn\'t exist')
             return False
-"""
+
     def open(self, *a):
         ''' Opens a scene browsing UI and sets the associated project. '''
-        new_file = pm.fileDialog2(fm=1, ds=1, dir=self.base_path)
+        new_file = pm.fileDialog2(fm=1, ds=1, dir=self.base_path)[0]
         if not new_file:
             return None
         try:
-            pm.file(new_file, open=True)
-        	self._updateIn()
-        except:
-            pm.warning('Could not open file: ' + new_file)
-
+            pm.openFile(new_file)
+        except RuntimeError:
+            query = pm.confirmDialog(
+                title='Save changes?',
+                message='Your scene has unsaved changes. Save before closing?',
+                button=['Yes','No','Cancel'],
+                db='Yes',
+                cb='Cancel',
+                ds='Cancel'
+                )
+            if query == 'Yes':
+                self.save()
+                pm.openFile(new_file)
+            elif query == 'No':
+                pm.openFile(new_file, force=True)
+            else: return False
+        
+        self._updateIn()
+        self.setProject()
+"""
     def submit(self, *a):
         ''' Submits the current scene to the render farm. '''
         sub = submit.RenderSubmitWindow()
