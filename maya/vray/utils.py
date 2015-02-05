@@ -1,5 +1,5 @@
 import pymel.core as pm
-import wtools.selection as select
+import cg.maya.selection as select
 
 ########################
 ### SCENE MANAGEMENT ###

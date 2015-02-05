@@ -4,12 +4,15 @@ import pymel.core as pm
 # Internal modules
 from pipeline.maya import asset
 from pipeline.maya import sort
-import pipeline.vray.utils
-import pipeline.vray.mattes
+import pipeline.maya.vray.utils as vrayutils
+import pipeline.maya.vray.mattes as vraymattes
 
 # Other ESPN modules
 import cg.maya.rendering as rendering
 import cg.maya.selection as selection
+
+# CFB global variables
+import pipeline.cfb as cfb
 
 main_width = 123
 emphasis = [0.1,0.38,0.52]
@@ -112,26 +115,26 @@ def run( *args ):
     #BUTTON - VRay Object Properties
     make_object_properties_btn = pm.button( l = 'Geometry Sort Set',
                                             bgc = emphasis,
-                                            c = vrayUtils.utils.makeObjectProperties,
+                                            c = vrayutils.makeObjectProperties,
                                             ann = 'Make a V-Ray object properties group.',
                                             p=grid )
     pm.popupMenu()
-    append_geo_menu = pm.menuItem(l='Add to existing ...', c=lambda *args: vrayUtils.utils.addToSet( typ='geo' ) )
+    append_geo_menu = pm.menuItem(l='Add to existing ...', c=lambda *args: vrayutils.addToSet( typ='geo' ) )
     
 
     #BUTTON - VRay Light Properties
     make_light_set_btn = pm.button( l = 'Light Sort Set',
                                     bgc = emphasis,
-                                    c = vrayUtils.utils.makeLightSelectSet,
+                                    c = vrayutils.makeLightSelectSet,
                                     ann = 'Make a V-Ray light select set.')
     pm.popupMenu()
-    append_lgt_menu = pm.menuItem(l='Add to existing ...', c=lambda *args: vrayUtils.utils.addToSet( typ='lgt' ) )
+    append_lgt_menu = pm.menuItem(l='Add to existing ...', c=lambda *args: vrayutils.addToSet( typ='lgt' ) )
 
     
     #BUTTON - Open mattes widget
     matte_assign_ui_btn = pm.button( l = 'V-Ray Mattes',
     				     bgc = emphasis,
-    			             c = vrayUtils.mattes.run,
+    			             c = vraymattes.run,
     			             ann = 'Open the matte assignment utility window')   
     
     pm.setParent('..')
@@ -275,6 +278,38 @@ def assetSelector( init=None, mode='reference', *a):
    
     select_win.show()
     
+def referenceSelector(*a):
+
+    def _run(*a):
+        # Get target namespace & asset file from UI
+        sel      = pm.textScrollList('selectNamespace', q=True, si=True)[0]
+        get_file = pm.fileDialog2(dir=cfb.MAIN_ASSET_DIR, ds=1, fm=1)[0]
+
+        asset.reference(get_file, sel)
+
+    # UI for namespace selection
+    try: pm.deleteUI('refAsset')
+    except: pass
+    widget = pm.window(
+                'refAsset',
+                title='Reference Asset into Namespace',
+                tlb=True,
+                rtf=True
+                )
+    main = pm.formLayout(p=widget)
+    label = pm.text(label='What namespace will this reference into?')
+    ns_box = pm.textScrollList(
+                'selectNamespace', 
+                numberOfRows=10, 
+                parent=main,
+                ams=False, 
+                append=cfb.NAMESPACES
+                )
+    rf_but = pm.button(l='Select Asset to Reference', p=main, c=_run)
+    main.redistribute(1,5,3)
+    widget.show()
+
+
 
 class RenderTemplateWindow(pm.uitypes.Window):
     
@@ -551,9 +586,9 @@ pm.menuItem(l="Remove and Reference", c=asset.swapImportWithReference)
 pm.menuItem(l="Remove and Import", c=asset.swapReferenceWithImport)
 
 pm.menuItem(divider=True)
-pm.menuItem(l="Geometry Sort Set", c=vrayUtils.utils.makeObjectProperties)
-pm.menuItem(l="Light Sort Set", c=vrayUtils.utils.makeLightSelectSet)
-pm.menuItem(l="Matte Selector", c=vrayUtils.mattes.run)
+pm.menuItem(l="Geometry Sort Set", c=vrayutils.makeObjectProperties)
+pm.menuItem(l="Light Sort Set", c=vrayutils.makeLightSelectSet)
+pm.menuItem(l="Matte Selector", c=vraymattes.run)
 
 pm.menuItem(divider=True)
 pm.menuItem(l="Check Model", c=lambda *args: asset.sanityCheck(report=True, model=True))

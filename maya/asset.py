@@ -222,106 +222,41 @@ def importAsset( get_file=None, *a):
     return in_file
 
 
-def createNamespaces( reference_node_list, *a ):
-    created = []
-    pm.namespace(set=':')
-    for name in reference_node_list:
-        try: 
-            rn = pm.namespace(add=name)
-        except RuntimeError: 
-            if pm.namespace(exists=name):
-                continue
-            else:
-                pm.warning('WARNING :: Could not create a required namespace ('+name+'). Maybe an object with that name already exists?')
-        if rn: created.append(rn)
-    return created
+def reference( file_to_ref, namespace, *a ):
+    ''' A helper utility for maintaining clean and consistent namespacing when referencing. '''
+    # Loop over all references to see if a reference is already loaded into the namespace
+    ref = None
 
+    for ref in pm.listReferences():
+        if ref.namespace == namespace:
+            break
+        else: ref = None
 
-def reference( reference_node_list, start_folder, *a ):
-    def _select(*a):
-        ''' redesign this whole fucking thing when you're feeling more capable'''
-        # Get target namespace & asset file from UI
-        sel      = pm.textScrollList('selectNamespace', q=True, si=True)[0]
-        get_file = pm.fileDialog2(dir=start_folder, ds=1, fm=1)[0]
+    # If there's no reference loaded with that namespace, we may as well just cleanup & start fresh
+    if not ref:
+        try: pm.namespace(rm=namespace)
+        except: pass
+        ref = pm.createReference( file_to_ref, namespace=namespace )
+        return ref
 
-        # Check that there's nothing already referenced into that namespace
-        if len(pm.namespaceInfo(sel, listNamespace=True)):
-            # If so, find the reference node and replace the referenced file
-            for ref in pm.listReferences():
-                if ref.namespace == sel:
-                    ref.replaceWith(get_file)
-        #try:
-            #pm.namespace(set=sel)
-            #pm.createReference(get_file, namespace=(':'+sel))
-            #pm.namespace(set=':')
-        cmds.file(get_file, reference=True, namespace=(':'+sel))
-        #except:
-        #    pm.warning('Could not reference '+str(get_file)+' into '+str(sel)+'.')
-
-    # Check that the required namespaces exist
-    createNamespaces( reference_node_list )
-
-    # UI for namespace selection
-    try: pm.deleteUI('refAsset')
-    except: pass
-    widget = pm.window(
-                'refAsset',
-                title='Reference Asset into Namespace',
-                tlb=True,
-                rtf=True
+    # If there's already a reference loaded into that namespace, we have a decision for the user
+    if ref:
+        chk = pm.confirmDialog(
+                title='Replace / create new reference?',
+                message='There is already an existing reference in that namespace. Do you want to:\nSwap: Swap in the new asset (keep animation).\nRemove: Remove the old reference completely and start over.',
+                b=['Swap','Remove','Cancel'],
+                db='Swap',
+                cb='Cancel',
+                ds='Cancel'
                 )
-    main = pm.formLayout(p=widget)
-    label = pm.text(label='What namespace will this reference into?')
-    ns_box = pm.textScrollList(
-                'selectNamespace', 
-                numberOfRows=10, 
-                parent=main,
-                ams=False, 
-                append=reference_node_list
-                )
-    rf_but = pm.button(l='Select Asset to Reference', p=main, c=_select)
-    main.redistribute(1,5,3)
-    widget.show()
+        if chk == 'Swap':
+            ref.replaceWith( file_to_ref )
+            return ref
 
-
-        
-
-
-    
-
-
-
-    '''
-    if not get_file:
-        get_file = pm.fileDialog2(dir=cfb.MAIN_ASSET_DIR, ds=1, fm=1)
-        ui_mode = True
-        
-    if not get_file or get_file == '':
-        return False
-
-    get_file_split = get_file.split('\\')
-
-    namespace = get_file_split[len(get_file_split)-1]
-    namespace = namespace.split('.')[0]
-    
-    try:
-        exists = pm.PyNode(namespace+'RN')
-        if exists:
-            if ui_mode:
-                confirm = pm.confirmDialog(title='Namespace exists!',
-                                 message='This reference already exists once in the scene. This will affect pipeline scripts.\n\nDo you want to continue?',
-                                 button=['OK','Cancel'],
-                                 defaultButton='OK',
-                                 dismissString='Cancel')
-                if confirm == 'Cancel':
-                    return False
-            else:
-                pm.warning('Object ' + str(namespace) + ' is being referenced multiple times.')
-    except: pass
-
-    in_file = pm.createReference(get_file, namespace=namespace)
-    return in_file
-    '''
+        elif chk == 'Remove':
+            ref.remove()
+            ref = pm.createReference( file_to_ref, namespace=namespace )
+            return ref
 
 
 def swapImportWithReference( obj=None, *a ):

@@ -1,6 +1,6 @@
 import pymel.core as pm
-import wtools.selection as select
-import renderElements as ele
+import cg.maya.selection as select
+import pipeline.maya.vray.renderElements as ele
 
 ######################
 ### MATTE SELECTOR ###

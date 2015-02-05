@@ -2,14 +2,12 @@
 import os
 
 # Maya-specific modules
+import maya.cmds as cmds
 import pymel.core as pm
 import pymel.core.system as pmsys
 
 # ESPN-specific modules
 #import pipeline.maya.submit as submit
-
-
-
 
 class SceneManager(object):
     def __init__(self, animation_base_dir, folder_structure):
@@ -19,25 +17,25 @@ class SceneManager(object):
         self.folder_structure = folder_structure
 
         # The name of the project.  
-        # Ex: "CFB_S_GAMEDAY_REJOIN"
+        # Ex: "CFB_S_REJOIN_01"
         self.project_name = ''
-        # The name of the scene (including variation).  
-        # Ex: "CFB_S_GAMEDAY_REJOIN_01"
+        # The name of the scene (including variation).  This is what scene files, render folders, etc will be named.  
+        # Ex: "CFB_S_REJOIN_01_GAMEDAY"
         self.scene_name = ''
 
         # The project folders of the scene file.  
-        # Ex: "V:\CFB_S_GAMEDAY_REJOIN\"
+        # Ex: "V:\CFB_S_REJOIN_01\"
         self.project_folder = ''
-        # Ex: "V:\CFB_S_GAMEDAY_REJOIN\maya\"
+        # Ex: "V:\CFB_S_REJOIN_01\maya\"
         self.maya_project_folder = ''
-        # Ex: "V:\CFB_S_GAMEDAY_REJOIN\maya\backup\"
+        # Ex: "V:\CFB_S_REJOIN_01\maya\backup\"
         self.backup_folder = ''
 
         # The full paths relating to the scene file.
-        # Ex: "V:\CFB_S_GAMEDAY_REJOIN\maya\scenes\CFB_S_GAMEDAY_REJOIN_01.mb"
+        # Ex: "V:\CFB_S_REJOIN_01\maya\scenes\CFB_S_REJOIN_01_GAMEDAY.mb"
         self.full_path = ''
-        # The full path of the next queued backup of this scene file.  
-        # Ex: "V:\CFB_S_GAMEDAY_REJOIN\maya\backup\CFB_S_GAMEDAY_REJOIN_01_0002.mb"
+        # The full path of the next queued backup of this scene file.
+        # Ex: "V:\CFB_S_REJOIN_01\maya\backup\CFB_S_REJOIN_01_GAMEDAY_0002.mb"
         self.backup_path = ''
 
         self._initCheck()
@@ -73,14 +71,6 @@ class SceneManager(object):
             main_layout.redistribute()
             self.show()
 
-    def _test(self, *a):
-    	test = self.NameWindow(self)
-    def _nameDialog(self, *a):
-        window = pm.window(
-            'nameWindow',
-            title='Select a ',
-            tlb=True,
-            )
 
     def _initCheck(self, *a):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it updates the 
@@ -112,22 +102,18 @@ class SceneManager(object):
             it will attempt to reconcile it. '''
 
         self.version = 1.0
-        self.variant = 1.0
-
 
         # CREATE SCENE CONTROLLER OBJECT.  This will store information about the scene
         # to simplify parsing when opening/saving the scene in the future.
         self.scene_controller = pm.createNode('locator', name='sceneControlObject')
         pm.lockNode(self.scene_controller, lock=False)
         # Add custom attributes
-        self.scene_controller.addAttr('Deliverable', dt='string')
+        self.scene_controller.addAttr('ProjectName', dt='string')
         self.scene_controller.addAttr('SceneName', dt='string')
         self.scene_controller.addAttr('CustomTag', dt='string')
-        self.scene_controller.addAttr('Variation', at='float')
         self.scene_controller.addAttr('Version', at='float')
           # Set initialized custom attributes
-        self.scene_controller.attr('Variation').set(self.version)
-        self.scene_controller.attr('Version').set(self.variant)
+        self.scene_controller.attr('Version').set(self.version)
         # Lock the node
         pm.lockNode(self.scene_controller, lock=True)
         
@@ -135,8 +121,8 @@ class SceneManager(object):
         # NAME PROMPT
         # Prompt for a project name
         name_query = pm.promptDialog(
-            title='New Project / Deliverable Type Name',
-            message='Which deliverable does this scene correspond to?',
+            title='New Project Name',
+            message='What project folder should this go in? i.e. \'CFB_S_REJOIN_01\'\nNote: Do not include \'_GAMEDAY\' or any other descriptors in this step.',
             text='CFB_',
             b=['OK', 'Cancel'],
             db='OK',
@@ -153,7 +139,7 @@ class SceneManager(object):
         # Prompt for a custom tag for the scene        
         custom_string = pm.promptDialog(
             title='Custom name tag?',
-            message='Do you want to create a custom name tag for the file?  i.e. \'_LIVE\', \'_COUNTDOWN\', etc.',
+            message='Do you want to create a custom descriptor for the scene file?  i.e. \'GAMEDAY\', \'PRIMETIME\', etc.',
             text='',
             b=['OK', 'No'],
             db='OK',
@@ -168,12 +154,12 @@ class SceneManager(object):
 
         # INITIALIZATION TREE:
         # Name the scene and begin init process
+        print '\nCREATING SCENE ... ' + self.scene_name 
         self._nameScene()
-        print 'SCENE MANAGER REPORT :: Creating scene ' + self.scene_name 
         
-        # Set initialized values on the sceneController
-        self._updateOut()
-        print 'Updating scene controller ...'
+        # Set initialized values on the sceneController and generate full file paths
+        print '\nUpdating scene controller ...'
+        self._pushPull()
 
         # Check if the project exists, and if any scene files exist (and if so, get the next available variant)
         project_exists, scene_exists = self._isProject()
@@ -182,16 +168,17 @@ class SceneManager(object):
         if not project_exists:
             try:
                 print self.project_folder
+                print '\nMaking folders ...'
                 self._makeFolders()
-                print 'Making folders ...'
+                print '\nMaking project workspace ...'
                 self._makeProject()
-                print 'Making project workspace ...'
+                print '\nSetting maya project ...'
                 self.setProject()
-                print 'Setting maya project ...'
+                print '\nSaving file ...'
                 self.save()
-                print 'Saving file ...'
+                print '\n... Done!'
                 return True
-            except:    return False
+            except: return False
 
         # Or: The project exists but this variant hasn't been saved yet, so just save, and we're done.
         elif project_exists and not scene_exists:
@@ -204,9 +191,9 @@ class SceneManager(object):
         # Or: Even the variant already exists, so we have a decision tree for the user.
         elif scene_exists:
             query = pm.confirmDialog(
-                title='New Variant?',
-                message='There is already a file called ' + self.name + '_' + self._formatVariant(2) + '.mb. Select an option below.',
-                buttons=['Backup & Overwrite', 'New Variant', 'Cancel'],
+                title='New Version?',
+                message='There is already a file called ' + self.name + '.mb. Select an option below.',
+                buttons=['Backup & Overwrite', 'New Version', 'Cancel'],
                 db='New Variant',
                 cb='Cancel',
                 ds='Cancel'
@@ -226,10 +213,8 @@ class SceneManager(object):
                     self.save()
             # 3B
             # New variant means we need to increment the variable and save the scene
-            elif query == 'New Variant':
-                self.variant = next_variant
-                self._nameScene()
-                self._updateOut()
+            elif query == 'New Version':
+                self._rename()
                 self.setProject()
                 self.save()
 
@@ -246,9 +231,9 @@ class SceneManager(object):
 
     def _isProject(self):
         ''' Checks whether a passed path/folder exists and has a maya project definition (workspace.mel). 
-            Returns: Tuple ((0, None): Doesn't exist, 
-                            (1, None): Folder exists but no variations (files) exist,
-                            (1, Float): Exists and has variations .. next available iteration is the tuple[1] '''
+            Returns: Tuple ((0, 0): Doesn't exist, 
+                            (1, 0): Folder exists but no variations (files) exist,
+                            (1, 1): Folder and scene already exist .. prompt for a new name / overwrite '''
         folder_exists = os.path.exists(self.project_folder)
         scene_exists = os.path.exists(self.full_path)
 
@@ -257,31 +242,10 @@ class SceneManager(object):
             return (False, None)
 
         elif folder_exists and not scene_exists:
-            self._makeProject()
             return (True, None)
 
         elif scene_exists:
-            available_variation = self._incrVariant(version_only=True)
-            return (True, available_variation)
-
-    def _incrVariant(self, variant, version_only=False):
-        ''' This function recursively increments scene variant #'s attempting to find the first available 
-            file name not already taken.
-
-            Note that this function, while similar, works slightly differently from _incrVersion() in that
-            it does not directly change values, merely checks.  Actual changing of values is handled
-            after user confirmation in _initScene().'''
-        file_name = self.maya_project_folder + 'scenes\\' + self.project_name + '_' + str(int(variant)).zfill(padding) + '_' + self.custom_string + '.mb'
-        
-        # We're working with a copy of the original value, not an object reference
-        variant = self.variant
-        if os.path.exists(file_name):
-            variant += 1
-            file_name = self._incrVariant(variant, version_only)
-        if version_only:
-            return variant
-        else: 
-            return file_name
+            return (True, True)
 
     def _incrVersion(self, version_only=False):
         ''' This function recursively increments versions attempting to find the next available file name for a
@@ -289,7 +253,7 @@ class SceneManager(object):
 
             Note that unlike _incrVariant(), this function will always change values in the SceneControl object,
             if it determines that the currently queued backup has already been saved.'''
-        file_name = self.backup_folder + self.scene_name + '_' + self._formatVersion(4) + '.mb'
+        file_name = self.backup_folder + self.scene_name + '_' + self._formatVersion() + '.mb'
 
         if os.path.exists(file_name):
             self.version += 1
@@ -301,20 +265,42 @@ class SceneManager(object):
             self.backup_path = file_name 
             return file_name
 
-    def _formatVariant(self, padding):
-        return str(int(self.variant)).zfill(padding)
-    def _formatVersion(self, padding):
-        return str(int(self.version)).zfill(padding)
+    def _formatVersion(self):
+        return str(int(self.version)).zfill(4)
+    
     def _nameScene(self):
-        self.scene_name = self.project_name + '_' + self._formatVariant(2) + '_' + self.custom_string
+        if self.custom_string != '':
+            self.scene_name = self.project_name + '_' + self.custom_string
+        else: 
+            self.scene_name = self.project_name
+
+    def rename(self):
+        prompt = pm.promptDialog(
+                    title='Rename Scene',
+                    message='Enter new descriptor tag (i.e. PRIMETIME)',
+                    text='',
+                    button=['OK','Cancel'],
+                    db='OK',
+                    cb='Cancel',
+                    ds='Cancel'
+                    )
+
+        if prompt == 'OK':
+            self.custom_string = pm.promptDialog(q=True, text=True)
+            self._nameScene()
+            self._pushPull()
+            self.save()
+        else:
+            return False
+
 
     def _updateOut(self):
         ''' Updates the maya sceneControlObject with any internal changes made to the python SceneManager.'''
         # Set all the values to be stored on the sceneControlObject
         self.scene_controller.attr('Version').set(self.version)
-        self.scene_controller.attr('Variation').set(self.variant)
+        #self.scene_controller.attr('Variation').set(self.variant)
         self.scene_controller.attr('SceneName').set(self.scene_name)
-        self.scene_controller.attr('Deliverable').set(self.project_name)
+        self.scene_controller.attr('ProjectName').set(self.project_name)
         self.scene_controller.attr('CustomTag').set(self.custom_string)
 
     def _updateIn(self):
@@ -322,21 +308,24 @@ class SceneManager(object):
             when a new scene is opened.) '''
         # Getting attrs from sceneControlObject
         self.scene_name    = self.scene_controller.attr('SceneName').get()
-        self.project_name  = self.scene_controller.attr('Deliverable').get()
+        self.project_name  = self.scene_controller.attr('ProjectName').get()
         self.version       = self.scene_controller.attr('Version').get()
-        self.variant       = self.scene_controller.attr('Variation').get()
+        #self.variant       = self.scene_controller.attr('Variation').get()
         self.custom_string = self.scene_controller.attr('CustomTag').get()
         # Combining project name and variant to create a scene name
-        _nameScene()
+        self._nameScene()
 
         # Setting new values (i.e. doing the business)
-        self.project_folder      = self.base_path + self.project_name
+        self.project_folder      = self.base_path + self.project_name + '\\'
         self.maya_project_folder = self.project_folder + 'maya\\'
         self.backup_folder       = self.maya_project_folder + 'backup\\'
         self.full_path           = self.maya_project_folder + 'scenes\\' + self.scene_name + '.mb'
         self.backup_path         = self._incrVersion()
-
         return True
+
+    def _pushPull(self):
+        self._updateOut()
+        self._updateIn()
 
     def _makeProject(self):
         ''' Make a new workspace definition file (workspace.mel) for this scene, if needed. '''
@@ -344,7 +333,6 @@ class SceneManager(object):
         if os.path.exists(self.maya_project_folder + '\\workspace.mel'):
             #print 'Loaded workspace.mel from ' + self.base_path + '\\maya\\'
             return True
-
         # open the default workspace template
         with open('\\\\cagenas\\workspace\\scripts\\maya\\workspace.mel', 'r') as workspace:
             workspace_lines = workspace.readlines()
@@ -368,10 +356,11 @@ class SceneManager(object):
             print this_folder
             if not os.path.exists(this_folder):
                 os.mkdir(this_folder) 
-            if v:
-                this_folder = this_folder + v
-                print this_folder
-                os.mkdir(this_folder)
+            if v != []:
+                for _v in v:
+                    sub_folder = this_folder + _v
+                    print sub_folder
+                    os.mkdir(sub_folder)
         return True
 
     def save(self, *a):
@@ -382,14 +371,14 @@ class SceneManager(object):
         # Save the backup
         self.backup_path = self._incrVersion()
         try:
-            pm.file(rename=self.backup_path)
-            pm.file(save=True, type='mayaBinary')
+            cmds.file(rename=self.backup_path)
+            cmds.file(save=True, type='mayaBinary')
         except:
             pm.warning('Failed to save backup!!  Check your scene file name and save an emergency local backup.')
         # Save the master
         try:
-            pm.file(rename=self.full_path)
-            pm.file(save=True, type='mayaBinary')
+            cmds.file(rename=self.full_path)
+            cmds.file(save=True, type='mayaBinary')
         except:
             pm.warning('Failed to save new master scene!  Save an emergency backup of this scene and let Mark know.')
 
@@ -421,9 +410,3 @@ class SceneManager(object):
         sub = submit.RenderSubmitWindow()
         return True
 """
-try:
-    pm.lockNode(pm.PyNode('sceneControlObject'), lock=False)
-    pm.delete(pm.PyNode('sceneControlObject'))
-except: pass
-import pipeline.cfb as cfb
-scene = SceneManager(cfb.ANIMATION_PROJECT_DIR, cfb.FOLDER_STRUCTURE)

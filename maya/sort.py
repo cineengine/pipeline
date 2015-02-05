@@ -3,7 +3,7 @@ import re
 import yaml
 
 # internal modules
-import vrayUtils.renderElements as vray
+import pipeline.maya.vray.renderElements as vray
 
 
 FRAMEBUFFERS = {
