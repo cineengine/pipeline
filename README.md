@@ -18,9 +18,12 @@ INSTALLATION
       import pipeline
       pipeline.cfb_ui.run() # not implemented yet
 
-QUICK TUTORIALS
+#QUICK TUTORIALS
+
+These tutorials are intended for power users, to understand the function and
+organization of the pipeline's modules.
+
 - To initialize a set of project definitions (folders, global variables, etc)
-  This is for power users only .. normally this is handled by the UI functions
 
       import pipeline.cfb as cfb
       # Note that the project definition module is necessary to initialize any
@@ -37,10 +40,12 @@ QUICK TUTORIALS
       # If this command is run on a pipeline-managed scene, it simply re-initializes
       # itself based on values stored in scene's sceneControlObject node (a locator.)
 
-- To save / rename a scene
+- To save / rename a scene:
 
-      scene.save() # overwrites and increments the backup
-      scene.rename() # also saves the scene
+      scene.save() 
+      # overwrites the master scene file and increments the backup
+      scene.rename() 
+      # also saves the scene
       scene.open()
       # If the scene opened is already pipeline-managed, it simply sets the maya
       # project correctly.  Otherwise it attempts to initialize the scene.
