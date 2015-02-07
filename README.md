@@ -52,6 +52,7 @@ organization of the pipeline's modules.
       # If the scene opened is already pipeline-managed, it simply sets the maya
       # project correctly.  Otherwise it attempts to initialize the scene.
 
+
 - To sort a scene / set it up for rendering:
 
       sort = pipeline.maya.sort.SortControl('NAME_OF_ELEMENT')
