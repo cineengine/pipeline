@@ -25,12 +25,12 @@ QUICK TUTORIALS
     import pipeline.cfb as cfb # this module can be customized to any project
                              # structure
 
-- To set up a new maya project / scene:
-    This will initialize a brand new scene or convert an existing one, and 
-    ensure that the correct folders are present on the network.
+# To set up a new maya project / scene:
+- This will initialize a brand new scene or convert an existing one, and 
+ensure that the correct folders are present on the network.
     scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
 
-    # Available simple commands
+- Available simple commands
     scene.save() # overwrites and increments the backup
     scene.rename() # also saves the scene
 
