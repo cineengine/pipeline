@@ -27,10 +27,10 @@ organization of the pipeline's modules.
 
 - To initialize a set of project definitions (folders, global variables, etc..)
 
-     import pipeline.cfb as cfb
-     # Note that the project definition module is necessary to initialize any
-     # function relying on a specific project folder structure or set of global
-     # variables.
+        import pipeline.cfb as cfb
+        # Note that the project definition module is necessary to initialize any
+        # function relying on a specific project folder structure or set of global
+        # variables.
 
 - The SceneManager object controls the project folder structure on the network,
   the Maya project definition (workspace.mel), and manages scene saving, opening,
@@ -38,31 +38,31 @@ organization of the pipeline's modules.
   otherwise it ensures that the user isn't overwriting anything that already exists
   and sets its maya project accordingly.
 
-     scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
-     # If this command is run on a pipeline-managed scene, it simply re-initializes
-     # itself based on values stored in scene's sceneControlObject node (a locator.)
+        scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
+        # If this command is run on a pipeline-managed scene, it simply re-initializes
+        # itself based on values stored in scene's sceneControlObject node (a locator.)
 
 - To save / rename a scene:
 
-     scene.save() 
-     # overwrites the master scene file and increments the backup
-     scene.rename() 
-     # also saves the scene
-     scene.open()
-     # If the scene opened is already pipeline-managed, it simply sets the maya
-     # project correctly.  Otherwise it attempts to initialize the scene.
+        scene.save() 
+        # overwrites the master scene file and increments the backup
+        scene.rename() 
+        # also saves the scene
+        scene.open()
+        # If the scene opened is already pipeline-managed, it simply sets the maya
+        # project correctly.  Otherwise it attempts to initialize the scene.
 
 
 - To sort a scene / set it up for rendering:
 
-      sort = pipeline.maya.sort.SortControl('NAME_OF_ELEMENT')
-      # This object needs to be initialized for every asset in the scene to be
-      # sorted.  The sorting.yaml database 'ELEMENT' attribute is currently the
-      # only list of currently-supported asset types.  
+        sort = pipeline.maya.sort.SortControl('NAME_OF_ELEMENT')
+        # This object needs to be initialized for every asset in the scene to be
+        # sorted.  The sorting.yaml database 'ELEMENT' attribute is currently the
+        # only list of currently-supported asset types.  
 
-      sort.run() 
-      # This command makes the render layers, enables the framebuffers and sorts 
-      # objects into the correct layers with the correct visibility flags.
+        sort.run() 
+        # This command makes the render layers, enables the framebuffers and sorts 
+        # objects into the correct layers with the correct visibility flags.
 
 
 - To make a new asset / export an asset
