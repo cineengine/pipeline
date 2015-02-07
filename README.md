@@ -55,7 +55,7 @@ organization of the pipeline's modules.
 
 - To sort a scene / set it up for rendering:
 
-        sort = pipeline.maya.sort.SortControl('NAME_OF_ELEMENT')
+        sort = pipeline.maya.sort.SortControl(cfb.SORTING_DATABASE, 'NAME_OF_ELEMENT', cfb.FRAMEBUFFERS)
         # This object needs to be initialized for every asset in the scene to be
         # sorted.  The sorting.yaml database 'ELEMENT' attribute is currently the
         # only list of supported element/asset types.  
