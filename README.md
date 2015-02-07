@@ -18,14 +18,16 @@ INSTALLATION
       import pipeline
       pipeline.cfb_ui.run() # not implemented yet
 
-#QUICK TUTORIALS
+------------------------------------------------------------------------------
+
+QUICK TUTORIALS
 
 These tutorials are intended for power users, to understand the function and
 organization of the pipeline's modules.
 
-- To initialize a set of project definitions (folders, global variables, etc)
-
-      import pipeline.cfb as cfb
+- To initialize a set of project definitions (folders, global variables, etc..)
+  
+    import pipeline.cfb as cfb
       # Note that the project definition module is necessary to initialize any
       # function relying on a specific project folder structure or set of global
       # variables.
