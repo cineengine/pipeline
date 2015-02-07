@@ -3,48 +3,7 @@ import re
 import yaml
 
 # internal modules
-import pipeline.maya.vray.renderElements as vray
-
-
-FRAMEBUFFERS = {
-    'cfb_logo':[
-        'reflection',
-        'specular',
-        'diffuse',
-        'refraction',
-        'SSS',
-        'lighting'
-        ],
-    'team_logo':[
-        'reflection',
-        'specular',
-        'diffuse',
-        'SSS',
-        'lighting'
-        ],
-    'sign':[
-        'reflection',
-        'specular',
-        'diffuse',
-        'lighting',
-        'selfIllum'
-        ],
-    'utility':[
-        'zDepth',
-        'normals',
-        'UV',
-        'AO',
-        'PPW',
-        'MV',
-        'matteA',
-        'matteB',
-        'matteC',
-        'matteD',
-        'matteE',
-        'matteF'
-        ]
-}
-
+import pipeline.maya.vray.renderElements as vray_re
 
 class Layer( object ):
     """Layer is an object used by the sort controller to parse information about a layer currently
@@ -99,14 +58,16 @@ class SortControl( object ):
     """SortControl is a custom data structure intended for assisting the building of render layers,
     render settings and framebuffers for a given element in a scene.  For example, the main logo, the 
     environment, a particular character, or any category of object requiring sorting into separate
-    render layers."""
+    render layers with different visibility flags on each one."""
 
-    def __init__(self, database, element):
+    def __init__(self, database, element, framebuffers):
         """'Element' is the type of object requesting a sort controller.  Potential keywords would be
         things like CFB_Logo, Team_Logo, Environment, etc.  See sorting.yaml's ELEMENT: attribute for the
         full list. """
 
         self.element = element
+        self.framebuffers = framebuffers
+
         yaml_stream = open(database)
         stream = yaml.load_all(yaml_stream)
 
@@ -126,6 +87,7 @@ class SortControl( object ):
             else:
                 element_dictionary = None
                 continue
+
         # If the loop breaks/ends with no match, it will remain None
         if element_dictionary == None:
             pm.error('No sorting dictionary found for element: ' + str(element) + '!')
@@ -187,7 +149,7 @@ class SortControl( object ):
                     addToLayer( lg, layer.name )
 
             # Enable framebuffers for the layer, based on type
-            setFramebuffers( layer.type )
+            setFramebuffers( layer.type, self.framebuffers )
 
 
 
@@ -271,10 +233,10 @@ def setVisibility( sort_set, override ):
         return True
 
 
-def setFramebuffers( layer_type ):
+def setFramebuffers( layer_type, framebuffers ):
     """ Enables the passes specified in the sort module global variables. """
     try:
-        layer_buffers = FRAMEBUFFERS[layer_type]
+        layer_buffers = framebuffers[layer_type]
     except:
         pm.warning('Error retrieving layer type from framebuffers list.')
         return False
@@ -290,7 +252,7 @@ def setFramebuffers( layer_type ):
     if layer_type != 'utility':
         for fb in layer_buffers:
             print 'Enabling buffer: ' + str(fb)
-            fb = vray.makeLightComponentBuffer(fb)
+            fb = vray_re.makeLightComponentBuffer(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
@@ -298,7 +260,7 @@ def setFramebuffers( layer_type ):
     elif layer_type == 'utility':
         for fb in layer_buffers:
             print 'Enabling buffer: ' + str(fb)
-            fb = vray.makeUtilityBuffer(fb)
+            fb = vray_re.makeUtilityBuffer(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
