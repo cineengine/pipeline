@@ -28,13 +28,14 @@ QUICK TUTORIALS
       # variables.
 
 - The SceneManager object controls the project folder structure on the network,
-the Maya project definition (workspace.mel), and manages scene saving, opening,
-backup duties within Maya.  This command initializes the project if necessary,
-otherwise it ensures that the user isn't overwriting anything that already exists
-and sets its maya project accordingly.
-      
-      import test
+  the Maya project definition (workspace.mel), and manages scene saving, opening,
+  backup duties within Maya.  This command initializes the project if necessary,
+  otherwise it ensures that the user isn't overwriting anything that already exists
+  and sets its maya project accordingly.
+
       scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
+      # If this command is run on a pipeline-managed scene, it simply re-initializes
+      # itself based on values stored in scene's sceneControlObject node (a locator.)
 
 - To save / rename a scene
 
