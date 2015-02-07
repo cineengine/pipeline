@@ -58,7 +58,7 @@ organization of the pipeline's modules.
         sort = pipeline.maya.sort.SortControl('NAME_OF_ELEMENT')
         # This object needs to be initialized for every asset in the scene to be
         # sorted.  The sorting.yaml database 'ELEMENT' attribute is currently the
-        # only list of currently-supported asset types.  
+        # only list of supported element/asset types.  
 
         sort.run() 
         # This command makes the render layers, enables the framebuffers and sorts 
@@ -66,15 +66,17 @@ organization of the pipeline's modules.
 
 
 - To make a new asset / export an asset
-      pipeline.maya.asset.makeNew()
-      pipeline.maya.asset.sanityCheck()
-      pipeline.maya.asset.export() # Overwrites the existing version of the
-                                 # asset and makes a backup. Includes sanity
-                                 # checks
+        
+        pipeline.maya.asset.makeNew()
+        pipeline.maya.asset.sanityCheck()
+        pipeline.maya.asset.export() 
+        # Export overwrites the existing version of the asset and makes a backup. 
+        # Includes sanity checks
 
 - To reference an asset in:
-    pipeline.maya.ui.referenceSelector() # This opens a UI which forces the user
-                                       # to select a valid project namespace.
+
+        pipeline.maya.ui.referenceSelector() 
+        # This opens a UI which forces the user to select a valid project namespace.
 
 UPCOMING FEATURES
 - Maya UI widget            (maya/ui.py)
