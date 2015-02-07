@@ -32,7 +32,7 @@ the Maya project definition (workspace.mel), and manages scene saving, opening,
 backup duties within Maya.  This command initializes the project if necessary,
 otherwise it ensures that the user isn't overwriting anything that already exists
 and sets its maya project accordingly.
-    
+
       scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
 
 - To save / rename a scene
