@@ -11,12 +11,12 @@ INSTALLATION
   you can add these commands to userSetup.py in an evalDeferred()
   function):
 
-      import sys
-      sys.path.append('your root installation path')
+    import sys
+    sys.path.append('your root installation path')
 
-      import cg
-      import pipeline
-      pipeline.cfb_ui.run() # not implemented yet
+    import cg
+    import pipeline
+    pipeline.cfb_ui.run() # not implemented yet
 
 ------------------------------------------------------------------------------
 
@@ -26,11 +26,11 @@ These tutorials are intended for power users, to understand the function and
 organization of the pipeline's modules.
 
 - To initialize a set of project definitions (folders, global variables, etc..)
-  
+
     import pipeline.cfb as cfb
-      # Note that the project definition module is necessary to initialize any
-      # function relying on a specific project folder structure or set of global
-      # variables.
+    # Note that the project definition module is necessary to initialize any
+    # function relying on a specific project folder structure or set of global
+    # variables.
 
 - The SceneManager object controls the project folder structure on the network,
   the Maya project definition (workspace.mel), and manages scene saving, opening,
@@ -38,19 +38,19 @@ organization of the pipeline's modules.
   otherwise it ensures that the user isn't overwriting anything that already exists
   and sets its maya project accordingly.
 
-      scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
-      # If this command is run on a pipeline-managed scene, it simply re-initializes
-      # itself based on values stored in scene's sceneControlObject node (a locator.)
+    scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
+    # If this command is run on a pipeline-managed scene, it simply re-initializes
+    # itself based on values stored in scene's sceneControlObject node (a locator.)
 
 - To save / rename a scene:
 
-      scene.save() 
-      # overwrites the master scene file and increments the backup
-      scene.rename() 
-      # also saves the scene
-      scene.open()
-      # If the scene opened is already pipeline-managed, it simply sets the maya
-      # project correctly.  Otherwise it attempts to initialize the scene.
+    scene.save() 
+    # overwrites the master scene file and increments the backup
+    scene.rename() 
+    # also saves the scene
+    scene.open()
+    # If the scene opened is already pipeline-managed, it simply sets the maya
+    # project correctly.  Otherwise it attempts to initialize the scene.
 
 
 - To sort a scene / set it up for rendering:
