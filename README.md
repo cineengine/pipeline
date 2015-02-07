@@ -22,28 +22,38 @@ QUICK TUTORIALS
 - To initialize a set of project definitions (folders, global variables, etc)
   This is for power users only .. normally this is handled by the UI functions
 
-    import pipeline.cfb as cfb # this module can be customized to any project
-                             # structure
+    import pipeline.cfb as cfb
+    # Note that the project definition module is necessary to initialize any
+    # function relying on a specific project folder structure or set of global
+    # variables.
 
-* To set up a new maya project / scene:
-- This will initialize a brand new scene or convert an existing one, and 
-ensure that the correct folders are present on the network.
+- The SceneManager object controls the project folder structure on the network,
+the Maya project definition (workspace.mel), and manages scene saving, opening,
+backup duties within Maya.  This command initializes the project if necessary,
+otherwise it ensures that the user isn't overwriting anything that already exists
+and sets its maya project accordingly.
     
     scene = pipeline.maya.SceneManager(cfb.ANIM_BASE_DIR, cfb.FOLDER_STRUCTURE)
 
-- Available simple commands
+- To save / rename a scene
+
     scene.save() # overwrites and increments the backup
     scene.rename() # also saves the scene
+    scene.open()
+    # If the scene opened is already pipeline-managed, it simply sets the maya
+    # project correctly.  Otherwise it attempts to initialize the scene.
 
 - To sort a scene / set it up for rendering:
+
+    sort = pipeline.maya.sort.SortControl('NAME_OF_ELEMENT')
     # This object needs to be initialized for every asset in the scene to be
     # sorted.  The sorting.yaml database 'ELEMENT' attribute is currently the
     # only list of currently-supported asset types.  
 
-    sort = pipeline.maya.sort.SortControl('type of object to sort')
-    sort.run() # This command makes the render layers, enables the framebuffers
-             # and sorts objects into the correct layers with the correct
-             # flags.
+    sort.run() 
+    # This command makes the render layers, enables the framebuffers and sorts 
+    # objects into the correct layers with the correct visibility flags.
+
 
 - To make a new asset / export an asset
     pipeline.maya.asset.makeNew()
