@@ -173,6 +173,8 @@ def export(*a):
             pass#print obj
         elif obj.nodeType() == 'VRayRenderElementSet':
             pass#print obj
+        elif obj.nodeType() == 'VRayLightMesh':
+            pass
         else:
             pm.warning('Something fishy about your selection.  Nothing exported.')
             return False
