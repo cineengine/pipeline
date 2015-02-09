@@ -165,7 +165,11 @@ def addToLayer(  sort_set, layer, rm=False ):
     ## a namespace, we will have to include logic to account for this
     # Search for all sortgroups matching the name passed to the function
     reg = re.compile(sort_set)
-    if 'sg_' in sort_set:
+    if 'sg_all' in sort_set:
+        all_matching = pm.ls(typ='VRayObjectProperties')
+    elif 'lg_all' in sort_set:
+        all_matching = pm.ls(typ='VRayRenderElementSet')
+    elif 'sg_' in sort_set:
         all_matching = pm.ls(regex=reg, typ='VRayObjectProperties')
     elif 'lg_' in sort_set:
         all_matching = pm.ls(regex=reg, typ='VRayRenderElementSet')

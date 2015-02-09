@@ -3,12 +3,13 @@ import pymel.core as pm
 # CFB modules
 
 # Internal modules
-from pipeline.db import Team
-import pipeline.vray.renderElements as renderElements
+#from pipeline.db import Team
+#import pipeline.vray.renderElements as renderElements
 import pipeline.vray.utils as utils
-import pipeline.vray.mattes as mattes
-import cg.maya.rendering as rendering
-"""
+#import pipeline.vray.mattes as mattes
+#import cg.maya.rendering as rendering
+import pipeline.asset as asset
+import pipeline.sort as sort
 
 def factory( *a ):
     
@@ -27,14 +28,12 @@ def factory( *a ):
 
     # REFERENCE FACTORY ELEMENTS
     # reference light rig
-    pm.createReference(cfb.FACTORY_LIGHT_RIG, namespace='FACTORY')
+    asset.reference(cfb.FACTORY_LIGHT_RIG, 'FACTORY')
     # build framebuffers
-    passes(cfb.FRAMEBUFFERS['beauty'])
-    passes(cfb.FRAMEBUFFERS['utility'])
     # get sorting template from DB
-    factory_sorting = SortDict('Factory')
+    sorter = sort.SortControl('Factory')
     # sort scene
-    sceneFromDb(factory_sorting)
+    sorter.run()
     
     ## MAKE FACTORY LAYERS
     # Make the layers at the correct bit depths
@@ -65,9 +64,14 @@ def factory( *a ):
             pm.PyNode('FACTORY:HDR_NIGHT').outColor >> v_ray.cam_envtexGi
             pm.PyNode('FACTORY:HDR_NIGHT').outColor >> v_ray.cam_envtexReflect           
 
+        elif str(layer) == 'STUDIO':
+            pm.PyNode('FACTORY:HDR_STUDIO').outColor >> v_ray.cam_envtexBg
+            pm.PyNode('FACTORY:HDR_STUDIO').outColor >> v_ray.cam_envtexGi
+            pm.PyNode('FACTORY:HDR_STUDIO').outColor >> v_ray.cam_envtexReflect    
+
         else: pass
         
-
+"""
 
 def attachTeamToSign(sign_name, team_name, do_attach=True):
     def _attach( obj, anchor ):

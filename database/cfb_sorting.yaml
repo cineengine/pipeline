@@ -21,6 +21,13 @@ NIGHT :
         - lg_sign
     rgba :
         - sg_all
+STUDIO :
+    type: beauty
+    rgba :
+        - sg_all
+    lights:
+        - lg_studio
+        - lg_cfb_logo
 UTIL :
     type: utility
     aov :
