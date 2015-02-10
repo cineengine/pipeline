@@ -321,3 +321,7 @@ def enableOverride( attr ):
         pm.editRenderLayerAdjustment( attr )
 
     return True
+
+def factory(*a):
+    sorter = SortControl('Factory')
+    sorter.run()

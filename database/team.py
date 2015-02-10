@@ -2,13 +2,13 @@ import yaml
 
 ## TEAM DATABASE OBJECT
 class Team(object):
-    def __init__(self, database, team_basename):
+    def __init__(self, database, team_tricode):
         yaml_stream = open(database)
         db = yaml.load_all(yaml_stream)
         found = 0
         # Parse the db to find the team by tricode or name 
         for team in db:
-            if (team['tricode'] == school) or (team['team'] == school):
+            if (team['tricode'] == team_tricode) or (team['team'] == team_tricode):
                 self.db = team
                 found = 1
                 break

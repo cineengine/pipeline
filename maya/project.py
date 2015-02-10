@@ -10,7 +10,7 @@ import pymel.core.system as pmsys
 #import pipeline.maya.submit as submit
 
 class SceneManager(object):
-    def __init__(self, animation_base_dir, folder_structure):
+    def __init__(self, animation_base_dir, folder_structure, delay_init):
         # The base path for all projects
         self.base_path = animation_base_dir
         # Dictionary for this project's folder structure.  Found in pipeline.<project_name> module.
@@ -38,7 +38,8 @@ class SceneManager(object):
         # Ex: "V:\CFB_S_REJOIN_01\maya\backup\CFB_S_REJOIN_01_GAMEDAY_0002.mb"
         self.backup_path = ''
 
-        self._initCheck()
+        if not delay_init:
+            self._initCheck()
 
     def __repr__(self, *a):
         print '\n'
@@ -51,7 +52,7 @@ class SceneManager(object):
         print '\n'
         return ' '
 
-    def _initCheck(self, *a):
+    def initCheck(self, *a):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it updates the 
             pre-existing python SceneManager object.  (Such as when a pipeline scene is opened.)
             If it is a clean / non-pipelined scene, it sets up the scene for controlling.'''
