@@ -7,8 +7,8 @@ from pipeline.maya import sort
 from pipeline.maya import build
 from pipeline.maya import project
 
-import pipeline.maya.vray.utils as vrayutils
-import pipeline.maya.vray.mattes as vraymattes
+import pipeline.vray.utils as vrayutils
+import pipeline.vray.mattes as vraymattes
 
 # Other ESPN modules
 import cg.maya.rendering as rendering
