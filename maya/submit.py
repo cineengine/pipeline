@@ -1,6 +1,3 @@
-## command:
-## ./qube-console --submitDict
-
 import os
 import subprocess
 import pymel.core as pm
@@ -161,7 +158,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                         'restrictions': '',
                         'requirements': '',
                         'kind': '',
-                        'priority': str(9999),
+                        'priority': str(5000),
                         'cpus': str(183),
                         'reservations': 'host.processors=16',
                         'flagsstring': 'auto_wrangling,disable_windows_job_object'
@@ -359,9 +356,7 @@ def submitJob( gui=True, *a ):
         else:
             subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])
 
-
-
-
-
-test = RenderSubmitWindow()
-test.run()
+def run(*a):
+    submission = RenderSubmitWindow()
+    submission.run()
+    return
