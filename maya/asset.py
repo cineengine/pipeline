@@ -175,6 +175,8 @@ def export(*a):
             pass#print obj
         elif obj.nodeType() == 'VRayLightMesh':
             pass
+        elif obj.nodeType() == 'VRayDisplacement':
+            pass
         else:
             pm.warning('Something fishy about your selection.  Nothing exported.')
             return False
