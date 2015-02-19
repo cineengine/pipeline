@@ -8,9 +8,10 @@ import cg.maya.selection as select
 
 
 def sanityCheck(report=True, model=False, shading=False, *a):
-    """ Performs a simple check of an asset to see if it's ready for check-in.  This includes
-        checking for invalid members of the asset heirarchy and valid metadata attributes (model-mode),
-        as well as checking for bad shading assignments (shading-mode)."""
+    """ Performs a simple check of an asset to see if it's ready for check-in.
+        This includes checking for invalid members of the asset heirarchy and 
+        valid metadata attributes (model-mode), as well as checking for bad 
+        shading assignments (shading-mode)."""
     
     obj = select.single()
     if not obj:
@@ -67,7 +68,8 @@ def sanityCheck(report=True, model=False, shading=False, *a):
 
 
 def makeNew(*a):
-    """ Makes an asset heirarchy for Maya, queries the user for a name, and performs a bless()."""
+    """ Makes an asset heirarchy for Maya, queries the user for a name, and 
+    performs a bless()."""
     asset = pm.createNode('transform', name='ASSETNAME')
     geo = pm.createNode('transform', name='GEO', p=asset)
     repo = pm.createNode('transform', name='REPO', p=geo)
@@ -80,8 +82,8 @@ def makeNew(*a):
 
 
 def bless(obj=False):
-    """ Creates and fills out an asset's custom metadata attributes.  Asset Path is determined
-        on first export."""
+    """ Creates and fills out an asset's custom metadata attributes.  
+        Asset Path is determined on first export."""
     if not obj:
         obj = select.single()
         if not obj:
@@ -133,8 +135,9 @@ def bless(obj=False):
 
 
 def export(*a):
-    """ Parses an asset's custom attributes for information about the name and location of the asset
-        in the filesystem.  Makes a backup of the asset on export, if necessary."""
+    """ Parses an asset's custom attributes for information about the name and
+        location of the asset in the filesystem.  Makes a backup of the asset 
+        on export, if necessary."""
     # Backup logic
     def __incrVersion(backup_path, version, name):
         backup_name = name + '_' + str(int(version)).zfill(4) + '.mb'
@@ -205,7 +208,9 @@ def export(*a):
         backup_name = backup_path + __incrVersion(backup_path, version, name)
         # & Copy the current asset into the backup folder, with the incremented file name
         os.rename(export_name, backup_name)
-        pm.warning('Successfully backed up asset to: ' + backup_name.replace('/','\\'))    
+        pm.warning(
+            'Successfully backed up asset to: ' + backup_name.replace('/','\\')
+            )    
         # Update the asset in the scene with the current version
         main_node.assetVersion.set(main_node.assetVersion.get()+1)
 
@@ -214,7 +219,8 @@ def export(*a):
 
 
 def importAsset( get_file=None, *a):
-    """ Opens an import dialog starting at the CFB asset directory, using no namespaces"""
+    """ Opens an import dialog starting at the CFB asset directory, 
+        using no namespaces"""
     if not get_file:
         get_file = pm.fileDialog2(dir=cfb.MAIN_ASSET_DIR, ds=1, fm=1)
     
@@ -227,8 +233,10 @@ def importAsset( get_file=None, *a):
 
 
 def reference( file_to_ref, namespace, *a ):
-    ''' A helper utility for maintaining clean and consistent namespacing when referencing. '''
-    # Loop over all references to see if a reference is already loaded into the namespace
+    ''' A helper utility for maintaining clean and consistent namespacing when
+        referencing.'''
+    # Loop over all references to see if a reference is already loaded into 
+    # the namespace
     ref = None
 
     for ref in pm.listReferences():
@@ -236,7 +244,7 @@ def reference( file_to_ref, namespace, *a ):
             break
         else: ref = None
 
-    # If there's no reference loaded with that namespace, we may as well just cleanup & start fresh
+    # If there's no reference loaded with that namespace, just delete it
     if not ref:
         try: pm.namespace(rm=namespace)
         except: pass
@@ -301,7 +309,8 @@ def swapImportWithReference( obj=None, *a ):
         pm.mel.eval('HypershadeWindow;hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
     except:
         pm.confirmDialog(title='Oops',
-                         message='Could not delete unused shading nodes.  You\'ll need to do it manually.'
+                         message="""Could not delete unused shading nodes.
+You\'ll need to do it manually."""
                          )
     
     ref = pm.createReference(full_path, namespace=asset_name)
@@ -309,12 +318,15 @@ def swapImportWithReference( obj=None, *a ):
 
 
 def swapReferenceWithImport( obj=None, *a ):
-    """ Based on the namespace of the current (referenced) selection, this command does the following:
+    """ Based on the namespace of the current (referenced) selection, this 
+        command does the following:
         - Removes the referenced scene completely
         - Imports the same scene into the default namespace """
     
     confirm = pm.confirmDialog(title='You sure?',
-                 message="""This script will remove the selected reference and its edits,\nthen import it back in.  This cannot be undone so make sure\nthat you've saved your working file.""",
+                 message="""This script will remove the selected reference
+and its edits, then import it back in.  This cannot be undone so make sure
+that you've saved your working file.""",
                  button=['OK','Cancel'],
                  defaultButton='OK',
                  dismissString='Cancel'
@@ -349,7 +361,8 @@ def swapReferenceWithImport( obj=None, *a ):
 
 
 def getAssetList( typ='generic' ):
-    ''' Return a list of all assets (folders) in various asset directories, defined in 'typ' '''
+    ''' Return a list of all assets (folders) in various asset directories, 
+        defined in 'typ' '''
     if typ == 'generic':
         asset_list = os.listdir(cfb.MAIN_ASSET_DIR)
         asset_list = [a for a in asset_list if '000_FACTORY' not in a]

@@ -3,7 +3,7 @@ import re
 import yaml
 
 # internal modules
-import pipeline.maya.vray.renderElements as vray_re
+import pipeline.vray.aov as aov
 
 class Layer( object ):
     """Layer is an object used by the sort controller to parse information about a layer currently
@@ -150,6 +150,8 @@ class SortControl( object ):
 
             # Enable framebuffers for the layer, based on type
             setFramebuffers( layer.type, self.framebuffers )
+            # Set any hard-coded exceptions for this element in this layer
+            exceptionCommands( self.element, layer.type )
 
 
 
@@ -256,7 +258,7 @@ def setFramebuffers( layer_type, framebuffers ):
     if layer_type != 'utility':
         for fb in layer_buffers:
             print 'Enabling buffer: ' + str(fb)
-            fb = vray_re.makeLightComponentBuffer(fb)
+            fb = aov.makeLightComponentBuffer(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
@@ -264,10 +266,19 @@ def setFramebuffers( layer_type, framebuffers ):
     elif layer_type == 'utility':
         for fb in layer_buffers:
             print 'Enabling buffer: ' + str(fb)
-            fb = vray_re.makeUtilityBuffer(fb)
+            fb = aov.makeUtilityBuffer(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
+
+def setExceptions( element_name, layer_type=None, layer_name=None ):
+    ''' All the 
+    if element_name == 'CFB_Logo' and layer_type == 'beauty':
+        with pm.PyNode('FRONT_GLASS_BLENDMTL') as shader:
+            fb = makeExTex('clearCoat', shader.outColor)
+        with pm.PyNode('CARBON_FIBER_BLENDMTL') as shader:
+            fb = makeExTex('carbonFiber', shader.outColor)
+        return
 
 
 # Helper Functions
