@@ -9,7 +9,7 @@ PROJECT_BASE_DIR = "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\CFB_15\\"
 # Asset directories
 MAIN_ASSET_DIR = PROJECT_BASE_DIR + "TOOLKIT\\001_3D_ASSETS\\"
 TEAMS_ASSET_DIR = PROJECT_BASE_DIR + "TOOLKIT\\002_3D_TEAMS\\"
-TEMPLATE_ASSET_DIR = PROJECT_BASE_DIR + "TOOLKIT\\004_TEMPLATES\\"
+#TEMPLATE_ASSET_DIR = PROJECT_BASE_DIR + "TOOLKIT\\004_TEMPLATES\\"
 ANIMATION_PROJECT_DIR = PROJECT_BASE_DIR + "PROJECTS\\000_Animation\\"
 
 # Database locations
@@ -29,7 +29,9 @@ FOLDER_STRUCTURE = {
         'c4d': [],
         'render_3d': [],
         'render_2d': ['prerenders'],
-        'qt': []
+        'qt': [],
+        'abc': [],
+        'cam': []
         }
 
 NAMESPACES = [
