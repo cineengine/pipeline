@@ -87,8 +87,9 @@ def assetSelector( init=None, mode='reference', *a):
     
 def referenceSelector(get_file=False, *a):
 
-    def _run(*a):
+    def _run(get_file):
         sel = pm.textScrollList('selectNamespace', q=True, si=True)[0]
+
         if not get_file:
             # Get target namespace & asset file from UI
             get_file = pm.fileDialog2(dir=cfb.MAIN_ASSET_DIR, ds=1, fm=1)[0]
@@ -113,7 +114,7 @@ def referenceSelector(get_file=False, *a):
                 ams=False, 
                 append=cfb.NAMESPACES
                 )
-    rf_but = pm.button(l='Select Asset to Reference', p=main, c=_run)
+    rf_but = pm.button(l='Select Asset to Reference', p=main, c=lambda *args: _run(get_file))
     main.redistribute(1,5,3)
     widget.show()
 

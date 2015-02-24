@@ -272,7 +272,6 @@ def setFramebuffers( layer_type, framebuffers ):
 
 
 def setExceptions( element_name, layer_type=None, layer_name=None ):
-    ''' All the 
     if element_name == 'CFB_Logo' and layer_type == 'beauty':
         with pm.PyNode('FRONT_GLASS_BLENDMTL') as shader:
             fb = makeExTex('clearCoat', shader.outColor)
