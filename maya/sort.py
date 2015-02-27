@@ -151,7 +151,7 @@ class SortControl( object ):
             # Enable framebuffers for the layer, based on type
             setFramebuffers( layer.type, self.framebuffers )
             # Set any hard-coded exceptions for this element in this layer
-            exceptionCommands( self.element, layer.type )
+            #exceptionCommands( self.element, layer.type )
 
 
 
