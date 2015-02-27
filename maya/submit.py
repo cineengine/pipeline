@@ -106,13 +106,26 @@ class RenderSubmitWindow(pm.uitypes.Window):
             return 'sanity check fail'
 
         # 2- no user cameras in scene
-        if scene_cameras == '':
-            pm.confirmDialog( title='No user camera.',
+        if scene_cameras == None:
+            pm.confirmDialog( title='No renderable camera.',
                               button='Whoops',
                               message='No renderable cameras found in your scene.',
                               defaultButton='Whoops'
                               )
             return 'sanity check fail'
+
+        elif len(scene_cameras) > 1:
+            confirm = pm.confirmDialog( title='Multiple renderable cameras.',
+                              button=('Whoops', 'That\'s fine'),
+                              cancelButton='That\'s fine',
+                              message='You have multiple renderable cameras in your scene.  All of them will be rendered.  Proceed?',
+                              defaultButton='Whoops',
+                              dismissString='That\'s fine'
+                              )
+            if confirm == 'That\'s fine':
+                pass
+            elif confirm == 'Whoops':
+                return 'sanity check fail'
 
         # 3- animation rendering not enabled
         if rg.animation.get() == False:
@@ -282,10 +295,9 @@ class RenderSubmitWindow(pm.uitypes.Window):
         """ Runs the Qube submission console command for the current render layer. """
 
         layer = pm.editRenderLayerGlobals(q=True, crl=True)
-        self.submit_dict['package']['layer'] = layer
-
+        self.submit_dict['package']['layers'] = str(layer)
         self.submit_dict['name'] = self.base_job_name + ' : ' + str(layer)
-        
+
         if qube_gui:
             subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--submitDict', str(self.submit_dict)])
         else:
@@ -309,10 +321,11 @@ class RenderSubmitWindow(pm.uitypes.Window):
 def getSceneUserCameras( *a ):
     """Returns a list of all non-default cameras in the scene """
     default_cameras = ['topShape', 'sideShape', 'frontShape', 'perspShape']
-    cams = [str(cam) for cam in pm.ls(typ='camera') if cam not in default_cameras and cam.renderable]
+    cams = [str(cam) for cam in pm.ls(typ='camera') if cam not in default_cameras and cam.renderable.get()]
     if len(cams) > 0:
         return cams
-    else: return ''
+    else: return None
+
 
 def toUNC( path ):
     """ Force updates drive mapping to unc paths """
