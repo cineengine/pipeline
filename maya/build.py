@@ -1,6 +1,7 @@
 import pymel.core as pm
 
 # CFB modules
+from pipeline import cfb
 
 # Internal modules
 #from pipeline.db import Team
@@ -11,9 +12,27 @@ from pipeline.maya import asset
 from pipeline.maya import sort
 from pipeline.maya import project
 
-import pipeline.maya.vray.utils as utils
+import pipeline.vray.utils as utils
 
-def factory( factory_scene ):
+def factory( *a ):
+    ## INITIALIZE V-RAY SETTINGS
+    pm.Mel.eval('unifiedRenderGlobalsWindow;')
+    try:
+        utils.initVray()
+        utils.setVrayDefaults()
+    except:
+        pm.warning('V-Ray wasn\'t loaded. Try the command again')
+        return None
+    
+    v_ray = pm.PyNode('vraySettings')
+    v_ray.cam_overrideEnvtex.set(1)
+    pm.mel.eval('renderThumbnailUpdate false;')
+
+    asset.reference(cfb.FACTORY_LIGHT_RIG, 'FACTORY')
+    sorter = sort.SortControl(cfb.SORTING_DATABASE, 'Factory', cfb.FRAMEBUFFERS)
+    sorter.run()
+
+def factory_old( factory_scene ):
     
     ## INITIALIZE V-RAY SETTINGS
     pm.Mel.eval('unifiedRenderGlobalsWindow;')
