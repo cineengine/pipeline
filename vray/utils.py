@@ -13,7 +13,7 @@ def initVray( *args, **kwargs ):
         pm.warning("Could not initialize V-Ray for some reason")
         return False
 
-def setVrayDefaults( *args ):
+def setVrayDefaults( gi=False, *args ):
     try:
         #initVray()
         v_ray = pm.PyNode('vraySettings')
@@ -24,7 +24,7 @@ def setVrayDefaults( *args ):
         globs.animation.set(1)
         v_ray.animBatchOnly.set(1)
         v_ray.ddisplac_maxSubdivs.set(12)
-        v_ray.gi.set(1)
+        v_ray.gi.set(gi)
         v_ray.primaryEngine.set(2)
         v_ray.secondaryEngine.set(0)
         v_ray.refractiveCaustics.set(0)

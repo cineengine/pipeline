@@ -1,6 +1,6 @@
 import pymel.core as pm
 import cg.maya.selection as select
-import pipeline.maya.vray.renderElements as ele
+import pipeline.vray.aov as aov
 
 ######################
 ### MATTE SELECTOR ###
@@ -177,8 +177,8 @@ def makeMatteRenderElements(*args):
         try:
             pm.PyNode('matte'+i)
         except pm.MayaNodeError:
-            uc = ele.makeUserColor(name=('matte'+i))
-            exTex = ele.makeExTex(name=('matte'+i), inTex = uc.outColor)
+            uc = aov.makeUserColor(name=('matte'+i))
+            exTex = aov.makeExTex(name=('matte'+i), inTex = uc.outColor)
     print mattes
     #pm.select(sel)
 
