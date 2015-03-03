@@ -4,21 +4,18 @@ SUNSET :
     type: beauty
     lights :
         - lg_sunset
-        - lg_sign
     rgba : 
         - sg_all
 NOON :
     type: beauty
-    light :
+    lights :
         - lg_noon
-        - lg_sign
     rgba :
         - sg_all
 NIGHT :
     type: beauty
-    light :
+    lights :
         - lg_night
-        - lg_sign
     rgba :
         - sg_all
 STUDIO :
@@ -27,11 +24,6 @@ STUDIO :
         - sg_all
     lights:
         - lg_studio
-        - lg_cfb_logo
-UTIL :
-    type: utility
-    aov :
-        - sg_all
 ...
 ---
 ELEMENT : CFB_Logo
