@@ -6,6 +6,8 @@ import os
 import cg.maya.rendering as rendering
 import cg.maya.selection as select
 
+from pipeline import cfb
+
 
 def sanityCheck(report=True, model=False, shading=False, *a):
     """ Performs a simple check of an asset to see if it's ready for check-in.
@@ -134,7 +136,7 @@ def bless(obj=False):
     return (name, version, path)
 
 
-def export(*a):
+def export(asset_directory):
     """ Parses an asset's custom attributes for information about the name and
         location of the asset in the filesystem.  Makes a backup of the asset 
         on export, if necessary."""
@@ -189,7 +191,7 @@ def export(*a):
     
     # Assign an export path (if none)
     if path == None or path == '':
-        path = (pm.fileDialog2(fm=3, dir=cfb.MAIN_ASSET_DIR)[0] + '\\')
+        path = (pm.fileDialog2(fm=3, dir=asset_directory[0]) + '\\')
         path += name + '\\'
         main_node.assetPath.set(path)
 
@@ -270,6 +272,104 @@ def reference( file_to_ref, namespace, *a ):
             ref = pm.createReference( file_to_ref, namespace=namespace )
             return ref
 
+def namespaceSelector(get_file=False, *a):
+
+    def _run(get_file):
+        sel = pm.textScrollList('selectNamespace', q=True, si=True)[0]
+
+        if not get_file:
+            # Get target namespace & asset file from UI
+            #get_file = pm.fileDialog2(dir=cfb.MAIN_ASSET_DIR, ds=1, fm=1)[0]
+            assetSelector(init=True, mode='reference')
+
+        else:
+            reference(get_file, sel)
+
+    # UI for namespace selection
+    try: pm.deleteUI('refAsset')
+    except: pass
+    widget = pm.window(
+                'refAsset',
+                title='Reference Asset into Namespace',
+                tlb=True,
+                rtf=True
+                )
+    main = pm.formLayout(p=widget)
+    label = pm.text(label='What namespace will this reference into?')
+    ns_box = pm.textScrollList(
+                'selectNamespace', 
+                numberOfRows=10, 
+                parent=main,
+                ams=False, 
+                append=cfb.NAMESPACES
+                )
+    rf_but = pm.button(l='Reference into this Namespace', p=main, c=lambda *args: _run(get_file))
+    main.redistribute(1,5,3)
+    widget.show()
+
+
+def assetSelector( init=None, mode='reference', *a):
+    
+    def _get( *a ):
+        return pm.textScrollList( 'sel_box', q=True, selectItem=True )[0]
+    
+
+    def _run( mode, typ, *a ):
+        if typ == 'generic':
+            folder = cfb.MAIN_ASSET_DIR
+        elif typ == 'team':
+            folder = cfb.TEAMS_ASSET_DIR
+        elif typ == 'template':
+            folder = cfb.TEMPLATE_DIR
+
+        asset_name = _get()
+        
+        if mode == 'reference':
+            namespaceSelector(get_file = (folder + asset_name + "\\" + asset_name + ".mb"))
+        elif mode == 'import':
+            importAsset(get_file = (folder + asset_name + "\\" + asset_name + ".mb"))
+    
+
+    if init == True:    
+        init = pm.confirmDialog( title='Select asset type:',
+                                     message='What type of asset?',
+                                     button=['Generic','Team','Template'],
+                                     defaultButton='Generic',
+                                     dismissString='Cancel'
+                                     )
+
+    if init == 'Cancel':
+        return False    
+    
+    try:
+        pm.deleteUI('select_win')
+    except: pass
+    
+    select_win = pm.window( 'select_win',
+                            title='Select asset:',
+                            tlb=True, rtf=True, s=False,
+                            width=150
+                            )
+    
+    # Basic window layout
+    top = pm.formLayout(p=select_win)
+    sel_box = pm.textScrollList('sel_box', p=top, dcc=lambda *args: _run(mode,init.lower()))
+    get_btn = pm.button('get_btn',
+                        label='Select',
+                        c=lambda *args: _run(mode,init.lower()),
+                        h=25)
+    top.redistribute(3.336,1)
+    
+    # Get the list of assets specified in init_win    
+    asset_list = getAssetList(typ=init.lower())
+
+    sel_list = pm.textScrollList( 'sel_box',
+                                  e=True,
+                                  append=asset_list,
+                                  numberOfRows=min(25, max(10, len(asset_list)))
+                                  )
+   
+    select_win.show()
 
 def swapImportWithReference( obj=None, *a ):
     """ Deletes the selected asset from the scene and does the following:
@@ -313,8 +413,8 @@ def swapImportWithReference( obj=None, *a ):
 You\'ll need to do it manually."""
                          )
     
-    ref = pm.createReference(full_path, namespace=asset_name)
-    return ref
+    namespaceSelector(get_file=full_path)
+    #return ref
 
 
 def swapReferenceWithImport( obj=None, *a ):
@@ -361,8 +461,8 @@ that you've saved your working file.""",
 
 
 def getAssetList( typ='generic' ):
-    ''' Return a list of all assets (folders) in various asset directories, 
-        defined in 'typ' '''
+    """ Return a list of all assets (folders) in various asset directories, 
+        defined in 'typ' """
     if typ == 'generic':
         asset_list = os.listdir(cfb.MAIN_ASSET_DIR)
         asset_list = [a for a in asset_list if '000_FACTORY' not in a]
