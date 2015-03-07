@@ -18,6 +18,17 @@ import cg.maya.selection as selection
 # CFB global variables
 import pipeline.cfb as cfb
 
+reload(asset)
+reload(sort)
+reload(build)
+reload(project)
+reload(team)
+reload(vrayutils)
+reload(vraymattes)
+reload(rendering)
+reload(selection)
+reload(cfb)
+
 main_width = 123
 emphasis = [0.1,0.38,0.52]
 deemphasis = [0.27,0.27,0.27]
@@ -106,7 +117,7 @@ pm.menuItem(divider=True)
 pm.menuItem(l="Make New Asset", c=asset.makeNew)
 pm.menuItem(l="Check Model", c=lambda *args: asset.sanityCheck(report=True, model=True))
 pm.menuItem(l="Check Shading", c=lambda *args: asset.sanityCheck(report=True, shading=True))
-pm.menuItem(l="EXPORT ASSET", c=lambda *args: asset.export(cfb.MAIN_ASSET_DIR))
+pm.menuItem(l="EXPORT ASSET", c=asset.export)
 
 pm.menuItem(divider=True)
 pm.menuItem(l="Reference Asset", c=lambda *args: asset.assetSelector(init=True, mode='reference'))

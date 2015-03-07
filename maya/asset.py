@@ -136,7 +136,7 @@ def bless(obj=False):
     return (name, version, path)
 
 
-def export(asset_directory):
+def export(*a):
     """ Parses an asset's custom attributes for information about the name and
         location of the asset in the filesystem.  Makes a backup of the asset 
         on export, if necessary."""
@@ -191,8 +191,8 @@ def export(asset_directory):
     
     # Assign an export path (if none)
     if path == None or path == '':
-        path = (pm.fileDialog2(fm=3, dir=asset_directory[0]) + '\\')
-        path += name + '\\'
+        path = pm.fileDialog2(fm=3, dir=cfb.MAIN_ASSET_DIR)[0]
+        path += '\\' + name + '\\'
         main_node.assetPath.set(path)
 
     ### Backup & export
