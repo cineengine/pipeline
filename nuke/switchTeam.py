@@ -1,4 +1,4 @@
-import cfb.db
+from pipeline import cfb
 import nuke
 
 from os.path import split
