@@ -7,14 +7,14 @@ import pymel.core as pm
 import pymel.core.system as pmsys
 
 # ESPN-specific modules
-#import pipeline.maya.submit as submit
+from pipeline import cfb
 
 class SceneManager(object):
-    def __init__(self, animation_base_dir, folder_structure, delay_init):
+    def __init__(self, delay_init=False):
         # The base path for all projects
-        self.base_path = animation_base_dir
+        self.base_path = cfb.ANIMATION_PROJECT_DIR
         # Dictionary for this project's folder structure.  Found in pipeline.<project_name> module.
-        self.folder_structure = folder_structure
+        self.folder_structure = cfb.FOLDER_STRUCTURE
 
         # The name of the project.  
         # Ex: "CFB_S_REJOIN_01"
@@ -39,7 +39,7 @@ class SceneManager(object):
         self.backup_path = ''
 
         if not delay_init:
-            self._initCheck()
+            self.initCheck()
 
     def __repr__(self, *a):
         print '\n'
@@ -75,6 +75,7 @@ class SceneManager(object):
             else:
                 pm.warning('SCENE MANAGER REPORT :: FAILED :: Scene failed to initialize. Ask Mark.')
                 return 0
+
 
     def _initScene(self, *a):
         ''' If this is a new scene, organize it into a project.
