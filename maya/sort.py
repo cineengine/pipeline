@@ -3,7 +3,7 @@ import re
 import yaml
 
 # internal modules
-import pipeline.vray.aov as aov
+from pipeline.vray import aov
 
 class Layer( object ):
     """Layer is an object used by the sort controller to parse information about a layer currently
@@ -55,22 +55,21 @@ class Layer( object ):
 
 
 class SortControl( object ):
-    """SortControl is a custom data structure intended for assisting the building of render layers,
+    """SortControl is a struct intended for assisting the building of render layers,
     render settings and framebuffers for a given element in a scene.  For example, the main logo, the 
     environment, a particular character, or any category of object requiring sorting into separate
     render layers with different visibility flags on each one."""
 
-    def __init__(self, database, element, framebuffers):
+    def __init__(self, element):
         """'Element' is the type of object requesting a sort controller.  Potential keywords would be
         things like CFB_Logo, Team_Logo, Environment, etc.  See sorting.yaml's ELEMENT: attribute for the
         full list. """
 
         self.element = element
-        self.framebuffers = framebuffers
+        self.framebuffers = cfb.FRAMEBUFFERS
 
-        yaml_stream = open(database)
+        yaml_stream = open(cfb.SORTING_DATABASE)
         stream = yaml.load_all(yaml_stream)
-
 
         #with open(cfb.SORTING_DATABASE) as yaml_stream:
         #    stream = yaml.load_all(yaml_stream)
@@ -150,8 +149,8 @@ class SortControl( object ):
 
             # Enable framebuffers for the layer, based on type
             setFramebuffers( layer.type, self.framebuffers )
-            # Set any hard-coded exceptions for this element in this layer
-            #exceptionCommands( self.element, layer.type )
+            # Set any hard-coded exceptions for this element / layer
+            setExceptions( layer.type, layer.element, layer.name )
 
 
 
@@ -271,12 +270,18 @@ def setFramebuffers( layer_type, framebuffers ):
             fb.enabled.set(1)
 
 
-def setExceptions( element_name, layer_type=None, layer_name=None ):
+def setExceptions( layer_type=None, element_name=None, layer_name=None ):
     if element_name == 'CFB_Logo' and layer_type == 'beauty':
-        with pm.PyNode('FRONT_GLASS_BLENDMTL') as shader:
-            fb = makeExTex('clearCoat', shader.outColor)
-        with pm.PyNode('CARBON_FIBER_BLENDMTL') as shader:
-            fb = makeExTex('carbonFiber', shader.outColor)
+        try:
+            shader = pm.PyNode('CFB_LOGO:GLASS_CLEARCOAT')
+            fb     = aov.makeExTex('clearCoat', shader.outColor)
+        except:
+            pm.warning('AOV ERROR :: Couldn\'t connect glass shader to extraTex')
+        try:
+            shader = pm.PyNode('CFB_LOGO:CARBON_FIBER')
+            fb     = aov.makeExTex('carbonFiber', shader.outColor)
+        except:
+            pm.warning('AOV ERROR :: Couldn\'t connect carbon fiber shader to extraTex')
         return
 
 
