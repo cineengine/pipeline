@@ -81,11 +81,7 @@ try:
     pm.deleteUI('pipeline')
 except: pass
 
-scene = project.SceneManager(
-    cfb.ANIMATION_PROJECT_DIR, 
-    cfb.FOLDER_STRUCTURE, 
-    True
-    )
+scene = project.SceneManager(delay_init=True)
 
 g_main = pm.getMelGlobal('string','$gMainWindow')
 
