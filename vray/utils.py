@@ -187,3 +187,48 @@ def addToSet( typ=None, *args ):
     winBox.redistribute(0,0)
     pm.showWindow( selGrpWin )
 
+
+def convertTextures(*a):
+    ''' Converts all textures in the scene to tiled exr format.
+
+        A guide to how it will rename your file:
+        my_input_file.exr      >> my_input_file_vray.exr
+        my_input_file.1001.exr >> my_input_file_vray.1001.exr 
+        my_input_file_1001.exr >> my_input_file_1001_vray.exr'''
+
+    linear      = 'auto'
+    compression = 'zips'
+    exe_path    = "C:\\Program Files\\Chaos Group\\V-Ray\\Maya 2015 for x64\\bin\\img2tiledexr.exe"
+
+    tex_node_list = pm.ls(typ='file')
+
+    for tex in tex_node_list:
+        # Get the texture path
+        tex_path = tex.fileTextureName.get()
+
+        # Assume that any file with a _vray tag is already converted, and skip it.
+        if '_vray.' in tex_path:
+            pm.warning('Tiled EXR Conversion  Not necessary for {0}.'.format(tex_path))
+            continue 
+
+        # Append '_vray' to the main part of the file name.  Assumes that numeric identifiers
+        # (frame numbers, UDIM tags) are bracketed by dots.
+        opt_basename    = os.path.basename(tex_path).split('.')[:-1]
+        opt_basename[0] = opt_basename[0] + '_vray'
+        opt_basename    = ''.join(opt_basename) + '.exr'
+        # Get the destination folder for the converted texture
+        tex_folder      = os.path.dirname(tex_path)
+        # Generate a new full path for the converted texture
+        opt_path        = os.path.join(tex_folder, opt_basename)
+
+        # Run the conversion command and wait for it to close
+        com = Popen(exe_path + ' {0} {1} -linear {2} -compression {3}'.format(tex_path, opt_path, linear, compression))
+        com.wait()
+        
+        # Check that it was successful and then link the new texture in maya
+        if os.path.exists(opt_path):
+            tex.fileTextureName.set(opt_path)  
+            pm.warning('Tiled EXR Conversion  Successfully converted & relinked {0}.'.format(opt_basename))      
+        else:
+            pm.warning('Tiled EXR Conversion  Failed to convert {0}.  (File not found.)'.format(opt_basename))
+
