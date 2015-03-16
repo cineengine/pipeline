@@ -158,32 +158,36 @@ def export(*a):
     sort_groups = []
     #print sel
     if len(sel) == 1:
-        check = pm.confirmDialog(title='No sort sets?',
-                                 message='No sort sets are selected. Export anyway?',
-                                 button=['Yes','Cancel'],
-                                 defaultButton='Yes',
-                                 dismissString='Cancel')
+        check = pm.confirmDialog(
+            title='No sort sets?',
+            message='No sort sets are selected. Export anyway?',
+            button=['Yes','Cancel'],
+            defaultButton='Yes',
+            dismissString='Cancel')
         
         if check == 'Cancel':
             return False
         else: pass
+
+    valid_node_list = [
+        'VRayObjectProperties',
+        'VRayRenderElementSet',
+        'VRayLightMesh',
+        'VRayDisplacement'
+        ]
     
+    # Check that only a single transform node and any number of valid nodetypes
+    # are selected
     for obj in sel:
         if obj.nodeType() == 'transform' and xform_ct == 0:
             main_node = obj
-            #print main_node
             xform_ct = 1
-            pass
-        elif obj.nodeType() == 'VRayObjectProperties':
-            pass#print obj
-        elif obj.nodeType() == 'VRayRenderElementSet':
-            pass#print obj
-        elif obj.nodeType() == 'VRayLightMesh':
-            pass
-        elif obj.nodeType() == 'VRayDisplacement':
-            pass
-        else:
-            pm.warning('Something fishy about your selection.  Nothing exported.')
+            continue
+        if obj.nodeType() == 'transform' and xform_ct == 1:
+            pm.warning('More than one top-level transform selected.  Export cancelled.')
+            return False
+        if not obj.nodeType() in valid_node_list:
+            pm.warning('Invalid top-level node selected.  Export cancelled.')
             return False
         
     # Bless object
@@ -271,6 +275,7 @@ def reference( file_to_ref, namespace, *a ):
             ref.remove()
             ref = pm.createReference( file_to_ref, namespace=namespace )
             return ref
+
 
 def namespaceSelector(get_file=False, *a):
 
@@ -370,6 +375,7 @@ def assetSelector( init=None, mode='reference', *a):
                                   )
    
     select_win.show()
+
 
 def swapImportWithReference( obj=None, *a ):
     """ Deletes the selected asset from the scene and does the following:
