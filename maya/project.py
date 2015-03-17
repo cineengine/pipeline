@@ -44,6 +44,8 @@ class Scene(object):
 
         if not delay:
             self._initScene()
+            self.setProject()
+
 
     def __repr__(self, *a):
         print '\n'
@@ -57,6 +59,9 @@ class Scene(object):
         return ' '
 
 
+    ##########################################################################
+    # Checks & Initialization
+    ##########################################################################
     def _checkStatus(self, *a):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it pulls
             in scene data and returns true.  Otherwise, returns False.  Typically, an init would
@@ -67,12 +72,30 @@ class Scene(object):
             # ..import metadata from the node
             self._updateIn()
             # Print a report
-            print self
             return True
 
         except pm.MayaNodeError:
             return False
 
+
+    def _isProject(self):
+        ''' Checks whether a passed path/folder exists and has a maya project definition (workspace.mel). 
+            Returns: Tuple ((0, 0): Doesn't exist, 
+                            (1, 0): Folder exists but no variations (files) exist,
+                            (1, 1): Folder and scene already exist .. prompt for a new name / overwrite '''
+        folder_exists = os.path.exists(self.project_folder)
+        scene_exists = os.path.exists(self.full_path)
+
+        # If the project folder doesnt exist, just escape out immediately
+        if not folder_exists:
+            return (False, None)
+
+        elif folder_exists and not scene_exists:
+            return (True, None)
+
+        elif scene_exists:
+            return (True, True)
+            
 
     def _initScene(self, *a):
         ''' If this is a new scene, organize it into a project.
@@ -93,7 +116,7 @@ class Scene(object):
         self.scene_controller.addAttr('SceneName', dt='string')
         self.scene_controller.addAttr('CustomTag', dt='string')
         self.scene_controller.addAttr('Version', at='float')
-        self.scene_controller.addAttr('Strict', dt='bool')
+        self.scene_controller.addAttr('Strict', at='bool')
           # Set initialized custom attributes
         self.scene_controller.attr('Version').set(self.version)
         # Lock the node
@@ -174,19 +197,19 @@ class Scene(object):
         elif scene_exists:
             query = pm.confirmDialog(
                 title='New Version?',
-                message='There is already a file called ' + self.name + '.mb. Select an option below.',
-                buttons=['Backup & Overwrite', 'New Version', 'Cancel'],
+                message='There is already a file called ' + self.scene_name + '.mb. Select an option below.',
+                b=['''Backup + Overwrite''', 'New Version', 'Cancel'],
                 db='New Variant',
                 cb='Cancel',
                 ds='Cancel'
                 )
             # 3A
             # Overwrite means we confirm it and just save without incrementing anything
-            if query == 'Backup & Overwrite':
+            if query == '''Backup + Overwrite''':
                 confirm = pm.confirmDialog(
                     title='Are you sure?',
                     message='Are you sure you want to overwrite this scene? DO NOT choose this option if things have already been rendered, unless you know what you\'re doing',
-                    buttons=['Yes', 'No'],
+                    b=['Yes', 'No'],
                     db='Yes',
                     cb='Cancel',
                     ds='Cancel'
@@ -211,24 +234,138 @@ class Scene(object):
             except: pass
             return False
 
-    def _isProject(self):
-        ''' Checks whether a passed path/folder exists and has a maya project definition (workspace.mel). 
-            Returns: Tuple ((0, 0): Doesn't exist, 
-                            (1, 0): Folder exists but no variations (files) exist,
-                            (1, 1): Folder and scene already exist .. prompt for a new name / overwrite '''
-        folder_exists = os.path.exists(self.project_folder)
-        scene_exists = os.path.exists(self.full_path)
 
-        # If the project folder doesnt exist, just escape out immediately
-        if not folder_exists:
-            return (False, None)
+    ##########################################################################
+    # Creators
+    ##########################################################################
+    def makeProject(self):
+        ''' Make a new workspace definition file (workspace.mel) for this scene, if needed. '''
+        # First, check that it doesn't already exist
+        if os.path.exists(self.maya_project_folder + '\\workspace.mel'):
+            #print 'Loaded workspace.mel from ' + self.base_path + '\\maya\\'
+            return True
+        # open the default workspace template
+        with open('\\\\cagenas\\workspace\\scripts\\maya\\workspace.mel', 'r') as workspace:
+            workspace_lines = workspace.readlines()
+        # modify the line for render output
+        workspace_lines[56] = "workspace -fr \"images\" \"" + self.project_folder.replace('\\','/') + "/render_3d\";\n"
+        # and save it to the new project folder
+        with open(self.maya_project_folder + 'workspace.mel', 'w') as workspace:
+            workspace.writelines(workspace_lines)
+        print 'Created workspace.mel for ' + self.maya_project_folder
+        return True
 
-        elif folder_exists and not scene_exists:
-            return (True, None)
 
-        elif scene_exists:
-            return (True, True)
+    def makeFolders(self):
+        ''' Make the folder template for a deliverable (meta-project -- including nuke, ae, etc).
+            Note: this should probably be moved in later versions.'''
+        main_folder = self.base_path + self.project_name
+        if not os.path.exists(main_folder):
+            os.mkdir(main_folder)
 
+        for k,v in self.folder_structure.iteritems():
+            this_folder = main_folder +"\\"+ k +"\\"
+            print this_folder
+            if not os.path.exists(this_folder):
+                os.mkdir(this_folder) 
+            if v != []:
+                for _v in v:
+                    sub_folder = this_folder + _v
+                    print sub_folder
+                    os.mkdir(sub_folder)
+        return True
+
+
+    ##########################################################################
+    # Public setters
+    ##########################################################################
+    def setProject(self, *a):
+        ''' Sets the current workspace to the controlled scene's project path.'''
+        try:
+            pmsys.Workspace.open(self.maya_project_folder)
+            print 'Set project to: ' + self.maya_project_folder
+            return True
+        except:
+            pm.warning('Failed to set the specified project. It probably doesn\'t exist')
+            return False
+
+
+    def rename(self):
+        prompt = pm.promptDialog(
+                    title='Rename Scene',
+                    message='Enter new descriptor tag (i.e. PRIMETIME)',
+                    text='',
+                    button=['OK','Cancel'],
+                    db='OK',
+                    cb='Cancel',
+                    ds='Cancel'
+                    )
+
+        if prompt == 'OK':
+            self.custom_string = pm.promptDialog(q=True, text=True)
+            self._nameScene()
+            self._pushPull()
+            self.save()
+        else:
+            return False
+
+
+    ##########################################################################
+    # File system operations
+    ##########################################################################
+    def save(self, *a):
+        ''' Saves a backup of the current scene and overwrites it as a master scene file. '''
+        if not self.scene_controller:
+            pm.warning('Save Scene  ERROR Can\'t use this command until you\'ve set up the scene in the pipeline.')
+
+        # Save the backup
+        self.backup_path = self._incrVersion()
+        try:
+            cmds.file(rename=self.backup_path)
+            cmds.file(save=True, type='mayaBinary')
+            pm.warning('Save Scene  SUCCESS Backup saved to {}'.format(self.backup_path))
+        except:
+            pm.warning('Save Scene  ERROR while saving backup. Save manually and check the script editor.')
+        
+        # Save the master
+        try:
+            cmds.file(rename=self.full_path)
+            cmds.file(save=True, type='mayaBinary')
+            pm.warning('Save Scene  SUCCESS New master saved to {}'.format(self.full_path))
+        except:
+            pm.warning('Save Scene  ERROR while saving new master. Save manually and check the script editor.')
+
+
+    def open(self, *a):
+        ''' Opens a scene browsing UI and sets the associated project. '''
+        new_file = pm.fileDialog2(fm=1, ds=1, dir=self.base_path)
+        try: new_file = new_file[0]
+        except: return
+
+        try:
+            pm.openFile(new_file)
+        except RuntimeError:
+            query = pm.confirmDialog(
+                title='Save changes?',
+                message='Your scene has unsaved changes. Save before closing?',
+                button=['Yes','No','Cancel'],
+                db='Yes',
+                cb='Cancel',
+                ds='Cancel'
+                )
+            if query == 'Yes':
+                self.save()
+                pm.openFile(new_file)
+            elif query == 'No':
+                pm.openFile(new_file, force=True)
+            else: return False
+
+        pm.evalDeferred("scene = project.Scene()")
+
+
+    ##########################################################################
+    # Internal getters & setters (aka helper functions)
+    ##########################################################################
     def _incrVersion(self, version_only=False):
         ''' This function recursively increments versions attempting to find the next available file name for a
             backup of the scene file. 
@@ -290,121 +427,3 @@ class Scene(object):
     def _pushPull(self):
         self._updateOut()
         self._updateIn()
-
-    def makeProject(self):
-        ''' Make a new workspace definition file (workspace.mel) for this scene, if needed. '''
-        # First, check that it doesn't already exist
-        if os.path.exists(self.maya_project_folder + '\\workspace.mel'):
-            #print 'Loaded workspace.mel from ' + self.base_path + '\\maya\\'
-            return True
-        # open the default workspace template
-        with open('\\\\cagenas\\workspace\\scripts\\maya\\workspace.mel', 'r') as workspace:
-            workspace_lines = workspace.readlines()
-        # modify the line for render output
-        workspace_lines[56] = "workspace -fr \"images\" \"" + self.project_folder.replace('\\','/') + "/render_3d\";\n"
-        # and save it to the new project folder
-        with open(self.maya_project_folder + 'workspace.mel', 'w') as workspace:
-            workspace.writelines(workspace_lines)
-        print 'Created workspace.mel for ' + self.maya_project_folder
-        return True
-
-    def makeFolders(self):
-        ''' Make the folder template for a deliverable (meta-project -- including nuke, ae, etc).
-            Note: this should probably be moved in later versions.'''
-        main_folder = self.base_path + self.project_name
-        if not os.path.exists(main_folder):
-            os.mkdir(main_folder)
-
-        for k,v in self.folder_structure.iteritems():
-            this_folder = main_folder +"\\"+ k +"\\"
-            print this_folder
-            if not os.path.exists(this_folder):
-                os.mkdir(this_folder) 
-            if v != []:
-                for _v in v:
-                    sub_folder = this_folder + _v
-                    print sub_folder
-                    os.mkdir(sub_folder)
-        return True
-
-    def save(self, *a):
-        ''' Saves a backup of the current scene and overwrites it as a master scene file. '''
-        if not self.scene_controller:
-            pm.warning('Can\'t use this command until you\'ve set up the scene in the pipeline.')
-
-        # Save the backup
-        self.backup_path = self._incrVersion()
-        try:
-            cmds.file(rename=self.backup_path)
-            cmds.file(save=True, type='mayaBinary')
-        except:
-            pm.warning('Failed to save backup!! Check your scene file name and save an emergency local backup.')
-        # Save the master
-        try:
-            cmds.file(rename=self.full_path)
-            cmds.file(save=True, type='mayaBinary')
-        except:
-            pm.warning('Failed to save new master scene! Save an emergency backup of this scene and let Mark know.')
-
-        return True
-
-    def rename(self):
-        prompt = pm.promptDialog(
-                    title='Rename Scene',
-                    message='Enter new descriptor tag (i.e. PRIMETIME)',
-                    text='',
-                    button=['OK','Cancel'],
-                    db='OK',
-                    cb='Cancel',
-                    ds='Cancel'
-                    )
-
-        if prompt == 'OK':
-            self.custom_string = pm.promptDialog(q=True, text=True)
-            self._nameScene()
-            self._pushPull()
-            self.save()
-        else:
-            return False
-
-    def setProject(self, *a):
-        ''' Sets the current workspace to the controlled scene's project path.'''
-        try:
-            pmsys.Workspace.open(self.maya_project_folder)
-            print 'Set project to: ' + self.maya_project_folder
-            return True
-        except:
-            pm.warning('Failed to set the specified project. It probably doesn\'t exist')
-            return False
-
-    def open(self, *a):
-        ''' Opens a scene browsing UI and sets the associated project. '''
-        new_file = pm.fileDialog2(fm=1, ds=1, dir=self.base_path)[0]
-        if not new_file:
-            return None
-        try:
-            pm.openFile(new_file)
-        except RuntimeError:
-            query = pm.confirmDialog(
-                title='Save changes?',
-                message='Your scene has unsaved changes. Save before closing?',
-                button=['Yes','No','Cancel'],
-                db='Yes',
-                cb='Cancel',
-                ds='Cancel'
-                )
-            if query == 'Yes':
-                self.save()
-                pm.openFile(new_file)
-            elif query == 'No':
-                pm.openFile(new_file, force=True)
-            else: return False
-        
-        self._updateIn()
-        self.setProject()
-"""
-    def submit(self, *a):
-        ''' Submits the current scene to the render farm. '''
-        sub = submit.RenderSubmitWindow()
-        return True
-"""
