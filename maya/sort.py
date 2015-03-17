@@ -10,7 +10,7 @@ class Layer( object ):
     under control by the script.  This object contains the following attributes:
     - type: the type of layer (beauty, utility)
     - depth: the bit depth of the layer (16 or 32-bit)
-    - bty_obj / mat_obj / pvo_obj / del_obj: lists the geometry in the layer (in the form of sg_groups) 
+    - bty_obj / mat_obj / pvo_obj / occ_obj: lists the geometry in the layer (in the form of sg_groups) 
         and the attribute names indicate how they are flagged for visibility.
     - lights: the lights in the layer (lg_groups)
 
@@ -53,7 +53,6 @@ class Layer( object ):
         return str(self.name)
 
 
-
 class SortControl( object ):
     """SortControl is a struct intended for assisting the building of render layers,
     render settings and framebuffers for a given element in a scene.  For example, the main logo, the 
@@ -89,8 +88,7 @@ class SortControl( object ):
 
         # If the loop breaks/ends with no match, it will remain None
         if element_dictionary == None:
-            pm.error('No sorting dictionary found for element: ' + str(element) + '!')
-
+            pm.error('Sort Control  Element not found in dictionary: {0}'.format(element))
         yaml_stream.close()
 
         # The name of this dictionary is no longer needed, so we delete it to make parsing easier.
@@ -104,7 +102,7 @@ class SortControl( object ):
 
 
     def __repr__(self):
-        __repr = "\n" + str(self.element) + "\n" + str([str(l) for l in self.layers])
+        __repr = "\n\n{0}\n{1}".format(self.element, str([str(l) for l in self.layers]))
         return __repr
 
 
@@ -185,11 +183,10 @@ def addToLayer(  sort_set, layer, rm=False ):
             else: # Remove flag is false (aka add)
                 [pm.editRenderLayerMembers( layer, n ) for n in nodes]
         except:
-            pm.warning ('Could not add ' + sort_set + ' to ' + layer + '.')
+            pm.warning('Sort Control  ERROR!!! {:>20} XX {:<20}'.format(sort_set, layer))
         
         # Not so much a warning as an echo.
-        print ('SORTING REPORT :: Successfully added ' + sort_set + ' to ' + layer + '.')
-
+        pm.warning('Sort Control  SORTING! {:>20} >> {:<20}'.format(sort_set, layer))
 
 def setVisibility( sort_set, override ):
     """ Enables the visibility state overrides on sortgroups based on keyword inputs. """
@@ -243,7 +240,7 @@ def setFramebuffers( layer_type, framebuffers ):
     try:
         layer_buffers = framebuffers[layer_type]
     except:
-        pm.warning('Error retrieving layer type from framebuffers list.')
+        pm.warning('Sort Control  Error creating framebuffers / looking up framebuffer list.')
         return False
 
     # First step: check that all existing framebuffers are turned off (as a layer override)
@@ -276,12 +273,12 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
             shader = pm.PyNode('CFB_LOGO:GLASS_CLEARCOAT')
             fb     = aov.makeExTex('clearCoat', shader.outColor)
         except:
-            pm.warning('AOV ERROR :: Couldn\'t connect glass shader to extraTex')
+            pm.warning('Sort Control  setExceptions() Couldn\'t connect glass shader to extraTex')
         try:
             shader = pm.PyNode('CFB_LOGO:CARBON_FIBER')
             fb     = aov.makeExTex('carbonFiber', shader.outColor)
         except:
-            pm.warning('AOV ERROR :: Couldn\'t connect carbon fiber shader to extraTex')
+            pm.warning('Sort Control  setExceptions() Couldn\'t connect carbon fiber shader to extraTex')
         return
 
 
@@ -316,7 +313,7 @@ def makeLayer( name=None ):
     try:
         exists = pm.PyNode(name)
         if exists:
-            pm.warning('[ '+ name + ' ] Layer (or an object) with that name already exists.  Skipping...')
+            pm.warning('Sort Control  Could not create layer: {0}'.format(name))
             return False
     except:
         lyr = pm.createRenderLayer( name=name, number=1, empty=True )
