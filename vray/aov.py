@@ -109,7 +109,6 @@ def makeNormal( name=None ):
         _fb.vray_name_bumpnormals.set(name)
         pm.rename(_fb, name)
 
-    print 'huh????'
     return _fb
 
 
