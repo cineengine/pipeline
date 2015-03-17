@@ -26,5 +26,5 @@ def factory( *a ):
     pm.mel.eval('renderThumbnailUpdate true;')
 
     asset.reference(cfb.FACTORY_LIGHT_RIG, 'FACTORY')
-    sorter = sort.SortControl('Factory')
-    sorter.run()
+    sc = sort.SortControl('Factory')
+    sc.run()
