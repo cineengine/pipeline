@@ -81,7 +81,7 @@ try:
     pm.deleteUI('pipeline')
 except: pass
 
-scene = project.SceneManager(delay_init=True)
+scene = project.Scene(delay=True)
 
 g_main = pm.getMelGlobal('string','$gMainWindow')
 
@@ -94,7 +94,7 @@ pm.setParent(menu=True)
 #pm.menuItem(l="Launch Widget", c=run)
 
 #pm.menuItem(divider=True)
-pm.menuItem(l="Scene Setup", c=scene.initCheck)
+pm.menuItem(l="Scene Setup", c=scene._initScene)
 pm.menuItem(l="Open Scene", c=scene.open)
 pm.menuItem(l="Save Scene", c=scene.save)
 
