@@ -285,7 +285,7 @@ def reference( file_to_ref, namespace, *a ):
 
 def namespaceSelector(get_file=False, *a):
 
-    def _run(get_file, win):
+    def _run(get_file):
         sel = pm.textScrollList('selectNamespace', q=True, si=True)[0]
 
         if not get_file:
@@ -296,11 +296,15 @@ def namespaceSelector(get_file=False, *a):
         else:
             reference(get_file, sel)
 
-        win.close()
+        try: 
+            pm.deleteUI('refAsset')
+            pm.deleteUI('sel_win')
+        except: pass
 
     # UI for namespace selection
     try: pm.deleteUI('refAsset')
     except: pass
+
     widget = pm.window(
                 'refAsset',
                 title='Reference Asset into Namespace',
@@ -327,7 +331,7 @@ def assetSelector( init=None, mode='reference', *a):
         return pm.textScrollList( 'sel_box', q=True, selectItem=True )[0]
     
 
-    def _run( mode, typ, win, *a ):
+    def _run( mode, typ, *a ):
         if typ == 'generic':
             folder = cfb.MAIN_ASSET_DIR
         elif typ == 'team':
@@ -342,7 +346,6 @@ def assetSelector( init=None, mode='reference', *a):
         elif mode == 'import':
             importAsset(get_file = (folder + asset_name + "\\" + asset_name + ".mb"))
 
-        select_win.close()
     
     if init == True:    
         init = pm.confirmDialog( title='Select asset type:',
@@ -370,7 +373,7 @@ def assetSelector( init=None, mode='reference', *a):
     sel_box = pm.textScrollList('sel_box', p=top, dcc=lambda *args: _run(mode,init.lower()))
     get_btn = pm.button('get_btn',
                         label='Select',
-                        c=lambda *args: _run(mode, init.lower(), select_win),
+                        c=lambda *args: _run(mode, init.lower()),
                         h=25)
     top.redistribute(3.336,1)
     
