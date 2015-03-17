@@ -3,6 +3,7 @@ import re
 import yaml
 
 # internal modules
+from pipeline import cfb
 from pipeline.vray import aov
 
 class Layer( object ):
@@ -148,7 +149,7 @@ class SortControl( object ):
             # Enable framebuffers for the layer, based on type
             setFramebuffers( layer.type, self.framebuffers )
             # Set any hard-coded exceptions for this element / layer
-            setExceptions( layer.type, layer.element, layer.name )
+            setExceptions( layer.type, self.element, layer.name )
 
 
 
