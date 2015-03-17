@@ -1,8 +1,11 @@
-import pymel.core as pm
+# Built-in modules
 import maya.cmds as cmds
 import os
 
-# ESPN external modules
+# Maya-specific modules
+import pymel.core as pm
+
+# Internal modules
 import cg.maya.rendering as rendering
 import cg.maya.selection as select
 
@@ -92,18 +95,21 @@ def bless(obj=False):
             return False
     # Create the attributes if necessary
     try:
-        if pm.addAttr(obj.assetName, q=True, exists=True):
-            pass
+        #if pm.addAttr(obj.assetName, q=True, exists=True):
+        #    pass
+        pm.PyNode(obj).attr('assetName')
     except:
         pm.addAttr(obj, ln='assetName', dt='string')
     try:
-        if pm.addAttr(obj.assetPath, q=True, exists=True):
-            pass
+        #if pm.addAttr(obj.assetPath, q=True, exists=True):
+        #    pass
+        pm.PyNode(obj).attr('assetPath')
     except:
         pm.addAttr(obj, ln='assetPath', dt='string')
     try:
-        if pm.addAttr(obj.assetVersion, q=True, exists=True):
-            pass
+        #if pm.addAttr(obj.assetVersion, q=True, exists=True):
+        #    pass
+        pm.PyNode(obj).attr('assetVersion')
     except:
         pm.addAttr(obj, ln='assetVersion')        
 
@@ -279,7 +285,7 @@ def reference( file_to_ref, namespace, *a ):
 
 def namespaceSelector(get_file=False, *a):
 
-    def _run(get_file):
+    def _run(get_file, win):
         sel = pm.textScrollList('selectNamespace', q=True, si=True)[0]
 
         if not get_file:
@@ -289,6 +295,8 @@ def namespaceSelector(get_file=False, *a):
 
         else:
             reference(get_file, sel)
+
+        win.close()
 
     # UI for namespace selection
     try: pm.deleteUI('refAsset')
@@ -319,7 +327,7 @@ def assetSelector( init=None, mode='reference', *a):
         return pm.textScrollList( 'sel_box', q=True, selectItem=True )[0]
     
 
-    def _run( mode, typ, *a ):
+    def _run( mode, typ, win, *a ):
         if typ == 'generic':
             folder = cfb.MAIN_ASSET_DIR
         elif typ == 'team':
@@ -333,12 +341,13 @@ def assetSelector( init=None, mode='reference', *a):
             namespaceSelector(get_file = (folder + asset_name + "\\" + asset_name + ".mb"))
         elif mode == 'import':
             importAsset(get_file = (folder + asset_name + "\\" + asset_name + ".mb"))
-    
 
+        select_win.close()
+    
     if init == True:    
         init = pm.confirmDialog( title='Select asset type:',
                                      message='What type of asset?',
-                                     button=['Generic','Team','Template'],
+                                     button=['Generic','Team','Cancel'],
                                      defaultButton='Generic',
                                      dismissString='Cancel'
                                      )
@@ -361,7 +370,7 @@ def assetSelector( init=None, mode='reference', *a):
     sel_box = pm.textScrollList('sel_box', p=top, dcc=lambda *args: _run(mode,init.lower()))
     get_btn = pm.button('get_btn',
                         label='Select',
-                        c=lambda *args: _run(mode,init.lower()),
+                        c=lambda *args: _run(mode, init.lower(), select_win),
                         h=25)
     top.redistribute(3.336,1)
     

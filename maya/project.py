@@ -6,11 +6,11 @@ import maya.cmds as cmds
 import pymel.core as pm
 import pymel.core.system as pmsys
 
-# ESPN-specific modules
+# Internal modules
 from pipeline import cfb
 
-class SceneManager(object):
-    def __init__(self, delay_init=False):
+class Scene(object):
+    def __init__(self, delay=False):
         # The base path for all projects
         self.base_path = cfb.ANIMATION_PROJECT_DIR
         # Dictionary for this project's folder structure.  Found in pipeline.<project_name> module.
@@ -38,24 +38,29 @@ class SceneManager(object):
         # Ex: "V:\CFB_S_REJOIN_01\maya\backup\CFB_S_REJOIN_01_GAMEDAY_0002.mb"
         self.backup_path = ''
 
-        if not delay_init:
-            self.initCheck()
+        # Strict is the property defining whether the scene is a strictly-controlled pipeline scene.
+        # Strictly-controlled scenes must pass more stringent sanity checks before initializing or saving.
+        self.strict = False
+
+        if not delay:
+            self._initScene()
 
     def __repr__(self, *a):
         print '\n'
-        print 'SCENE MANAGER REPORT ::'
-        print 'Project Name: '   + self.project_name
-        print 'Scene Name :  '   + self.scene_name
+        print 'Scene Information'
+        print 'Project Name:   ' + self.project_name
+        print 'Scene Name :    ' + self.scene_name
         print 'Project Folder: ' + self.maya_project_folder
-        print 'Full Path : '     + self.full_path
-        print 'Next Backup '     + self.backup_path
+        print 'Full Path :     ' + self.full_path
+        print 'Next Backup     ' + self.backup_path
         print '\n'
         return ' '
 
-    def initCheck(self, *a):
-        ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it updates the 
-            pre-existing python SceneManager object.  (Such as when a pipeline scene is opened.)
-            If it is a clean / non-pipelined scene, it sets up the scene for controlling.'''
+
+    def _checkStatus(self, *a):
+        ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it pulls
+            in scene data and returns true.  Otherwise, returns False.  Typically, an init would
+            be run subsequent to this function, although it is safe to run at any time.  '''
         try:
             # If there's a scene controller,
             self.scene_controller = pm.PyNode('sceneControlObject')
@@ -63,24 +68,19 @@ class SceneManager(object):
             self._updateIn()
             # Print a report
             print self
-            return 1
+            return True
 
         except pm.MayaNodeError:
-            # If there's no scene controller, try to initialize the scene
-            success = self._initScene()
-            # Print a report if it worked
-            if success:
-                print self
-                return 2
-            else:
-                pm.warning('SCENE MANAGER REPORT :: FAILED :: Scene failed to initialize. Ask Mark.')
-                return 0
+            return False
 
 
     def _initScene(self, *a):
         ''' If this is a new scene, organize it into a project.
             If this is a pre-existing scene not yet conformed to the project structure, 
             it will attempt to reconcile it. '''
+
+        if self._checkStatus():
+            return
 
         self.version = 1.0
 
@@ -93,6 +93,7 @@ class SceneManager(object):
         self.scene_controller.addAttr('SceneName', dt='string')
         self.scene_controller.addAttr('CustomTag', dt='string')
         self.scene_controller.addAttr('Version', at='float')
+        self.scene_controller.addAttr('Strict', dt='bool')
           # Set initialized custom attributes
         self.scene_controller.attr('Version').set(self.version)
         # Lock the node
@@ -150,9 +151,9 @@ class SceneManager(object):
             try:
                 print self.project_folder
                 print '\nMaking folders ...'
-                self._makeFolders()
+                self.makeFolders()
                 print '\nMaking project workspace ...'
-                self._makeProject()
+                self.makeProject()
                 print '\nSetting maya project ...'
                 self.setProject()
                 print '\nSaving file ...'
@@ -263,6 +264,7 @@ class SceneManager(object):
         self.scene_controller.attr('SceneName').set(self.scene_name)
         self.scene_controller.attr('ProjectName').set(self.project_name)
         self.scene_controller.attr('CustomTag').set(self.custom_string)
+        self.scene_controller.attr('Strict').set(self.strict)
 
     def _updateIn(self):
         ''' Updates the python SceneControl object with any changes made to the sceneControlObject (such as 
@@ -273,6 +275,7 @@ class SceneManager(object):
         self.version       = self.scene_controller.attr('Version').get()
         #self.variant       = self.scene_controller.attr('Variation').get()
         self.custom_string = self.scene_controller.attr('CustomTag').get()
+        self.strict        = self.scene_controller.attr('Strict').get()
         # Combining project name and variant to create a scene name
         self._nameScene()
 
@@ -288,7 +291,7 @@ class SceneManager(object):
         self._updateOut()
         self._updateIn()
 
-    def _makeProject(self):
+    def makeProject(self):
         ''' Make a new workspace definition file (workspace.mel) for this scene, if needed. '''
         # First, check that it doesn't already exist
         if os.path.exists(self.maya_project_folder + '\\workspace.mel'):
@@ -305,7 +308,7 @@ class SceneManager(object):
         print 'Created workspace.mel for ' + self.maya_project_folder
         return True
 
-    def _makeFolders(self):
+    def makeFolders(self):
         ''' Make the folder template for a deliverable (meta-project -- including nuke, ae, etc).
             Note: this should probably be moved in later versions.'''
         main_folder = self.base_path + self.project_name

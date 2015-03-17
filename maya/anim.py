@@ -1,8 +1,11 @@
+# Built-in modules
 import re
 from os.path import exists
 
+# Maya-specific modules
 import pymel.core as pm
 
+# Internal modules
 from pipeline.maya import project
 
 
