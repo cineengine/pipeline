@@ -9,6 +9,9 @@ import pymel.core as pm
 from pipeline.maya import project
 
 
+##############################################################################
+# .atom files
+##############################################################################
 def atomPreFlight(*a):
     ''' Checks that the current selection and scene are valid for atom import/export '''
     # get selection
@@ -77,6 +80,9 @@ def importAtom(*a):
         return
 
 
+##############################################################################
+# .abc files
+##############################################################################
 def exportAbc(*a):
     # get selection
     sel = pm.ls(sl=True)[0]
@@ -94,48 +100,9 @@ def exportAbc(*a):
     return
 
 
-def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_name=False):
-
-    # check that the scene is controlled by the pipeline
-    try: scene_controller = pm.PyNode('sceneControlObject')
-    except: pass
-
-    # set up export paths
-    scene         = project.Scene()
-    # The use_maya_subfolder flag determines whether this export goes into a folder
-    # below the main project folder or below the maya folder instead.
-    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(filetype)
-    anim_file   = scene.scene_name
-
-    # If exporting (i.e. determining a full destination file name)
-    if export:
-        if override_name:
-            export_file += '.{0}'.format(filetype)
-
-        else:
-            custom_string = pm.promptDialog(
-                title='Custom name tag?',
-                message=message,
-                text='',
-                b=['OK', 'No'],
-                db='OK',
-                cb='No',
-                ds='No'
-                )
-            if custom_string == 'OK':
-                custom_string = pm.promptDialog(q=True, text=True)
-            else:
-                custom_string = ''
-            anim_file += '_{}.{}'.format(custom_string, filetype)
-
-        return anim_folder + anim_file
-
-    # i.e., if import (just returning a path)
-    elif not export:
-        return anim_folder
-
-
-
+##############################################################################
+# camera & playblasting
+##############################################################################
 def bakeCamera( exp=False, *args, **kwargs ):
     """Duplicates a baked version of a camera.  Expects a valid camera transform node."""
     # Frame range
@@ -179,7 +146,7 @@ def exportCamera(*a):
     camera = bakeCamera(child)
     
     # get the scene export path
-    export_path = getExportPath('fbx', '', override_name='cam')
+    export_path = getAnimPath('fbx', '', 0, override_name='cam')
 
     # select and export camera
     pm.select(camera)
@@ -214,7 +181,50 @@ def playblast(*a):
         quality     = 70,
         clearCache  = True
         )
-    
+
+
+##############################################################################
+# helper functions
+##############################################################################
+def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_name=False):
+
+    # check that the scene is controlled by the pipeline
+    try: scene_controller = pm.PyNode('sceneControlObject')
+    except: pass
+
+    # set up export paths
+    scene       = project.Scene()
+    # The use_maya_subfolder flag determines whether this export goes into a folder
+    # below the main project folder or below the maya folder instead.
+    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(filetype)
+    anim_file   = scene.scene_name
+
+    # If exporting (i.e. determining a full destination file name)
+    if export:
+        if override_name:
+            export_file += '.{0}'.format(filetype)
+
+        else:
+            custom_string = pm.promptDialog(
+                title='Custom name tag?',
+                message=message,
+                text='',
+                b=['OK', 'No'],
+                db='OK',
+                cb='No',
+                ds='No'
+                )
+            if custom_string == 'OK':
+                custom_string = pm.promptDialog(q=True, text=True)
+            else:
+                custom_string = ''
+            anim_file += '_{}.{}'.format(custom_string, filetype)
+
+        return anim_folder + anim_file
+
+    # i.e., if import (just returning a path)
+    elif not export:
+        return anim_folder
 
 
 def listAllRigNodes(*a):

@@ -98,7 +98,6 @@ pm.menuItem(l="Scene Setup", c=scene._initScene)
 pm.menuItem(l="Open Scene", c=scene.open)
 pm.menuItem(l="Save Scene", c=scene.save)
 
-
 pm.menuItem(divider=True)
 pm.menuItem(l="Select Meshes in Group", c=lambda *args: selection.shapes( pm.ls(sl=True), xf=True, do=True ))
 pm.menuItem(l="Select Shader on Selected", c=lambda *args: rendering.getShader(select_result=True))
