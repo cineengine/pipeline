@@ -9,36 +9,72 @@ import pymel.core as pm
 from pipeline.maya import project
 
 
-def exportAtom(*a):
+def atomPreFlight(*a):
+    ''' Checks that the current selection and scene are valid for atom import/export '''
     # get selection
-    sel = pm.ls(sl=True)[0]
-
+    try:
+        sel = pm.ls(sl=True)[0]
+    except IndexError:
+        pm.warning('Export Atom  ERROR Select a RIG node!')
+        return False
     # check that the scene is controlled by the pipeline
     try: scene_controller = pm.PyNode('sceneControlObject')
     except: 
-        pm.warning('Scene not set up for the pipeline.  Cannot export .atom')
-        return
+        pm.warning('Export Atom  ERROR Scene not set up for the pipeline.  Cannot export .atom')
+        return False
     # check that a rig node is selected
     if sel not in listAllRigNodes(): 
-        pm.warning('Select a RIG node!')
+        pm.warning('Export Atom  ERROR Select a RIG node!')
+        return False
+
+    return sel
+
+
+def exportAtom(*a):
+    ''' Exports the entire hierarchy below the current selection as an .atom file '''    
+    sel = atomPreFlight()
+    if not sel:
         return
 
     msg = 'Add a custom tag to the filename?  i.e. \'LOGO\', \'CAM\', or whatev.'
-    export_path = getExportPath('atom', msg)
+    export_path = getAnimPath('atom', msg, 1)
 
     # select the whole heirarchy
-    pm.select(heirarchy=True)
+    pm.select(hierarchy=True)
 
     # export the .atom for the selected heirarchy
-    pm.exportSelected(
-        export_path, 
-        type='atomExport', 
-        preserveReferences=True, 
-        expressions=True
-        )
-
+    try:
+        # Load the atom plugin
+        pm.loadPlugin("atomImportExport.mll")
+        # Export the selection
+        pm.exportSelected(
+            export_path, 
+            type='atomExport'
+            )
+        pm.warning('Export Atom  SUCCESS')
+    except RuntimeError:
+        pm.warning('Export Atom  ERROR During export. (Most likely there\'s no animation to export.)')
+        return
+    
+    # Restore original selection.
     pm.select(sel)
-    return True
+
+
+def importAtom(*a):
+    ''' Imports an atom file into the hierarchy below the current selection '''
+    sel = atomPreFlight()
+    if not sel:
+        return
+    # select the whole hierarchy
+    pm.select(hierarchy=True)
+
+    atom_file = pm.fileDialog2(fm=3, dir=getAnimPath('atom', '', 1, export=False))[0]
+    
+    if atom_file:
+        pm.importFile(atomFile, defaultNamespace=True)
+        return
+    else:
+        return
 
 
 def exportAbc(*a):
@@ -49,47 +85,55 @@ def exportAbc(*a):
     end   = str(pm.playbackOptions(q=True, max=True))
 
     msg = 'Add a custom tag to the filename?  i.e. \'LOGO\', \'CAM\', or whatever it is you\'re exporting.'
-    export_path = getExportPath('abc', msg)
+    export_path = getAnimPath('abc', msg, 0)
 
     pm.Mel.eval(
-        "AbcExport -j -frameRange {0} {1} -dataFormat ogawa -root {2} -file {3};".format(
-            start, end, sel, export_path))
+        "AbcExport -j \"-frameRange {0} {1} -dataFormat ogawa -root {2} -file {3}\";".format(
+            start, end, sel, export_path.replace('\\','/')))
+    pm.warning('Export Alembic  SUCCESS Wrote to {0}'.format(export_path))
     return
 
 
-def getExportPath(filetype, message, override_name=False):
+def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_name=False):
 
     # check that the scene is controlled by the pipeline
     try: scene_controller = pm.PyNode('sceneControlObject')
-    except: 
-        pm.warning('Scene not set up for the pipeline.  Cannot use export tools.')
-        return False
+    except: pass
 
     # set up export paths
-    scene         = project.SceneManager()
-    export_folder = str(scene.maya_project_folder) + '\\{0}\\'.format(filetype)
-    export_file   = scene.project_name
+    scene         = project.Scene()
+    # The use_maya_subfolder flag determines whether this export goes into a folder
+    # below the main project folder or below the maya folder instead.
+    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(filetype)
+    anim_file   = scene.scene_name
 
-    if override_name:
-        export_file += '.{0}'.format(filetype)
+    # If exporting (i.e. determining a full destination file name)
+    if export:
+        if override_name:
+            export_file += '.{0}'.format(filetype)
 
-    else:
-        custom_string = pm.promptDialog(
-            title='Custom name tag?',
-            message=message,
-            text='',
-            b=['OK', 'No'],
-            db='OK',
-            cb='No',
-            ds='No'
-            )
-        if custom_string == 'OK':
-            custom_string = pm.promptDialog(q=True, text=True)
         else:
-            custom_string = ''
-        export_file += custom_string + '.{0}'.format(filetype)
+            custom_string = pm.promptDialog(
+                title='Custom name tag?',
+                message=message,
+                text='',
+                b=['OK', 'No'],
+                db='OK',
+                cb='No',
+                ds='No'
+                )
+            if custom_string == 'OK':
+                custom_string = pm.promptDialog(q=True, text=True)
+            else:
+                custom_string = ''
+            anim_file += '_{}.{}'.format(custom_string, filetype)
 
-    return export_folder + export_file
+        return anim_folder + anim_file
+
+    # i.e., if import (just returning a path)
+    elif not export:
+        return anim_folder
+
 
 
 def bakeCamera( exp=False, *args, **kwargs ):
