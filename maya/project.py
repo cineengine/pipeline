@@ -95,7 +95,7 @@ class Scene(object):
 
         elif scene_exists:
             return (True, True)
-            
+
 
     def _initScene(self, *a):
         ''' If this is a new scene, organize it into a project.
@@ -109,7 +109,7 @@ class Scene(object):
 
         # CREATE SCENE CONTROLLER OBJECT.  This will store information about the scene
         # to simplify parsing when opening/saving the scene in the future.
-        self.scene_controller = pm.createNode('locator', name='sceneControlObject')
+        self.scene_controller = pm.createNode('locator', name='sceneControlObjectShape')
         pm.lockNode(self.scene_controller, lock=False)
         # Add custom attributes
         self.scene_controller.addAttr('ProjectName', dt='string')
