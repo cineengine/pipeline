@@ -1,4 +1,6 @@
 import re
+from os.path import exists
+
 import pymel.core as pm
 
 from pipeline.maya import project
@@ -137,6 +139,36 @@ def exportCamera(*a):
     pm.exportSelected(export_path, type='fbx')
     pm.warning('Successfully exported camera  {0}  to  {1}.'.format(camera, export_path))
     return True
+
+
+def playblast(*a):
+    # Frame range
+    frame_range = ( 
+        pm.playbackOptions( q=True, min=True ), 
+        pm.playbackOptions( q=True, max=True )
+        )
+
+    out_path = "c:\\temp\\temp.mov"
+
+    if exists(out_path):
+        versionup_out_path.split('.')[0]
+
+    pm.Mel.eval('setCurrentFrameVisibility(1);')
+    pm.playblast(
+        startTime   = frame_range[0],
+        endTime     = frame_range[1],
+        filename    = out_path,
+        format      = 'qt',
+        compression = 'H.264',
+        orn         = False,
+        width       = 960,
+        height      = 540,
+        percent     = 100,
+        quality     = 70,
+        clearCache  = True
+        )
+    
+
 
 def listAllRigNodes(*a):
     comp = re.compile('.:RIG$')
