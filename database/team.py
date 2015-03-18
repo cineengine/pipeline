@@ -1,9 +1,11 @@
 import yaml
 
+from pipeline import cfb
+
 ## TEAM DATABASE OBJECT
 class Team(object):
-    def __init__(self, database, team_tricode):
-        yaml_stream = open(database)
+    def __init__(self, team_tricode):
+        yaml_stream = open(cfb.TEAM_DATABASE)
         db = yaml.load_all(yaml_stream)
         found = 0
         # Parse the db to find the team by tricode or name 
