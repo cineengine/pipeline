@@ -18,7 +18,7 @@ def setVrayDefaults( gi=False, *args ):
         #initVray()
         v_ray = pm.PyNode('vraySettings')
         globs = pm.PyNode('defaultRenderGlobals')
-        v_ray.imageFormatStr.set(6)
+        v_ray.imageFormatStr.set('exr (multichannel)')
         v_ray.imgOpt_exr_autoDataWindow.set(1)
         v_ray.imgOpt_exr_compression.set(3)
         v_ray.vfbOn.set(1)
@@ -42,8 +42,8 @@ def setVrayDefaults( gi=False, *args ):
     except pm.MayaNodeError:
         pm.error('Looks like V-Ray might not have been loaded yet.')
         return False
-    except pm.AttributeError:
-        pm.error('Attribute missing in V-Ray quick setup batch.')
+    #except pm.AttributeError:
+    #    pm.error('Attribute missing in V-Ray quick setup batch.')
     finally:
         pass
 
