@@ -13,12 +13,12 @@ import pipeline.vray.utils as utils
 def factory( *a ):
     ## INITIALIZE V-RAY SETTINGS
     pm.Mel.eval('unifiedRenderGlobalsWindow;')
-    try:
-        utils.initVray()
-        utils.setVrayDefaults()
-    except:
-        pm.warning('V-Ray wasn\'t loaded. Try the command again')
-        return None
+    #try:
+    utils.initVray()
+    utils.setVrayDefaults()
+    #except:
+    #   pm.warning('V-Ray wasn\'t loaded. You may need to try the command again')
+    #   return None
     
 
     v_ray = pm.PyNode('vraySettings')
