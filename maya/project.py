@@ -15,6 +15,7 @@ def isScene(*a):
         test = pm.PyNode('sceneControlObject')
         return True
     except pm.MayaNodeError:
+        pm.warning('Scene Setup  ERROR This is not a pipeline-managed scene.  Please run Scene Setup.')
         return False
 
 
@@ -75,16 +76,13 @@ class Scene(object):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it pulls
             in scene data and returns true.  Otherwise, returns False.  Typically, an init would
             be run subsequent to this function, although it is safe to run at any time.  '''
-        try:
-            # If there's a scene controller,
-            self.scene_controller = pm.PyNode('sceneControlObject')
-            # ..import metadata from the node
-            self._updateIn()
-            # Print a report
-            return True
-
-        except pm.MayaNodeError:
+        
+        if not isScene():
             return False
+
+        else:
+            self._updateIn()
+            return True
 
 
     def _isProject(self):
@@ -300,6 +298,9 @@ class Scene(object):
 
 
     def rename(self):
+        if not isScene():
+            return
+
         prompt = pm.promptDialog(
                     title='Rename Scene',
                     message='Enter new descriptor tag (i.e. PRIMETIME)',
@@ -313,6 +314,7 @@ class Scene(object):
         if prompt == 'OK':
             self.custom_string = pm.promptDialog(q=True, text=True)
             self._nameScene()
+            self.version = 1.0
             self._pushPull()
             self.save()
         else:
@@ -344,10 +346,10 @@ class Scene(object):
         except:
             pm.warning('Save Scene  ERROR while saving new master. Save manually and check the script editor.')
 
-
+    @classmethod
     def open(self, *a):
-        ''' Opens a scene browsing UI and sets the associated project. '''
-        new_file = pm.fileDialog2(fm=1, ds=1, dir=self.base_path)
+        ''' Opens a scene browsing UI and sets the associated project.'''
+        new_file = pm.fileDialog2(fm=1, ds=1, dir=cfb.ANIMATION_PROJECT_DIR)
         try: new_file = new_file[0]
         except: return
 
@@ -416,6 +418,7 @@ class Scene(object):
     def _updateIn(self):
         ''' Updates the python SceneControl object with any changes made to the sceneControlObject (such as 
             when a new scene is opened.) '''
+        self.scene_controller = pm.PyNode('sceneControlObject')
         # Getting attrs from sceneControlObject
         self.scene_name    = self.scene_controller.attr('SceneName').get()
         self.project_name  = self.scene_controller.attr('ProjectName').get()

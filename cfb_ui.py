@@ -72,16 +72,22 @@ def lookupTricode(*a):
 ######################################################################
 
 def save_ui(*a):
-    scene = project.Scene()
-    scene.save()
+    if project.isScene():
+        scene = project.Scene()
+        scene.save()
+    else: 
+        return
 
 def open_ui(*a):
     project.Scene.open()
     #scene.open()
 
 def rename_ui(*a):
-    scene = project.Scene()
-    scene.rename()
+    if project.isScene():
+        scene = project.Scene()    
+        scene.rename()
+    else:
+        return
 
 def init_scene(*a):
     scene = project.Scene()
