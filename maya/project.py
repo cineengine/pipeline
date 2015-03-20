@@ -296,9 +296,9 @@ class Scene(object):
             pm.warning('Failed to set the specified project. It probably doesn\'t exist')
             return False
 
-
     def rename(self):
-        if not isScene():
+        x = isScene()
+        if not (x):
             return
 
         prompt = pm.promptDialog(
