@@ -19,9 +19,9 @@ TEAMS_ASSET_DIR = PROJECT_BASE_DIR + "TOOLKIT\\002_3D_TEAMS\\"
 ANIMATION_PROJECT_DIR = PROJECT_BASE_DIR + "PROJECTS\\000_Animation\\"
 
 # Database locations
-TEAM_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\cfb\\teams.yaml"
-SORTING_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\cfb\\sorting.yaml"
-TEMPLATES_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\cfb\\templates.yaml"
+TEAM_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_teams.yaml"
+SORTING_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_sorting.yaml"
+TEMPLATES_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_templates.yaml"
 
 # Factory location
 FACTORY_LIGHT_RIG = MAIN_ASSET_DIR + "\\000_FACTORY\\FACTORY.mb"
