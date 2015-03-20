@@ -76,8 +76,8 @@ def save_ui(*a):
     scene.save()
 
 def open_ui(*a):
-    scene = project.Scene()
-    scene.open()
+    project.Scene.open()
+    #scene.open()
 
 def rename_ui(*a):
     scene = project.Scene()
@@ -142,7 +142,7 @@ pm.menuItem(l="EXPORT ASSET", c=asset.export)
 pm.setParent(mmenu, menu=True)
 
 pm.menuItem(divider=True)
-pm.menuItem(subMenu=True, to=True, l='Scene Building')
+pm.menuItem(subMenu=True, to=True, l='Scene Creation')
 pm.menuItem(l="Scene Setup", c=init_scene)
 pm.menuItem(l="Reference Asset", c=lambda *args: asset.assetSelector(init=True, mode='reference'))
 pm.menuItem(l="Import Asset", c=lambda *args: asset.assetSelector(init=True, mode='import'))
@@ -151,7 +151,7 @@ pm.menuItem(l="Remove and Import", c=asset.swapReferenceWithImport)
 pm.setParent(mmenu, menu=True)
 
 pm.menuItem(divider=True)
-pm.menuItem(subMenu=True, to=True, l='Animation Setup')
+pm.menuItem(subMenu=True, to=True, l='Animation Tools')
 pm.menuItem(l="Export Atom", c=anim.exportAtom)
 pm.menuItem(l="Import Atom", c=anim.importAtom)
 pm.menuItem(l="Export Camera", c=anim.exportCamera)

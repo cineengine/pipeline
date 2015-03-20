@@ -9,6 +9,15 @@ import pymel.core.system as pmsys
 # Internal modules
 from pipeline import cfb
 
+
+def isScene(*a):
+    try:
+        test = pm.PyNode('sceneControlObject')
+        return True
+    except pm.MayaNodeError:
+        return False
+
+
 class Scene(object):
     def __init__(self, delay=False):
         # The base path for all projects
