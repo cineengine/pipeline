@@ -79,6 +79,10 @@ def open_ui(*a):
     scene = project.Scene()
     scene.open()
 
+def rename_ui(*a):
+    scene = project.Scene()
+    scene.rename()
+
 def init_scene(*a):
     scene = project.Scene()
 
@@ -107,6 +111,7 @@ pm.setParent(menu=True)
 
 pm.menuItem(l="Open Scene", c=open_ui)
 pm.menuItem(l="Save Scene", c=save_ui)
+pm.menuItem(l="Rename Scene", c=rename_ui)
 
 pm.menuItem(divider=True)
 pm.menuItem(subMenu=True, to=True, l='General Utilities')
