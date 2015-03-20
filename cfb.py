@@ -3,6 +3,12 @@
 ###            COLLEGE FOOTBALL 2015 PLAYOFFS / REGULAR SEASON             ###
 ##############################################################################
 
+# version tag
+version = """
+version 0.8.1
+March 20th, 2015
+"""
+
 # Main project directory
 PROJECT_BASE_DIR = "Y:\\Workspace\\MASTER_PROJECTS\\CFB_15\\"
 

@@ -71,10 +71,10 @@ def importAtom(*a):
     # select the whole hierarchy
     pm.select(hierarchy=True)
 
-    atom_file = pm.fileDialog2(fm=3, dir=getAnimPath('atom', '', 1, export=False))[0]
+    atom_file = pm.fileDialog2(fm=1, dir=getAnimPath('atom', '', 1, folder_only=True))[0]
     
     if atom_file:
-        pm.importFile(atomFile, defaultNamespace=True)
+        pm.importFile(atom_file, defaultNamespace=True)
         return
     else:
         return
@@ -103,7 +103,7 @@ def exportAbc(*a):
 ##############################################################################
 # camera & playblasting
 ##############################################################################
-def bakeCamera( exp=False, *args, **kwargs ):
+def bakeCamera( cam, exp=False, *args, **kwargs ):
     """Duplicates a baked version of a camera.  Expects a valid camera transform node."""
     # Frame range
     frame_range = ( 
@@ -150,9 +150,21 @@ def exportCamera(*a):
 
     # select and export camera
     pm.select(camera)
-    pm.exportSelected(export_path, type='fbx')
+    pm.exportSelected(export_path, type='Fbx')
     pm.warning('Successfully exported camera  {0}  to  {1}.'.format(camera, export_path))
     return True
+
+
+def importCamera(*a):
+    cam_path = getAnimPath('Fbx', '', 0, 1, override_name='cam')
+
+    fbx_file = pm.fileDialog2(fm=1, dir=cam_path)[0]
+    
+    if fbx_file:
+        pm.importFile(fbx_file, defaultNamespace=True)
+        return
+    else:
+        return
 
 
 def playblast(*a):
@@ -186,23 +198,28 @@ def playblast(*a):
 ##############################################################################
 # helper functions
 ##############################################################################
-def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_name=False):
+def getAnimPath(filetype, message, use_maya_subfolder, folder_only=False, override_name=False):
 
     # check that the scene is controlled by the pipeline
     try: scene_controller = pm.PyNode('sceneControlObject')
     except: pass
 
+    if override_name:
+        folder_name = override_name
+    else:
+        folder_name = filetype
+
     # set up export paths
     scene       = project.Scene()
     # The use_maya_subfolder flag determines whether this export goes into a folder
     # below the main project folder or below the maya folder instead.
-    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(filetype)
+    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(folder_name)
     anim_file   = scene.scene_name
 
     # If exporting (i.e. determining a full destination file name)
-    if export:
+    if not folder_only:
         if override_name:
-            export_file += '.{0}'.format(filetype)
+            anim_file += '.{0}'.format(override_name)
 
         else:
             custom_string = pm.promptDialog(
@@ -223,7 +240,7 @@ def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_nam
         return anim_folder + anim_file
 
     # i.e., if import (just returning a path)
-    elif not export:
+    elif folder_only:
         return anim_folder
 
 

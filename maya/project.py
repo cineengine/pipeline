@@ -360,7 +360,8 @@ class Scene(object):
                 pm.openFile(new_file, force=True)
             else: return False
 
-        pm.evalDeferred("scene = project.Scene()")
+        pm.evalDeferred("from pipeline.maya import project\nscene=project.Scene()")
+        #pm.evalDeferred("scene = project.Scene()")
 
 
     ##########################################################################
