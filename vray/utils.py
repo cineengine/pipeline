@@ -18,32 +18,43 @@ def setVrayDefaults( gi=False, *args ):
         #initVray()
         v_ray = pm.PyNode('vraySettings')
         globs = pm.PyNode('defaultRenderGlobals')
+        # Image format options
         v_ray.imageFormatStr.set('exr (multichannel)')
         v_ray.imgOpt_exr_autoDataWindow.set(1)
         v_ray.imgOpt_exr_compression.set(3)
+        # UI / misc
+        if not v_ray.fileNamePrefix.get():
+            v_ray.fileNamePrefix.set("""%s/%l/v001/%l""")
         v_ray.vfbOn.set(1)
         globs.animation.set(1)
         v_ray.animBatchOnly.set(1)
-        v_ray.ddisplac_maxSubdivs.set(12)
+        v_ray.globopt_light_doDefaultLights.set(0)
+        # Polygon subdivision
+        v_ray.globopt_render_viewport_subdivision.set(1)
+        v_ray.ddisplac_maxSubdivs.set(4)
+        # AA Settings
+        v_ray.aaFilterType.set(3)
+        v_ray.aaFilterSize.set(2.2)
+        # DMC settings
+        v_ray.dmcs_adaptiveAmount.set(1)
+        v_ray.dmcs_adaptiveThreshold.set(0.010)
+        v_ray.dmcs_adaptiveMinSamples.set(12)
+        v_ray.dmcThreshold.set(0.005)
+        v_ray.dmcMaxSubdivs.set(20)
+        # GI settings
         v_ray.gi.set(gi)
         v_ray.primaryEngine.set(2)
         v_ray.secondaryEngine.set(0)
         v_ray.refractiveCaustics.set(0)
-        v_ray.dmcs_adaptiveAmount.set(1)
-        v_ray.dmcs_adaptiveThreshold.set(0.010)
-        v_ray.dmcs_adaptiveMinSamples.set(12)
-        v_ray.dmcThreshold.set(0.010)
-        v_ray.globopt_light_doDefaultLights.set(0)
+        # Linear workflow
         v_ray.cmap_gamma.set(2.2)
         v_ray.cmap_subpixelMapping.set(1)
         v_ray.cmap_adaptationOnly.set(1)
-        v_ray.ddisplac_maxSubdivs.set(4)
+
         print 'Successfully loaded V-Ray quick setup.'
     except pm.MayaNodeError:
         pm.error('Looks like V-Ray might not have been loaded yet.')
         return False
-    #except pm.AttributeError:
-    #    pm.error('Attribute missing in V-Ray quick setup batch.')
     finally:
         pass
 
