@@ -152,6 +152,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
 
 
 
+        """
         ## output scene dictionary for Qube
         submit_dict = {'name': str( scene_file_path.basename().rstrip('.mb') ),
                        'prototype':'maya',
@@ -163,7 +164,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                                   'renderer':      str( renderer ),
                                   'layers_all':    str( render_layers ),
                                   'layers':        str( layer_name ),
-                                  'mayaExecutable':'R:\\Program Files\\Autodesk\\Maya2013\\bin\\mayabatch.exe',
+                                  'mayaExecutable':'R:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe',
                                   'renderDirectory': toUNC(image_path),
                                   'renderThreads': -1 
                                   },
@@ -176,6 +177,29 @@ class RenderSubmitWindow(pm.uitypes.Window):
                         'reservations': 'host.processors=16',
                         'flagsstring': 'auto_wrangling,disable_windows_job_object'
                       }
+                      """
+        submit_dict = {'name': str( scene_file_path.basename().rstrip('.mb') ),
+               'prototype':'maya',
+               'package':{'scenefile':     str( toUNC(scene_file_path.replace('/','\\')) ),
+                          'project':       str( toUNC(project_path) ), 
+                          'range':         str( frame_range ), 
+                          'cameras_all':   listToStr( scene_cameras ), 
+                          'layers_all':    str( render_layers ),
+                          'layers':        str( layer_name ),
+                          'mayaExecutable':'R:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe',
+                          'renderDirectory': toUNC(image_path),
+                          'renderThreads': -1,
+                          'ignoreRenderTimeErrors': True
+                          },
+                'cluster': '/',
+                'restrictions': '',
+                'requirements': '',
+                'kind': '',
+                'priority': str(5000),
+                'cpus': str(17),
+                'reservations': 'host.processors=16',
+                'flagsstring': 'auto_wrangling,disable_windows_job_object'
+              }              
 
         return submit_dict
 
@@ -291,7 +315,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         self.show()
 
 
-    def submit( self, qube_gui=False, *a ):
+    def submit( self, qube_gui=0, *a ):
         """ Runs the Qube submission console command for the current render layer. """
 
         layer = pm.editRenderLayerGlobals(q=True, crl=True)
