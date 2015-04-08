@@ -61,6 +61,14 @@ FRAMEBUFFERS = {
         'SSS',
         'lighting'
         ],
+    'beauty':[
+        'reflection',
+        'specular',
+        'diffuse',
+        'SSS',
+        'lighting',
+        'selfIllum'
+        ],
     'team_logo':[
         'reflection',
         'specular',
@@ -81,12 +89,7 @@ FRAMEBUFFERS = {
         'UV',
         'AO',
         'PPW',
-        'MV',
-        'matteA',
-        'matteB',
-        'matteC',
-        'matteD',
-        'matteE',
-        'matteF'
-        ]
-}
+        'MV'
+        ],
+    'matte':['']
+    }
