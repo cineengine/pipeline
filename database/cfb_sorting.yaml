@@ -37,6 +37,10 @@ utilLogo :
     type: utility
     aov :
         - sg_cfb_logo
+matteLogo :
+    type: matte
+    aov :
+        - sg_cfb_logo
 ...
 ---
 ELEMENT: Home_Sign
