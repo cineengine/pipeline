@@ -5,6 +5,23 @@ import yaml
 # internal modules
 from pipeline import cfb
 from pipeline.vray import aov
+from pipeline.vray.stringMattes import espnMatteTags
+
+import pipeline.vray.utils as vrayUtils
+
+reload(cfb)
+reload(aov)
+
+#def scene(*a):
+
+    # ui for selecting which elements in scene to sort
+
+    # loop over all selected
+
+    # init scene control for current type
+
+    # run sort controller
+
 
 class Layer( object ):
     """Layer is an object used by the sort controller to parse information about a layer currently
@@ -110,6 +127,10 @@ class SortControl( object ):
     def run(self):
         """ Sorts the objects under this controller into their designated layers, set their
         corresponding visibility flags, and enable the correct framebuffers."""
+
+        vrayUtils.initVray()
+        vrayUtils.setVrayDefaults()
+
         for layer in self.layers:
 
             # Create the render layer, if it doesn't exist.
@@ -140,17 +161,19 @@ class SortControl( object ):
                     addToLayer( sg, layer.name )
                     setVisibility( sg, 'occlude')
 
-
             # Add the lg_groups (lights) to the layer
             if layer.lights:
                 for lg in layer.lights:
                     addToLayer( lg, layer.name )
 
+            # Create matte framebuffers on matte layers
+            if layer.type == 'matte':
+                pass
+
             # Enable framebuffers for the layer, based on type
             setFramebuffers( layer.type, self.framebuffers )
             # Set any hard-coded exceptions for this element / layer
             setExceptions( layer.type, self.element, layer.name )
-
 
 
 #####################################
@@ -188,6 +211,7 @@ def addToLayer(  sort_set, layer, rm=False ):
         
         # Not so much a warning as an echo.
         pm.warning('Sort Control  SORTING! {:>20} >> {:<20}'.format(sort_set, layer))
+
 
 def setVisibility( sort_set, override ):
     """ Enables the visibility state overrides on sortgroups based on keyword inputs. """
@@ -229,7 +253,7 @@ def setVisibility( sort_set, override ):
             sort_set.primaryVisibility.set(0)
             sort_set.generateRenderElements.set(0)
         elif override == 'aov':
-            sort_set.matteSurface.set(1)
+            sort_set.matteSurface.set(0)
             sort_set.alphaContribution.set(1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(1)        
@@ -250,9 +274,9 @@ def setFramebuffers( layer_type, framebuffers ):
         for fb in existing:
             enableOverride(fb.enabled)
             fb.enabled.set(0)
-    
+
     # Lighting component framebuffers (beauty passes)
-    if layer_type != 'utility':
+    if layer_type == 'beauty':
         for fb in layer_buffers:
             print 'Enabling buffer: ' + str(fb)
             fb = aov.makeLightComponentBuffer(fb)
@@ -267,20 +291,46 @@ def setFramebuffers( layer_type, framebuffers ):
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
+    elif layer_type == 'matte':
+        print 'Generating mattes ...'
+        fb = espnMatteTags.parseVrayUserAttributes()
+        espnMatteTags.createRenderElements(fb)
+
+
 
 def setExceptions( layer_type=None, element_name=None, layer_name=None ):
+    # Set up additional shader framebuffers for CFB Logos
     if element_name == 'CFB_Logo' and layer_type == 'beauty':
         try:
-            shader = pm.PyNode('CFB_LOGO:GLASS_CLEARCOAT')
+            shader = pm.PyNode('CFB_LOGO:FRONT_GLASS_BLENDMTL')
             fb     = aov.makeExTex('clearCoat', shader.outColor)
         except:
             pm.warning('Sort Control  setExceptions() Couldn\'t connect glass shader to extraTex')
         try:
-            shader = pm.PyNode('CFB_LOGO:CARBON_FIBER')
+            shader = pm.PyNode('CFB_LOGO:CARBON_FIBER_SPEC')
             fb     = aov.makeExTex('carbonFiber', shader.outColor)
         except:
             pm.warning('Sort Control  setExceptions() Couldn\'t connect carbon fiber shader to extraTex')
         return
+
+    # Flag all utility passes as 32-bit
+    if layer_type == 'utility':
+        vr = pm.PyNode('vraySettings')
+        enableOverride(vr.imgOpt_exr_bitsPerChannel)
+        vr.imgOpt_exr_bitsPerChannel.set(32)
+
+    # Utility and matte passes require fixed sampling
+    if layer_type == 'utility' or layer_type == 'matte':
+        vr = pm.PyNode('vraySettings')
+        # Enable overrides on sampler type, lights and reflections
+        enableOverride(vr.samplerType)
+        enableOverride(vr.globopt_light_doLights)
+        enableOverride(vr.globopt_mtl_reflectionRefraction)
+        # Override values
+        vr.samplerType.set(0)
+        vr.fixedSubdivs.set(10)
+        vr.globopt_light_doLights.set(0)
+        vr.globopt_mtl_reflectionRefraction.set(0)
 
 
 # Helper Functions
