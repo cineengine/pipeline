@@ -28,7 +28,7 @@ STUDIO :
 ---
 ELEMENT : CFB_Logo
 btyLogo :
-    type: cfb_logo
+    type: beauty
     rgba :
         - sg_cfb_logo
     lights : 
@@ -45,7 +45,7 @@ matteLogo :
 ---
 ELEMENT: Home_Sign
 btyHomeSign:
-    type: sign
+    type: beauty
     rgba:
         - "HOMESIGN:sg_sign"
     lights:
@@ -58,7 +58,7 @@ utilHomeSign:
 ---
 ELEMENT: Home_Logo
 btyHomeLogo:
-    type: team_logo
+    type: beauty
     rgba:
         - "HOMELOGO:sg_logo"
     aov:
