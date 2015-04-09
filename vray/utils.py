@@ -29,6 +29,7 @@ def setVrayDefaults( gi=False, *args ):
         globs.animation.set(1)
         v_ray.animBatchOnly.set(1)
         v_ray.globopt_light_doDefaultLights.set(0)
+        v_ray.sys_regsgen_xc.set(16)
         # Polygon subdivision
         v_ray.globopt_render_viewport_subdivision.set(1)
         v_ray.ddisplac_maxSubdivs.set(4)
