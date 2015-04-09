@@ -196,7 +196,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                 'requirements': '',
                 'kind': '',
                 'priority': str(5000),
-                'cpus': str(17),
+                'cpus': str(183),
                 'reservations': 'host.processors=16',
                 'flagsstring': 'auto_wrangling,disable_windows_job_object'
               }              
