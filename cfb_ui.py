@@ -31,6 +31,11 @@ reload(rendering)
 reload(selection)
 reload(cfb)
 
+
+######################################################################
+# TRICODE LOOKUP
+######################################################################
+
 def lookupTricode(*a):
     
     def _lookup(*a):
@@ -68,7 +73,77 @@ def lookupTricode(*a):
 
 
 ######################################################################
-# UI HELPER FUNCTIONS
+# SORT CONTROL / TEAM SWITCHER
+######################################################################
+
+class SortControlLayout(pm.uitypes.Window):
+
+    def __init__(self):
+
+        self.wh = (280,160)
+        self.setTitle('Scene Sort Controller')
+        self.setToolbox()
+        self.setResizeToFitChildren(1)
+        self.setSizeable(1)
+        self.setWidth(self.wh[0])
+        self.setHeight(self.wh[1])
+        #self.run()
+        self.element_list = []
+
+        with open("F:\\10_GITHUB\\pipeline\\database\\cfb_sorting.yaml") as yaml_stream:
+            self.stream = yaml.load_all(yaml_stream)
+            for element in self.stream:
+                self.element_list.append(element['ELEMENT'])
+
+      
+        top_layout      = pm.formLayout(p=self)
+
+        # selection box
+        column          = pm.formLayout(p=top_layout)
+        pm.text(label='Select elements to sort', font='tinyBoldLabelFont', p=column)
+        self.sel_box    = pm.textScrollList('sel_box', p=column)
+        pm.textScrollList('sel_box',
+            e=True,
+            ams=True,
+            append=self.element_list,
+            numberOfRows=min(25, max(10, len(self.element_list)))
+            )
+        column.redistribute(1,5)
+        
+        # buttons
+        column          = pm.formLayout(p=top_layout)
+        self.sort_btn   = pm.button(l='SORT SCENE', p=column)
+        self.open_btn   = pm.button(l='Open Scene', p=column)
+        self.save_btn   = pm.button(l='Save Scene', p=column)
+        self.rename_btn = pm.button(l='Rename Scene', p=column)
+        self.ref_btn    = pm.button(l='Reference Editor', p=column)
+        column.redistribute(3,1,1,1)
+
+        top_layout.redistribute()
+
+        #self.show()
+
+def sortControlWidget(*a):
+    s = SortControlWidget()
+    
+    if pm.dockControl('sortingDock', query=True, exists=True):
+        pm.deleteUI('sortingDock')
+    
+    allowedAreas = ['right', 'left']
+
+    dock = pm.dockControl( 
+        'sortingDock', 
+        floating=True, 
+        label='Sorting / Team Switching', 
+        area='left', 
+        content=s, 
+        allowedArea=allowedAreas
+        )
+
+
+
+######################################################################
+# MAIN MENU 
 ######################################################################
 
 def save_ui(*a):
@@ -91,8 +166,6 @@ def rename_ui(*a):
 
 def init_scene(*a):
     scene = project.Scene()
-
-### MAIN MENU
 
 try:
     pm.deleteUI('cfbTools')
