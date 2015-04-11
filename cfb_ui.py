@@ -80,7 +80,7 @@ class SortControlLayout(pm.uitypes.Window):
 
     def __init__(self):
 
-        self.wh = (280,160)
+        self.wh = (220,160)
         self.setTitle('Scene Sort Controller')
         self.setToolbox()
         self.setResizeToFitChildren(1)
@@ -95,36 +95,78 @@ class SortControlLayout(pm.uitypes.Window):
             for element in self.stream:
                 self.element_list.append(element['ELEMENT'])
 
-      
-        top_layout      = pm.formLayout(p=self)
+        main = pm.columnLayout()
+
+        # TEAM SWITCHING LAYOUT
+        top_frame = pm.frameLayout(
+            l='Team Switcher',
+            w=self.wh[0], fn='smallBoldLabelFont',
+            cll=True,
+            cl=False,
+            p=main
+            )
+        top_layout     = pm.formLayout(p=top_frame)
+        
+        matchup_toggle = pm.radioButtonGrp(
+            label='',
+            labelArray2=['Single Team', 'Matchup'],
+            numberOfRadioButtons=2,
+            cw=[(1,0)],
+            cl2=['left','left'],
+            p=top_layout
+            )
+
+        top_layout.redistribute()
+
+        # SCENE SORTING LAYOUT
+        bot_frame = pm.frameLayout(
+            l='Scene Sorting', 
+            w=self.wh[0], fn='smallBoldLabelFont', 
+            cll=True, 
+            cl=False, 
+            p=main
+            )
+        bot_layout = pm.formLayout(p=bot_frame)
 
         # selection box
-        column          = pm.formLayout(p=top_layout)
-        pm.text(label='Select elements to sort', font='tinyBoldLabelFont', p=column)
+        column          = pm.formLayout(p=bot_layout)
+        pm.text(label='Select elements to sort', align='left', font='tinyBoldLabelFont', p=column)
         self.sel_box    = pm.textScrollList('sel_box', p=column)
         pm.textScrollList('sel_box',
             e=True,
             ams=True,
             append=self.element_list,
-            numberOfRows=min(25, max(10, len(self.element_list)))
+            numberOfRows=min(25, max(10, len(self.element_list))),
+            p=column
             )
         column.redistribute(1,5)
         
         # buttons
-        column          = pm.formLayout(p=top_layout)
-        self.sort_btn   = pm.button(l='SORT SCENE', p=column)
-        self.open_btn   = pm.button(l='Open Scene', p=column)
-        self.save_btn   = pm.button(l='Save Scene', p=column)
-        self.rename_btn = pm.button(l='Rename Scene', p=column)
-        self.ref_btn    = pm.button(l='Reference Editor', p=column)
-        column.redistribute(3,1,1,1)
+        column          = pm.formLayout(p=bot_layout)
+        self.sort_btn   = pm.button(l='SORT SCENE', p=column, c=self.sortBtn)
+        column.redistribute(3,1)
 
-        top_layout.redistribute()
+        grid_l          = pm.gridLayout(nc=2,nr=2,cr=True,cwh=((self.wh[0]/2.05), self.wh[1]/4),p=bot_layout)
+        self.open_btn   = pm.button(l='Open Scene', p=grid_l, c=open_ui)
+        self.save_btn   = pm.button(l='Save Scene', p=grid_l, c=save_ui)
+        self.rename_btn = pm.button(l='Rename Scene', p=grid_l, c=rename_ui)
+        self.ref_btn    = pm.button(l='Reference Editor', p=grid_l)
+        
+        bot_layout.redistribute(3,2,4)
 
-        #self.show()
+    def sortBtn(*a):
+        sel = pm.textScrollList(
+                'sel_box',
+                q=True,
+                si=True
+                )
+
+        for s in sel:
+            print "sort.SortControl({0})".format(s)
+
 
 def sortControlWidget(*a):
-    s = SortControlWidget()
+    s = SortControlLayout()
     
     if pm.dockControl('sortingDock', query=True, exists=True):
         pm.deleteUI('sortingDock')
@@ -139,7 +181,6 @@ def sortControlWidget(*a):
         content=s, 
         allowedArea=allowedAreas
         )
-
 
 
 ######################################################################
