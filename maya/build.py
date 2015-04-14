@@ -59,7 +59,7 @@ def loadAssets(home_team, away_team=False, clean=True):
     if away_team: away = team.Team(away_team)
 
     # Create paths for signs / team logo scenes
-    home
+    home 
 
     # If existing
             # If dirty, replace
