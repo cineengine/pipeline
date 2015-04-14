@@ -31,6 +31,14 @@ reload(rendering)
 reload(selection)
 reload(cfb)
 
+
+blue = [0,0.38,0.52]
+red  = [0.52,0,0]
+
+######################################################################
+# TRICODE LOOKUP
+######################################################################
+
 def lookupTricode(*a):
     
     def _lookup(*a):
@@ -68,7 +76,160 @@ def lookupTricode(*a):
 
 
 ######################################################################
-# UI HELPER FUNCTIONS
+# SORT CONTROL / TEAM SWITCHER
+######################################################################
+
+class SortControlLayout(pm.uitypes.Window):
+
+    def __init__(self):
+
+        self.wh = (220,100)
+        self.setTitle('Scene Controller')
+        #self.setToolbox()
+        self.setResizeToFitChildren(1)
+        self.setSizeable(1)
+        self.setHeight(self.wh[1])
+        #self.setWidth(self.wh[0])
+        self.element_list = []
+
+        with open(cfb.SORTING_DATABASE) as yaml_stream:
+            self.stream = yaml.load_all(yaml_stream)
+            for element in self.stream:
+                self.element_list.append(element['ELEMENT'])
+
+        main = pm.columnLayout()
+
+        # TEAM SWITCHING LAYOUT
+        top_frame = pm.frameLayout(
+            l='Team Switcher',
+            #w=self.wh[0], 
+            fn='smallBoldLabelFont',
+            cll=True,
+            cl=False,
+            p=main
+            )
+        
+        column         = pm.formLayout(p=top_frame)
+        matchup_toggle = pm.radioButtonGrp(
+            'matchup_toggle',
+            label='',
+            labelArray2=['Single Team', 'Matchup'],
+            numberOfRadioButtons=2,
+            cw=[(1,0)],
+            cl2=['left','left'],
+            cc=self.toggleMatchup,
+            p=column
+            )
+        pm.radioButtonGrp('matchup_toggle', e=True, sl=1)
+
+        home_team_txt = pm.textFieldGrp(
+            'home_team_txt',
+            l='Home Team',
+            cw2=[78,130],
+            cl2=['right','right'],
+            p=column
+            )
+            
+        away_team_txt = pm.textFieldGrp(
+            'away_team_txt',
+            l='Away Team',
+            cw2=[78,130],
+            cl2=['right','right'],
+            en=False,
+            p=column
+            )
+
+        switchteam_btn = pm.button(
+            'switch_team',
+            l='S W I T C H   T E A M',
+            bgc=red,
+            p=column
+            )
+            
+        column.redistribute()
+
+        # SCENE SORTING LAYOUT
+        bot_frame = pm.frameLayout(
+            l='Scene Sorting',
+            w=self.wh[0], 
+            fn='smallBoldLabelFont', 
+            cll=True, 
+            cl=False, 
+            p=main
+            )
+
+        # selection box
+        column          = pm.formLayout(
+                            p=bot_frame, 
+                            #width=(self.wh[0]-5),
+                            )
+        pm.text(label='Select elements to sort', align='left', font='tinyBoldLabelFont', p=column)
+        self.sel_box    = pm.textScrollList('sel_box', p=column)
+        pm.textScrollList('sel_box',
+            e=True,
+            ams=True,
+            append=self.element_list,
+            numberOfRows=15,
+            p=column
+            )
+                    
+        # buttons
+        self.sort_btn   = pm.button(l='SORT SCENE', bgc=blue, p=column, c=self.sortBtn)
+        
+        box             = pm.formLayout(p=column)
+        grid_l          = pm.gridLayout(nc=2,nr=2,cr=True, cwh=((self.wh[0]/2)-3, 25), p=box)
+        #self.open_btn   = pm.button(l='Open Scene', p=grid_l, c=open_ui)
+        #self.save_btn   = pm.button(l='Save Scene', p=grid_l, c=save_ui)
+        #self.rename_btn = pm.button(l='Rename Scene', p=grid_l, c=rename_ui)
+        self.open_btn   = pm.button(l='Open Scene', p=grid_l)
+        self.save_btn   = pm.button(l='Save Scene', p=grid_l)
+        self.rename_btn = pm.button(l='Rename Scene', p=grid_l)
+        self.ref_btn    = pm.button(l='Reference Editor', p=grid_l)
+        
+        column.redistribute(1,15,3,4)
+        #main.redistribute(1,4)
+
+    def sortBtn(*a):
+        sel = pm.textScrollList(
+                'sel_box',
+                q=True,
+                si=True
+                )
+
+        for s in sel:
+            print "sort.SortControl({0})".format(s)
+
+
+    def toggleMatchup(*a):
+        get_bool = pm.radioButtonGrp('matchup_toggle', q=True, sl=True)
+        if get_bool == 1:
+            pm.textFieldGrp('away_team_txt', e=True, enable=False)
+        elif get_bool == 2:
+            pm.textFieldGrp('away_team_txt', e=True, enable=True)
+        else:
+            pm.warning('SORT CONTROL  ERROR: Please select single-team or matchup.')
+        return
+
+def sortControlWidget(*a):
+    s = SortControlLayout()
+    
+    if pm.dockControl('sortingDock', query=True, exists=True):
+        pm.deleteUI('sortingDock')
+    
+    allowedAreas = ['right', 'left']
+
+    dock = pm.dockControl( 
+        'sortingDock', 
+        floating=True, 
+        label='Sorting / Team Switching', 
+        area='left', 
+        content=s, 
+        allowedArea=allowedAreas
+        )
+
+
+######################################################################
+# MAIN MENU 
 ######################################################################
 
 def save_ui(*a):
@@ -91,8 +252,6 @@ def rename_ui(*a):
 
 def init_scene(*a):
     scene = project.Scene()
-
-### MAIN MENU
 
 try:
     pm.deleteUI('cfbTools')
