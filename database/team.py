@@ -27,6 +27,7 @@ class Team(object):
             self.matte = self.db['matte']
             self.sky = self.db['sky']
             self.sign = self.db['sign']
+            self.switch_colors = False
             
             # Team categories
             self.conf = self.db['conference']
