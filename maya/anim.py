@@ -94,7 +94,7 @@ def exportAbc(*a):
     export_path = getAnimPath('abc', msg, 0)
 
     pm.Mel.eval(
-        "AbcExport -j \"-frameRange {0} {1} -dataFormat ogawa -root {2} -file {3}\";".format(
+        "AbcExport -j \"-frameRange {0} {1} -worldSpace -uvWrite -dataFormat ogawa -root {2} -file {3}\";".format(
             start, end, sel, export_path.replace('\\','/')))
     pm.warning('Export Alembic  SUCCESS Wrote to {0}'.format(export_path))
     return
