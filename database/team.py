@@ -24,6 +24,9 @@ class Team(object):
             self.nickname = self.db['mascot']
             self.safename = self.db['os_safe']
             self.tricode = self.db['tricode']
+            self.matte = self.db['matte']
+            self.sky = self.db['sky']
+            self.sign = self.db['sign']
             
             # Team categories
             self.conf = self.db['conference']
