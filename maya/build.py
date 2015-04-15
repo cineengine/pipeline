@@ -1,7 +1,7 @@
-# Built-in modules
+# Internal modules
 import pymel.core as pm
 
-# Internal modules
+# External modules
 from pipeline import cfb
 from pipeline.maya import asset
 from pipeline.maya import sort
@@ -12,6 +12,7 @@ import pipeline.vray.utils as utils
 
 # Built-in modules
 import os.path
+import re
 
 def factory( *a ):
     ## INITIALIZE V-RAY SETTINGS
@@ -28,9 +29,9 @@ def factory( *a ):
 def loadTeams(home, away=None, clean=True, *a):
     ''' Loads a home team and an optional away team into the scene.  Includes many checks, but 
         also makes many assumptions about the scenes preparedness in the pipeline. '''
-    loadAssets(home, clean)
+    loadAssets(home, 'HOME', clean)
     if away:
-        loadAssets(away, clean)
+        loadAssets(away, 'AWAY', clean)
     return
 
 
@@ -53,19 +54,24 @@ def loadAssets(tricode, location, clean=True):
     sign_path = os.path.join(cfb.MAIN_ASSET_DIR, sign, (sign+'.mb'))
     logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
 
+    # Generate namespaces
+    sign_nspc = '{0}SIGN'.format(location)
+    logo_nspc = '{0}LOGO'.format(location)
+
     # Check for existing references
-    sign_ref, logo_ref = None
+    sign_ref = None
+    logo_ref = None
 
     # Get those reference nodess
     for ref in pm.listReferences():
-        if ref.namespace == '{0}SIGN'.format(location):
+        if ref.namespace == sign_nspc:
             sign_ref = ref
 
-        elif ref.namespace == '{0}LOGO'.format(location):
+        elif ref.namespace == logo_nspc:
             logo_ref = ref
 
     # If there are references missing, force a clean run for simplicity's sake (i implore you)
-    if (sign_ref) or (logo_ref) == None:
+    if (sign_ref) or (logo_ref) == None and clean == False:
         pm.warning('Build Scene  WARNING Existing reference not found.  Forcing clean reference.')
         clean = True
 
@@ -75,8 +81,8 @@ def loadAssets(tricode, location, clean=True):
         if (logo_ref): logo_ref.remove()
         if (sign_ref): sign_ref.remove()
         # Reference in the asset to the namespace
-        asset.reference(sign_path, '{0}SIGN'.format(location))
-        asset.reference(logo_path, '{0}LOGO'.format(location))
+        asset.reference(sign_path, sign_nspc)
+        asset.reference(logo_path, logo_nspc)
         # Attach them to their parent locators
         attachToSign(location)
         attachToScene(location)
@@ -95,6 +101,16 @@ def loadAssets(tricode, location, clean=True):
             pass
         else:
             logo_ref.replaceWith(logo_path)
+
+    # Cleanup foster parents
+    try:
+        sign_re = re.compile('{0}RNfosterParent.'.format(sign_nspc))
+        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
+
+        pm.delete(pm.ls(regex=sign_re))
+        pm.delete(pm.ls(regex=logo_re))
+    except:
+        pass
 
 
 def attachToSign(location):
@@ -145,7 +161,7 @@ def attachToScene(location):
         return
 
     try:
-        sign_loc = pm.PyNode('{0}:main_ctrl_curve'.format(location))
+        sign_loc = pm.PyNode('{0}SIGN:MAIN_POS'.format(location))
     except:
         pm.warning('Build Scene  ERROR Could not find sign master control curve for {0} team.'.format(location))
         return
