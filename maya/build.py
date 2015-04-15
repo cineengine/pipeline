@@ -56,6 +56,7 @@ def loadAssets(tricode, location, clean=True):
     # Check for existing references
     sign_ref, logo_ref = None
 
+    # Get those reference nodess
     for ref in pm.listReferences():
         if ref.namespace == '{0}SIGN'.format(location):
             sign_ref = ref
@@ -63,11 +64,16 @@ def loadAssets(tricode, location, clean=True):
         elif ref.namespace == '{0}LOGO'.format(location):
             logo_ref = ref
 
+    # If there are references missing, force a clean run for simplicity's sake (i implore you)
+    if (sign_ref) or (logo_ref) == None:
+        pm.warning('Build Scene  WARNING Existing reference not found.  Forcing clean reference.')
+        clean = True
+
     # If the user has asked to do a clean reference of the asset, including attachment
     if (clean):
-        # If there's already references in those namespaces, just delete them
-        if (logo_ref): logo_ref.remove()
-        if (sign_ref): sign_ref.remove()
+        # If there's already references in those namespaces (and they're the wrong ones), just delete them
+        if (logo_ref) and not (team.tricode+'.mb' in logo_ref.path): logo_ref.remove()
+        if (sign_ref) and not (sign+'.mb' in sign_ref.path): sign_ref.remove()
         # Reference in the asset to the namespace
         asset.reference(sign_path, '{0}SIGN'.format(location))
         asset.reference(logo_path, '{0}LOGO'.format(location))
@@ -75,18 +81,16 @@ def loadAssets(tricode, location, clean=True):
         attachToSign(location)
         attachToScene(location)
 
-    # (If) there is already a sign reference in the namespace, and the user is requesting
+    # (If) there are already references in the namespaces, and the user is requesting
     # to replace the reference and maintain reference edits (dirty mode)
-    elif (sign_ref) and not clean:
+    elif not (clean):
         # If the right sign is already loaded, pass
         if (sign+'.mb') in sign_ref.path:
             pass
         # Or else replace the sign reference
         else:
             sign_ref.replaceWith(sign_path)
-
-    # Still dirty mode, same steps, this time with logos
-    elif (logo_ref) and not clean:
+        # Same thing with school logos this time
         if (team.tricode+'.mb') in logo_ref.path:
             pass
         else:
