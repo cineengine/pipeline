@@ -7,9 +7,11 @@ from pipeline.maya import asset
 from pipeline.maya import sort
 from pipeline.maya import project
 
-from pipeline.database import team
+from pipeline.database.team import Team
 import pipeline.vray.utils as utils
 
+# Built-in modules
+import os.path
 
 def factory( *a ):
     ## INITIALIZE V-RAY SETTINGS
@@ -31,43 +33,105 @@ def factory( *a ):
     sc.run()
 
 
-def loadAssets(home_team, away_team=False, clean=True):
+def loadAssets(tricode, orientation, clean=True):
+
+    orientation = orientation.upper()
     # Check for attachment locators
     try:
-        home_loc = pm.PyNode('HOME_LOCATOR')
-        if away_team:
-            away_loc = pm.PyNode('AWAY_LOCATOR')
-    except:
-        pm.warning('Build Scene  ERROR Missing sign attachment locator.' )
+        scene_loc = pm.PyNode('{0}_LOCATOR'.format(orientation))
+    except: 
+        pm.warning('Build Scene  ERROR Missing sign attachment locator for {0} team.'.format(orientation))
+        return
 
-    # Check for existing references
-    for ref in pm.listReferences():
-        if ref.namespace == 'HOMESIGN':
-            homesign_exists = True
+    # Get team info from database
+    try:
+        team = Team(tricode)
+    except: 
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
 
-        elif ref.namespace == 'HOMELOGO':
-            homelogo_exists = True
-
-        elif (away_team) and ref.namespace == 'AWAYSIGN':
-            awaysign_exists = True
-
-        elif (away_team) and ref.namespace == 'AWAYLOGO':
-            awaylogo_exists = True
-
-    # Instance team objects
-    home = team.Team(home_team)
-    if away_team: away = team.Team(away_team)
+    # Generate string for the name of the school's sign
+    sign = 'SIGN_{0}'.format(team.sign.upper())
 
     # Create paths for signs / team logo scenes
-    home 
+    sign_path = os.path.join(cfb.MAIN_ASSET_DIR, sign, (sign+'.mb'))
+    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
 
-    # If existing
-            # If dirty, replace
-            # If clean, remove and reattach
+    # Check for existing references
+    sign_ref, logo_ref = None
 
-    # If not existing
-            # Reference and attach
+    for ref in pm.listReferences():
+        if ref.namespace == '{0}SIGN'.format(orientation):
+            sign_ref = ref
+
+        elif ref.namespace == '{0}LOGO'.format(orientation):
+            logo_ref = ref
+
+    # If the user has asked to do a clean reference of the asset, including attachment
+    if (clean):
+        # If there's already references in those namespaces, just delete them
+        if (logo_ref): logo_ref.remove()
+        if (sign_ref): sign_ref.remove()
+        # Reference in the asset to the namespace
+        asset.reference(sign_path, '{0}SIGN'.format(orientation))
+        asset.reference(logo_path, '{0}LOGO'.format(orientation))
+
+        attachToSign(orientation)
+
+    # (If) there is already a sign reference in the namespace, and the user is requesting
+    # to replace the reference and maintain reference edits (dirty mode)
+    elif (sign_ref) and not clean:
+        # If the right sign is already loaded, pass
+        if (sign) in sign_ref.path:
+            pass
+        # Or else replace the sign reference
+        else:
+            sign_ref.replaceWith(sign_path)
+
+    # Still dirty mode, same steps, this time with logos
+    elif (logo_ref) and not clean:
+        if (team.tricode) in logo_ref.path:
+            pass
+        else:
+            logo_ref.replaceWith(logo_path)
 
 
-def checkLoaded(matchup=False):
+def attachToSign(orientation):
+    orientation = orientation.upper()
+
+    sign_namespace = '{0}SIGN'.format(orientation)
+    logo_namespace = '{0}LOGO'.format(orientation)
+
+    # Get basic attachment points
+    try:
+        sign_atch_board  = pm.PyNode('{0}:ATTACH_01'.format(sign_namespace))
+        sign_atch_bldg   = pm.PyNode('{0}:ATTACH_05'.format(sign_namespace))
+        sign_atch_mascot = pm.PyNode('{0}:ATTACH_06'.format(sign_namespace))
+
+        logo_atch_board  = pm.PyNode('{0}:ATTACH_01'.format(logo_namespace))
+
+    except:
+        pm.warning('Build Scene  ERROR Critical attachment points not found for {0} team.'.format(orientation))
+    
+    # Get optional attachment points.  These do not exist in every element.
+    try:
+        logo_atch_bldg   = pm.PyNode('{0}:ATTACH_05'.format(logo_namespace))
+    except: logo_atch_bldg = None
+    try:
+        sign_atch_mascot = pm.PyNode('{0}:ATTACH_06'.format(logo_namespace))
+    except: logo_atch_mascot = None
+
+    attach(sign_atch_board, logo_atch_board)
+    if (logo_atch_bldg):
+        attach(sign_atch_bldg, logo_atch_bldg)
+    if (logo_atch_mascot):
+        attach(sign_atch_mascot, logo_atch_mascot)    
+    return
+
+
+def attach(parent, child):
+    pc = pm.parentConstraint(parent, child, mo=False)
+    sc = pm.scaleConstraint(parent, child, mo=False)
+    return (pc,sc)
+
 
