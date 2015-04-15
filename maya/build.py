@@ -116,7 +116,7 @@ def attachToSign(location):
         logo_atch_bldg   = pm.PyNode('{0}:ATTACH_05'.format(logo_namespace))
     except: logo_atch_bldg = None
     try:
-        sign_atch_mascot = pm.PyNode('{0}:ATTACH_06'.format(logo_namespace))
+        logo_atch_mascot = pm.PyNode('{0}:ATTACH_06'.format(logo_namespace))
     except: logo_atch_mascot = None
 
     attach(sign_atch_board, logo_atch_board)
