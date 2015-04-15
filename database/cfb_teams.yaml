@@ -9,6 +9,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 05
+sky        : 03
+sign       : A
 ...
 ---
 team       : Akron
@@ -21,6 +24,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : Alabama
@@ -32,7 +38,10 @@ secondary  : [235,235,235]
 tier       : 1
 five       : True
 six        : True
-conference : MAC
+conference : SEC
+matte      : 11
+sky        : 03
+sign       : A
 ...
 ---
 team       : Appalachian State
@@ -44,7 +53,10 @@ secondary  : [255,213,29]
 tier       : 2
 five       : False
 six        : False
-conference : Independent
+conference : Sun Belt
+matte      : 13
+sky        : 04
+sign       : A
 ...
 ---
 team       : Arizona
@@ -57,6 +69,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 04
+sky        : 01
+sign       : A
 ...
 ---
 team       : Arizona State
@@ -69,6 +84,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 04
+sky        : 01
+sign       : C
 ...
 ---
 team       : Arkansas
@@ -81,6 +99,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 11
+sky        : 03
+sign       : B
 ...
 ---
 team       : Arkansas State
@@ -93,6 +114,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 11
+sky        : 03
+sign       : B
 ...
 ---
 team       : Army
@@ -105,6 +129,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Independent
+matte      : 15
+sky        : 03
+sign       : B
 ...
 ---
 team       : Auburn
@@ -117,6 +144,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 12
+sky        : 01
+sign       : B
 ...
 ---
 team       : Ball State
@@ -129,6 +159,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : B
 ...
 ---
 team       : Baylor
@@ -141,6 +174,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 06
+sky        : 03
+sign       : B
 ...
 ---
 team       : Boise State
@@ -153,6 +189,9 @@ tier       : 1
 five       : False
 six        : False
 conference : MWC
+matte      : 05
+sky        : 03
+sign       : B
 ...
 ---
 team       : Boston College
@@ -165,6 +204,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : Bowling Green
@@ -177,6 +219,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : Buffalo
@@ -189,6 +234,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : BYU
@@ -201,6 +249,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Independent
+matte      : 05
+sky        : 03
+sign       : B
 ...
 ---
 team       : California
@@ -213,6 +264,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 02
+sky        : 03
+sign       : B
 ...
 ---
 team       : Central Florida
@@ -225,6 +279,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 16
+sky        : 03
+sign       : A
 ...
 ---
 team       : Central Michigan
@@ -237,6 +294,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 08
+sky        : 01
+sign       : A
 ...
 ---
 team       : Charlotte
@@ -249,6 +309,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 13
+sky        : 04
+sign       : C
 ...
 ---
 team       : Cincinnati
@@ -261,6 +324,9 @@ tier       : 1
 five       : False
 six        : False
 conference : American
+matte      : 10
+sky        : 04
+sign       : B
 ...
 ---
 team       : Clemson
@@ -273,6 +339,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 11
+sky        : 03
+sign       : A
 ...
 ---
 team       : Colorado
@@ -285,6 +354,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 05
+sky        : 03
+sign       : C
 ...
 ---
 team       : Colorado State
@@ -297,6 +369,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 05
+sky        : 03
+sign       : B
 ...
 ---
 team       : Connecticut
@@ -309,6 +384,9 @@ tier       : 1
 five       : False
 six        : False
 conference : American
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : Duke
@@ -321,6 +399,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 14
+sky        : 01
+sign       : C
 ...
 ---
 team       : East Carolina
@@ -333,6 +414,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 14
+sky        : 01
+sign       : A
 ...
 ---
 team       : Eastern Michigan
@@ -345,6 +429,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 08
+sky        : 01
+sign       : B
 ...
 ---
 team       : Florida
@@ -357,6 +444,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 12
+sky        : 01
+sign       : A
 ...
 ---
 team       : Florida Atlantic
@@ -369,6 +459,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 16
+sky        : 03
+sign       : C
 ...
 ---
 team       : Florida International
@@ -381,6 +474,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 16
+sky        : 03
+sign       : C
 ...
 ---
 team       : Florida State
@@ -393,6 +489,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 12
+sky        : 01
+sign       : C
 ...
 ---
 team       : Fresno State
@@ -405,6 +504,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 02
+sky        : 03
+sign       : C
 ...
 ---
 team       : Georgia
@@ -417,6 +519,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 11
+sky        : 03
+sign       : B
 ...
 ---
 team       : Georgia Southern
@@ -429,6 +534,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 11
+sky        : 03
+sign       : B
 ...
 ---
 team       : Georgia State
@@ -441,6 +549,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 11
+sky        : 03
+sign       : C
 ...
 ---
 team       : Georgia Tech
@@ -453,6 +564,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 11
+sky        : 03
+sign       : B
 ...
 ---
 team       : Hawaii
@@ -465,6 +579,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 16
+sky        : 03
+sign       : C
 ...
 ---
 team       : Houston
@@ -477,6 +594,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 06
+sky        : 03
+sign       : C
 ...
 ---
 team       : Idaho
@@ -489,6 +609,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 05
+sky        : 03
+sign       : C
 ...
 ---
 team       : Illinois
@@ -501,6 +624,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 10
+sky        : 04
+sign       : C
 ...
 ---
 team       : Indiana
@@ -513,6 +639,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 10
+sky        : 04
+sign       : B
 ...
 ---
 team       : Iowa
@@ -525,6 +654,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 09
+sky        : 04
+sign       : A
 ...
 ---
 team       : Iowa State
@@ -537,6 +669,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 09
+sky        : 04
+sign       : C
 ...
 ---
 team       : Kansas
@@ -549,6 +684,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 09
+sky        : 04
+sign       : A
 ...
 ---
 team       : Kansas State
@@ -561,6 +699,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 09
+sky        : 04
+sign       : C
 ...
 ---
 team       : Kent State
@@ -573,6 +714,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : C
 ...
 ---
 team       : Kentucky
@@ -585,6 +729,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 10
+sky        : 04
+sign       : C
 ...
 ---
 team       : Louisiana Tech
@@ -597,6 +744,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 12
+sky        : 01
+sign       : B
 ...
 ---
 team       : Louisville
@@ -609,6 +759,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : LSU
@@ -621,6 +774,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 12
+sky        : 01
+sign       : A
 ...
 ---
 team       : Marshall
@@ -632,7 +788,10 @@ secondary  : [181,183,186]
 tier       : 2
 five       : False
 six        : False
-conference : MAC
+conference : C-USA
+matte      : 13
+sky        : 04
+sign       : A
 ...
 ---
 team       : Maryland
@@ -645,6 +804,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : Massachusetts
@@ -657,6 +819,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : Memphis
@@ -669,6 +834,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 14
+sky        : 01
+sign       : A
 ...
 ---
 team       : Miami FL
@@ -681,6 +849,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 16
+sky        : 03
+sign       : C
 ...
 ---
 team       : Miami OH
@@ -693,6 +864,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : Michigan
@@ -705,6 +879,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 08
+sky        : 01
+sign       : B
 ...
 ---
 team       : Michigan State
@@ -717,6 +894,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 08
+sky        : 01
+sign       : A
 ...
 ---
 team       : Middle Tennessee
@@ -729,6 +909,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 14
+sky        : 01
+sign       : B
 ...
 ---
 team       : Minnesota
@@ -741,6 +924,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 08
+sky        : 01
+sign       : A
 ...
 ---
 team       : Mississippi State
@@ -753,6 +939,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 12
+sky        : 01
+sign       : C
 ...
 ---
 team       : Missouri
@@ -765,6 +954,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 09
+sky        : 04
+sign       : C
 ...
 ---
 team       : Navy
@@ -777,6 +969,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Independent
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : Nebraska
@@ -789,6 +984,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 09
+sky        : 04
+sign       : A
 ...
 ---
 team       : Nevada
@@ -801,6 +999,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 04
+sky        : 01
+sign       : A
 ...
 ---
 team       : New Mexico
@@ -813,6 +1014,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 04
+sky        : 01
+sign       : A
 ...
 ---
 team       : New Mexico State
@@ -825,6 +1029,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 04
+sky        : 01
+sign       : C
 ...
 ---
 team       : North Carolina
@@ -837,6 +1044,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 14
+sky        : 01
+sign       : C
 ...
 ---
 team       : North Carolina State
@@ -849,6 +1059,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 14
+sky        : 01
+sign       : A
 ...
 ---
 team       : North Texas
@@ -861,6 +1074,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 06
+sky        : 03
+sign       : A
 ...
 ---
 team       : Northern Illinois
@@ -873,6 +1089,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : B
 ...
 ---
 team       : Northwestern
@@ -885,6 +1104,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 10
+sky        : 04
+sign       : C
 ...
 ---
 team       : Notre Dame
@@ -897,6 +1119,9 @@ tier       : 1
 five       : True
 six        : True
 conference : Independent
+matte      : 10
+sky        : 04
+sign       : C
 ...
 ---
 team       : Ohio
@@ -909,6 +1134,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : Ohio State
@@ -921,6 +1149,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 10
+sky        : 04
+sign       : C
 ...
 ---
 team       : Oklahoma
@@ -933,6 +1164,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 07
+sky        : 03
+sign       : C
 ...
 ---
 team       : Oklahoma State
@@ -945,6 +1179,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 07
+sky        : 03
+sign       : B
 ...
 ---
 team       : Old Dominion
@@ -956,7 +1193,10 @@ secondary  : [194,195,192]
 tier       : 2
 five       : False
 six        : False
-conference : Independent
+conference : C-USA
+matte      : 14
+sky        : 01
+sign       : C
 ...
 ---
 team       : Ole Miss
@@ -969,6 +1209,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 12
+sky        : 01
+sign       : B
 ...
 ---
 team       : Oregon
@@ -981,6 +1224,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 01
+sky        : 02
+sign       : C
 ...
 ---
 team       : Oregon State
@@ -993,6 +1239,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 01
+sky        : 02
+sign       : B
 ...
 ---
 team       : Penn State
@@ -1005,6 +1254,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 15
+sky        : 03
+sign       : B
 ...
 ---
 team       : Pittsburgh
@@ -1017,6 +1269,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 15
+sky        : 03
+sign       : B
 ...
 ---
 team       : Purdue
@@ -1029,6 +1284,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 10
+sky        : 04
+sign       : B
 ...
 ---
 team       : Rice
@@ -1041,6 +1299,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 06
+sky        : 03
+sign       : A
 ...
 ---
 team       : Rutgers
@@ -1053,6 +1314,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : San Diego State
@@ -1065,6 +1329,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 03
+sky        : 03
+sign       : C
 ...
 ---
 team       : San Jose State
@@ -1077,6 +1344,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 02
+sky        : 03
+sign       : A
 ...
 ---
 team       : South Alabama
@@ -1089,6 +1359,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 12
+sky        : 01
+sign       : A
 ...
 ---
 team       : South Carolina
@@ -1101,6 +1374,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 11
+sky        : 03
+sign       : A
 ...
 ---
 team       : South Florida
@@ -1113,6 +1389,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 16
+sky        : 03
+sign       : B
 ...
 ---
 team       : SMU
@@ -1125,6 +1404,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 06
+sky        : 03
+sign       : C
 ...
 ---
 team       : Southern Miss
@@ -1137,6 +1419,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 12
+sky        : 01
+sign       : B
 ...
 ---
 team       : Stanford
@@ -1149,6 +1434,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 02
+sky        : 03
+sign       : A
 ...
 ---
 team       : Syracuse
@@ -1161,6 +1449,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 15
+sky        : 03
+sign       : B
 ...
 ---
 team       : TCU
@@ -1173,6 +1464,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 06
+sky        : 03
+sign       : A
 ...
 ---
 team       : Temple
@@ -1185,6 +1479,9 @@ tier       : 2
 five       : False
 six        : False
 conference : American
+matte      : 15
+sky        : 03
+sign       : C
 ...
 ---
 team       : Tennessee
@@ -1197,6 +1494,9 @@ tier       : 1
 five       : True
 six        : False
 conference : SEC
+matte      : 13
+sky        : 04
+sign       : A
 ...
 ---
 team       : Texas
@@ -1209,6 +1509,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 06
+sky        : 03
+sign       : A
 ...
 ---
 team       : "Texas A&M"
@@ -1221,6 +1524,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 06
+sky        : 03
+sign       : B
 ...
 ---
 team       : Texas State
@@ -1233,6 +1539,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 06
+sky        : 03
+sign       : A
 ...
 ---
 team       : Texas Tech
@@ -1245,6 +1554,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 06
+sky        : 03
+sign       : B
 ...
 ---
 team       : Toledo
@@ -1257,6 +1569,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : Troy
@@ -1269,6 +1584,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 12
+sky        : 01
+sign       : A
 ...
 ---
 team       : Tulane
@@ -1281,6 +1599,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 12
+sky        : 01
+sign       : C
 ...
 ---
 team       : Tulsa
@@ -1293,18 +1614,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
-...
----
-team       : UAB
-os_safe    : UAB
-tricode    : UAB
-mascot     : Blazers
-primary    : [36,92,78]
-secondary  : [201,178,106]
-tier       : 2
-five       : False
-six        : False
-conference : C-USA
+matte      : 07
+sky        : 03
+sign       : A
 ...
 ---
 team       : UCLA
@@ -1317,6 +1629,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 03
+sky        : 03
+sign       : C
 ...
 ---
 team       : UL Lafayette
@@ -1329,6 +1644,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 12
+sky        : 01
+sign       : C
 ...
 ---
 team       : UL Monroe
@@ -1341,6 +1659,9 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
+matte      : 12
+sky        : 01
+sign       : B
 ...
 ---
 team       : UNLV
@@ -1353,6 +1674,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 04
+sky        : 01
+sign       : C
 ...
 ---
 team       : USC
@@ -1365,6 +1689,9 @@ tier       : 1
 five       : True
 six        : False
 conference : Pac-12
+matte      : 03
+sky        : 03
+sign       : C
 ...
 ---
 team       : UT San Antonio
@@ -1377,6 +1704,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 06
+sky        : 03
+sign       : A
 ...
 ---
 team       : Utah
@@ -1389,6 +1719,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 05
+sky        : 03
+sign       : A
 ...
 ---
 team       : Utah State
@@ -1401,6 +1734,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 05
+sky        : 03
+sign       : A
 ...
 ---
 team       : UTEP
@@ -1413,6 +1749,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 06
+sky        : 03
+sign       : C
 ...
 ---
 team       : Vanderbilt
@@ -1425,6 +1764,9 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
+matte      : 14
+sky        : 01
+sign       : A
 ...
 ---
 team       : Virginia
@@ -1437,6 +1779,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 14
+sky        : 01
+sign       : C
 ...
 ---
 team       : Virginia Tech
@@ -1449,6 +1794,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 13
+sky        : 04
+sign       : B
 ...
 ---
 team       : Wake Forest
@@ -1461,6 +1809,9 @@ tier       : 1
 five       : False
 six        : False
 conference : ACC
+matte      : 13
+sky        : 04
+sign       : C
 ...
 ---
 team       : Washington
@@ -1473,6 +1824,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 01
+sky        : 02
+sign       : B
 ...
 ---
 team       : Washington State
@@ -1485,6 +1839,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
+matte      : 01
+sky        : 02
+sign       : A
 ...
 ---
 team       : West Virginia
@@ -1497,6 +1854,9 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
+matte      : 13
+sky        : 04
+sign       : B
 ...
 ---
 team       : Western Kentucky
@@ -1509,6 +1869,9 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
+matte      : 10
+sky        : 04
+sign       : A
 ...
 ---
 team       : Western Michigan
@@ -1521,6 +1884,9 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
+matte      : 08
+sky        : 01
+sign       : B
 ...
 ---
 team       : Wisconsin
@@ -1533,6 +1899,9 @@ tier       : 1
 five       : True
 six        : True
 conference : Big Ten
+matte      : 08
+sky        : 01
+sign       : A
 ...
 ---
 team       : Wyoming
@@ -1545,4 +1914,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
+matte      : 05
+sky        : 03
+sign       : B
 ...
