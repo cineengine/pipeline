@@ -12,6 +12,8 @@ from pipeline.database import team
 import pipeline.vray.utils as vrayutils
 import pipeline.vray.mattes as vraymattes
 
+import yaml
+
 # Other ESPN modules
 import cg.maya.rendering as rendering
 import cg.maya.selection as selection
@@ -83,7 +85,7 @@ class SortControlLayout(pm.uitypes.Window):
 
     def __init__(self):
 
-        self.wh = (220,100)
+        self.wh = (220,500)
         self.setTitle('Scene Controller')
         #self.setToolbox()
         self.setResizeToFitChildren(1)
@@ -109,8 +111,8 @@ class SortControlLayout(pm.uitypes.Window):
             p=main
             )
         
-        column         = pm.formLayout(p=top_frame)
-        matchup_toggle = pm.radioButtonGrp(
+        column = pm.formLayout(p=top_frame)
+        matchup_tgl = pm.radioButtonGrp(
             'matchup_toggle',
             label='',
             labelArray2=['Single Team', 'Matchup'],
@@ -120,7 +122,7 @@ class SortControlLayout(pm.uitypes.Window):
             cc=self.toggleMatchup,
             p=column
             )
-        pm.radioButtonGrp('matchup_toggle', e=True, sl=1)
+        matchup_tgl.setSelect(1)
 
         home_team_txt = pm.textFieldGrp(
             'home_team_txt',
@@ -139,10 +141,16 @@ class SortControlLayout(pm.uitypes.Window):
             p=column
             )
 
+        clean_tgl = pm.checkBox('clean_toggle')
+        clean_tgl.setLabel('Clean')
+        clean_tgl.setValue(1)
+
+
         switchteam_btn = pm.button(
             'switch_team',
-            l='S W I T C H   T E A M',
+            l='L O A D   T E A M',
             bgc=red,
+            c=self.loadBtn,
             p=column
             )
             
@@ -175,21 +183,24 @@ class SortControlLayout(pm.uitypes.Window):
                     
         # buttons
         self.sort_btn   = pm.button(l='SORT SCENE', bgc=blue, p=column, c=self.sortBtn)
+        self.teardn_btn = pm.button(l='TEARDOWN SCENE', p=column, c=self.teardownBtn)
         
         box             = pm.formLayout(p=column)
-        grid_l          = pm.gridLayout(nc=2,nr=2,cr=True, cwh=((self.wh[0]/2)-3, 25), p=box)
-        #self.open_btn   = pm.button(l='Open Scene', p=grid_l, c=open_ui)
-        #self.save_btn   = pm.button(l='Save Scene', p=grid_l, c=save_ui)
-        #self.rename_btn = pm.button(l='Rename Scene', p=grid_l, c=rename_ui)
-        self.open_btn   = pm.button(l='Open Scene', p=grid_l)
-        self.save_btn   = pm.button(l='Save Scene', p=grid_l)
-        self.rename_btn = pm.button(l='Rename Scene', p=grid_l)
-        self.ref_btn    = pm.button(l='Reference Editor', p=grid_l)
+        grid_l          = pm.gridLayout(nc=2,nr=2,cr=True, cwh=((self.wh[0]/2)-3, 15), p=box)
+        self.open_btn   = pm.button(l='Open Scene', c=open_ui, p=grid_l)
+        self.save_btn   = pm.button(l='Save Scene', c=save_ui, p=grid_l)
+        self.rename_btn = pm.button(l='Rename Scene', c=rename_ui, p=grid_l)
+        self.ref_btn    = pm.button(
+                            l='Reference Editor', 
+                            c=lambda *args: pm.mel.eval('ReferenceEditor;'), 
+                            p=grid_l
+                            )
         
-        column.redistribute(1,15,3,4)
+        column.redistribute(1,15,3,1,4)
         #main.redistribute(1,4)
 
-    def sortBtn(*a):
+
+    def sortBtn(self, *a):
         sel = pm.textScrollList(
                 'sel_box',
                 q=True,
@@ -197,10 +208,30 @@ class SortControlLayout(pm.uitypes.Window):
                 )
 
         for s in sel:
-            print "sort.SortControl({0})".format(s)
+            sc = sort.SortControl(s)
+            sc.run()
 
 
-    def toggleMatchup(*a):
+    def loadBtn(self, *a):
+        home_team = pm.textFieldGrp('home_team_txt', q=True, text=True)
+        clean = pm.checkBox('clean_toggle', q=True, value=True)
+
+        if home_team == '':
+            pm.warning('Build Scene  ERROR Please enter a team name / tricode before proceeding.')
+
+        if (pm.radioButtonGrp('matchup_toggle', q=True, sl=True)) == 1:
+            build.loadTeams(home_team, clean=clean)
+
+        elif (pm.radioButtonGrp('matchup_toggle', q=True, sl=True)) == 2:
+            away_team = pm.textFieldGrp('away_team_txt', q=True, text=True)
+            build.loadTeams(home_team, away_team, clean=clean)
+
+
+    def teardownBtn(self, *a):
+        sort.sceneTeardown()
+
+
+    def toggleMatchup(self, *a):
         get_bool = pm.radioButtonGrp('matchup_toggle', q=True, sl=True)
         if get_bool == 1:
             pm.textFieldGrp('away_team_txt', e=True, enable=False)
@@ -209,6 +240,7 @@ class SortControlLayout(pm.uitypes.Window):
         else:
             pm.warning('SORT CONTROL  ERROR: Please select single-team or matchup.')
         return
+
 
 def sortControlWidget(*a):
     s = SortControlLayout()
@@ -307,7 +339,8 @@ pm.menuItem(l="EXPORT ASSET", c=asset.export)
 pm.setParent(mmenu, menu=True)
 
 pm.menuItem(divider=True)
-pm.menuItem(subMenu=True, to=True, l='Scene Creation')
+pm.menuItem(l="Sort Control / Load Team", c=sortControlWidget)
+pm.menuItem(subMenu=True, to=True, l='Scene Setup')
 pm.menuItem(l="Scene Setup", c=init_scene)
 pm.menuItem(l="Reference Asset", c=lambda *args: asset.assetSelector(init=True, mode='reference'))
 pm.menuItem(l="Import Asset", c=lambda *args: asset.assetSelector(init=True, mode='import'))
