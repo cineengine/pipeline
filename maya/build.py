@@ -71,9 +71,9 @@ def loadAssets(tricode, location, clean=True):
 
     # If the user has asked to do a clean reference of the asset, including attachment
     if (clean):
-        # If there's already references in those namespaces (and they're the wrong ones), just delete them
-        if (logo_ref) and not (team.tricode+'.mb' in logo_ref.path): logo_ref.remove()
-        if (sign_ref) and not (sign+'.mb' in sign_ref.path): sign_ref.remove()
+        # If there's already references in those namespaces, just delete them
+        if (logo_ref): logo_ref.remove()
+        if (sign_ref): sign_ref.remove()
         # Reference in the asset to the namespace
         asset.reference(sign_path, '{0}SIGN'.format(location))
         asset.reference(logo_path, '{0}LOGO'.format(location))
