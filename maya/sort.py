@@ -124,7 +124,7 @@ class SortControl( object ):
         return __repr
 
 
-    def run(self):
+    def run(self): 
         """ Sorts the objects under this controller into their designated layers, set their
         corresponding visibility flags, and enable the correct framebuffers."""
 
@@ -300,7 +300,7 @@ def setFramebuffers( layer_type, framebuffers ):
 
 def setExceptions( layer_type=None, element_name=None, layer_name=None ):
     # Set up additional shader framebuffers for CFB Logos
-    if element_name == 'CFB_Logo' and layer_type == 'beauty':
+    if element_name == ('CFB_Logo') or ('SNF_Logo') and layer_type == 'beauty':
         try:
             shader = pm.PyNode('CFB_LOGO:FRONT_GLASS_BLENDMTL')
             fb     = aov.makeExTex('clearCoat', shader.outColor)
@@ -311,7 +311,6 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
             fb     = aov.makeExTex('carbonFiber', shader.outColor)
         except:
             pm.warning('Sort Control  setExceptions() Couldn\'t connect carbon fiber shader to extraTex')
-        return
 
     # Flag all utility passes as 32-bit
     if layer_type == 'utility':
@@ -332,8 +331,31 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
         vr.globopt_light_doLights.set(0)
         vr.globopt_mtl_reflectionRefraction.set(0)
 
+    if element_name == 'SNF_Logo' and layer_type == 'beauty':
+        print '????'
+        vr = pm.PyNode('vraySettings')
+        enableOverride(vr.giOn)
+        enableOverride(vr.dmc_depth)
+        vr.giOn.set(True)
+        vr.dmc_depth.set(1)
 
 # Helper Functions
+
+def sceneTeardown(*a):
+    ''' Tears down all rendering-related elements created by the sort controller.'''
+    # Get all framebuffers that aren't referenced
+    buffers = pm.ls(typ='VRayRenderElement')
+    for b in buffers:
+        if b.isReferenced(): buffers.remove(b)
+    # And delete them
+    pm.delete(buffers)
+    # Get all render layers
+    layers = getAllLayers()
+    # Have to be on the default render layers to delete the rest
+    pm.editRenderLayerGlobals(crl='defaultRenderLayer')
+    # And delete them
+    [pm.delete(lay) for lay in layers]
+
 
 def getAllSortgroups( sg=True, lg=False ):
     '''Return a list of all Light Select Sets and Object Properties Groups'''
