@@ -252,7 +252,7 @@ class Scene(object):
             #print 'Loaded workspace.mel from ' + self.base_path + '\\maya\\'
             return True
         # open the default workspace template
-        with open('\\\\cagenas\\workspace\\scripts\\maya\\workspace.mel', 'r') as workspace:
+        with open(cfb.DEFAULT_WORKSPACE_MEL, 'r') as workspace:
             workspace_lines = workspace.readlines()
         # modify the line for render output
         workspace_lines[56] = "workspace -fr \"images\" \"" + self.project_folder.replace('\\','/') + "/render_3d\";\n"

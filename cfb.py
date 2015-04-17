@@ -26,6 +26,9 @@ TEMPLATES_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPT
 # Factory location
 FACTORY_LIGHT_RIG = MAIN_ASSET_DIR + "\\000_FACTORY\\FACTORY.mb"
 
+# Location for a default workspace.mel file
+DEFAULT_WORKSPACE_MEL = "\\\\cagenas\\workspace\\scripts\\maya\\workspace.mel"
+
 # Folder structure
 FOLDER_STRUCTURE = {
         'ae': [],
@@ -54,20 +57,14 @@ NAMESPACES = [
 
 
 FRAMEBUFFERS = {
-    'cfb_logo':[
-        'reflection',
-        'specular',
-        'diffuse',
-        'SSS',
-        'lighting'
-        ],
     'beauty':[
         'reflection',
         'specular',
         'diffuse',
         'SSS',
         'lighting',
-        'selfIllum'
+        'selfIllum',
+        'GI'
         ],
     'team_logo':[
         'reflection',
