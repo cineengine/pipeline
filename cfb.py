@@ -5,8 +5,8 @@
 
 # version tag
 version = """
-version 0.8.1
-March 20th, 2015
+version 1.0.2
+April 17th, 2015
 """
 
 # Main project directory
