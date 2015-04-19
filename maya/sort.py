@@ -20,18 +20,18 @@ class Layer( object ):
     """ Layer is an object used by the sort controller to parse information 
         about a layer currently under control by the script.  This object 
         contains the following attributes:
-    - type: the type of layer (beauty, utility)
-    - depth: the bit depth of the layer (16 or 32-bit)
-    - bty_obj / aov_obj / pvo_obj / occ_obj: lists the geometry in the layer 
-        (in the form of sg_groups) and the attribute names indicate how they 
-        are flagged for visibility.
-    - lights: the lights in the layer (lg_groups)
+        - type: the type of layer (beauty, utility)
+        - depth: the bit depth of the layer (16 or 32-bit)
+        - bty_obj / aov_obj / pvo_obj / occ_obj: lists the geometry in the 
+          layer (in the form of sg_groups) and the attribute names indicate 
+          how they are flagged for visibility.
+        - lights: the lights in the layer (lg_groups)
 
 
-    It must be instantiated with a key/value pair, with the key being the name
-    of the layer and the value being a valid sort controller dictionary 
-    (using the formatting from sorting.yaml)
-    """
+        It must be instantiated with a key/value pair, with the key being the
+        name of the layer and the value being a valid sort controller
+        dictionary (using the formatting from sorting.yaml)
+        """
 
     def __init__(self, name, dictionary):
         # The name of the render layer
