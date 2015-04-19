@@ -14,6 +14,7 @@ import pipeline.vray.utils as utils
 import os.path
 import re
 
+
 def factory( *a ):
     ## INITIALIZE V-RAY SETTINGS
     #pm.Mel.eval('unifiedRenderGlobalsWindow;')
