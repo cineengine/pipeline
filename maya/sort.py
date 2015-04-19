@@ -71,9 +71,9 @@ class Layer( object ):
 
 class SortControl( object ):
     """ SortControl is a struct intended for assisting the building of render 
-        layers, render settings and framebuffers for a given element in a scene.  
-        For example, the main logo, the environment, a particular character, 
-        or any category of object requiring sorting into separate
+        layers, render settings and framebuffers for a given element in a 
+        scene.  For example, the main logo, the environment, a particular 
+        character, or any category of object requiring sorting into separate
         render layers with different visibility flags on each one.
         """
 
@@ -111,10 +111,11 @@ class SortControl( object ):
             pm.error('Sort Control  Element not found in dictionary:\ {0}'.format(element))
         yaml_stream.close()
 
-        # The name of this dictionary is no longer needed, so we delete it to make parsing easier.
+        # The name of this dictionary is no longer needed, 
+        # so we delete it to make parsing easier.
         del element_dictionary['ELEMENT']
 
-        # Create a list of Layer objects for parsing.  (See Layer class for description.)
+        # Create a list of Layer objects for parsing.
         self.layers = []
         for k,v in element_dictionary.iteritems():
             layer = Layer(k,v)
@@ -122,8 +123,8 @@ class SortControl( object ):
 
 
     def __repr__(self):
-        __repr = "\n\n{0}\n{1}".format(self.element, str([str(l) for l in self.layers]))
-        return __repr
+        repr_ = "\n\n{0}\n{1}".format(self.element, str([str(l) for l in self.layers]))
+        return repr_
 
 
     def run(self): 
@@ -188,8 +189,8 @@ class SortControl( object ):
 def addToLayer(  sort_set, layer, rm=False ):
     """ Assign the objects in a sortgroup to a render layer. """
     
-    ## Since some scenes will have multiple sort sets with the same name, including
-    ## a namespace, we will have to include logic to account for this
+    # Since some scenes will have multiple sort sets with the same name, 
+    # including a namespace, we will have to include logic to account for this
     # Search for all sortgroups matching the name passed to the function
     reg = re.compile(sort_set)
     if 'sg_all' in sort_set:
@@ -204,36 +205,37 @@ def addToLayer(  sort_set, layer, rm=False ):
     # Loop through all the matching sets and add them to their assigned layer
     for sort_set in all_matching:
         try:
-            # The nodes / sorting set members that will be assigned to the render layer.
+            # The nodes / sorting set members that will be assigned to the lyr
             nodes = sort_set.inputs()         
             if rm: # Remove flag is true
                 [pm.editRenderLayerMembers( layer, n, r=True ) for n in nodes]
             else: # Remove flag is false (aka add)
                 [pm.editRenderLayerMembers( layer, n ) for n in nodes]
         except:
-            pm.warning('Sort Control  ERROR  {:>25} XX {:<25}'.format(sort_set, layer))
+            pm.warning('Sort Control  ERROR {:>25} XX {:<25}'.format(sort_set, layer))
         
         # Print progress repot.
         print 'Sort Control  SORTING {:>25} >> {:<25}'.format(sort_set, layer)
 
 
 def setVisibility( sort_set, override ):
-    """ Enables the visibility state overrides on sortgroups based on keyword inputs. """
+    """ Enables the visibility state overrides on sortgroups based on 
+        keyword inputs. """
 
     # Ignore light and displacement groups
     if 'lg_' in sort_set or 'dg_' in sort_set:
         return None
 
-    ## Since some scenes will have multiple sort sets with the same name, including
-    ## a namespace, we will have to include logic to account for this
+    ## Since some scenes will have multiple sort sets with the same name, 
+    ## including a namespace, we will have to include logic to account for it
     reg = re.compile(sort_set)
     all_matching = pm.ls(regex=reg)
     
     if all_matching == []:
         return None
 
-    # Loop through all matching sort sets, enable RL override on the relevant attrs,
-    # and set the flags for each type of visibility.
+    # Loop through all matching sort sets, enable RL override on the relevant
+    # attrs, and set the flags for each type of visibility.
     for sort_set in all_matching:
 
         enableOverride( sort_set.attr('primaryVisibility') )
@@ -272,7 +274,7 @@ def setFramebuffers( layer_name, layer_type, framebuffers ):
         pm.warning('Sort Control  Error creating framebuffers / looking up framebuffer list.')
         return False
 
-    # First step: check that all existing framebuffers are turned off (as a layer override)
+    # First step: check that all existing framebuffers are disabled
     existing = pm.ls(typ='VRayRenderElement')
     if existing:
         for fb in existing:
@@ -321,11 +323,12 @@ def setFramebuffers( layer_name, layer_type, framebuffers ):
 
 
 def setExceptions( layer_type=None, element_name=None, layer_name=None ):
-    ''' A catch-all function for performing nonstandard operations based on combinations
-        of layer types, layer names, or element names. '''
+    ''' A catch-all function for performing nonstandard operations based on 
+        combinations of layer types, layer names, or element names. '''
 
     # Set up additional shader framebuffers for CFB Logos
-    if (element_name == ('CFB_Logo' or 'SNF_Logo')) and (layer_type == 'beauty'):
+    if (element_name == ('CFB_Logo' or 'SNF_Logo')) and\
+            (layer_type == 'beauty'):
         try:
             shader = pm.PyNode('CFB_LOGO:FRONT_GLASS_BLENDMTL')
             fb     = aov.makeExTex('clearCoat', shader.outColor)
@@ -364,24 +367,30 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
         vr.giOn.set(True)
         vr.dmc_depth.set(1)
 
-    # Matte painting layers get automatically renamed based on asset currently loaded
+    # Matte painting layers get automatically renamed based on asset currently
+    # loaded
     if ('MP0') in layer_name:
         # Regex match for 'MPdd' where d is a single-digit integer
         reg = re.compile('(MP\d{2})')
         try:
-            # Get the top node of the region asset.  Major assumptions being made here
+            # Get the top node of the region asset.  
+            # Major assumptions being made here
             asset_name = pm.PyNode('REGION:GEO').getParent().attr('assetName').get()
             # Match the MPdd in the assetName attr
             new_name   = re.findall(reg, asset_name)[0]
             # Rename our default MP00 with MPdd
-            pm.rename(pm.PyNode(layer_name), layer_name.replace('MP00', new_name))
+            pm.rename(
+                pm.PyNode(layer_name), 
+                layer_name.replace('MP00', new_name)
+                )
         except: pass
         print 'Sort Control  Matte painting layer detected.  Renaming ...\n'
 
 
 # Helper Functions
 def sceneTeardown(*a):
-    ''' Tears down all rendering-related elements created by the sort controller.'''
+    ''' Tears down all rendering-related elements created by the 
+        sort controller.'''
     # Get all framebuffers that aren't referenced
     buffers = pm.ls(typ='VRayRenderElement')
     for b in buffers:
@@ -403,7 +412,8 @@ def getAllSortgroups( sg=True, lg=False ):
     elif lg and not sg:
         return pm.ls(type='VRayRenderElementSet')
     elif lg and sg:
-        return pm.ls(type='VRayObjectProperties') + pm.ls(type='VRayRenderElementSet')
+        return pm.ls(type='VRayObjectProperties') +\
+            pm.ls(type='VRayRenderElementSet')
 
 
 def makeLayer( name=None ):
@@ -434,11 +444,13 @@ def makeLayer( name=None ):
 
 def getAllLayers():
     """ Returns a list of all render layers. """
-    return [layer for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)]
+    return [layer for layer in pm.ls(type='renderLayer')
+        if not 'defaultRenderLayer' in str(layer)]
 
 
 def enableOverride( attr ):
-    ''' Enables the override of a specified attribute on the current render layer. '''
+    ''' Enables the override of a specified attribute on the current 
+        render layer. '''
     enabled = pm.editRenderLayerAdjustment( query=True )
 
     if not enabled or not attr in enabled:
