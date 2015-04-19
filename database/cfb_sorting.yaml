@@ -116,7 +116,6 @@ btyLayout:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
     lights:
-        - "LAYOUT:lg_noon"
         - "LAYOUT_ENV_LGT:lg_noon"
 utilLayout:
     type: utility
