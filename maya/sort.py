@@ -1,8 +1,11 @@
-import pymel.core as pm
+# Built-in modules
 import re
+
+# External modules
+import pymel.core as pm
 import yaml
 
-# internal modules
+# Internal ESPN modules
 from pipeline import cfb
 from pipeline.vray import aov
 from pipeline.vray.stringMattes import espnMatteTags
@@ -12,29 +15,23 @@ import pipeline.vray.utils as vrayUtils
 reload(cfb)
 reload(aov)
 
-#def scene(*a):
-
-    # ui for selecting which elements in scene to sort
-
-    # loop over all selected
-
-    # init scene control for current type
-
-    # run sort controller
-
 
 class Layer( object ):
-    """Layer is an object used by the sort controller to parse information about a layer currently
-    under control by the script.  This object contains the following attributes:
+    """ Layer is an object used by the sort controller to parse information 
+        about a layer currently under control by the script.  This object 
+        contains the following attributes:
     - type: the type of layer (beauty, utility)
     - depth: the bit depth of the layer (16 or 32-bit)
-    - bty_obj / mat_obj / pvo_obj / occ_obj: lists the geometry in the layer (in the form of sg_groups) 
-        and the attribute names indicate how they are flagged for visibility.
+    - bty_obj / aov_obj / pvo_obj / occ_obj: lists the geometry in the layer 
+        (in the form of sg_groups) and the attribute names indicate how they 
+        are flagged for visibility.
     - lights: the lights in the layer (lg_groups)
 
 
-    It must be instantiated with a key/value pair, with the key being the name of the layer and the value
-    being a valid sort controller dictionary (using the formatting from sorting.yaml)"""
+    It must be instantiated with a key/value pair, with the key being the name
+    of the layer and the value being a valid sort controller dictionary 
+    (using the formatting from sorting.yaml)
+    """
 
     def __init__(self, name, dictionary):
         # The name of the render layer
@@ -49,8 +46,9 @@ class Layer( object ):
         elif self.type == 'utility':
             self.depth = 32
 
-        # Each of these contains a list of sg_groups in the scene, and decides how their visibilty is
-        # flagged to the renderer.  Beauty, aov-only, primary visibility, occlusion (black holed)     
+        # Each of these contains a list of sg_groups in the scene, and decides
+        # how their visibilty is flagged to the renderer.  Beauty, aov-only, 
+        # primary visibility, occlusion (black holed)     
         try: self.bty_obj = dictionary['rgba']
         except: self.bty_obj = None
 
@@ -60,7 +58,7 @@ class Layer( object ):
         try: self.pvo_obj = dictionary['pv_off']
         except: self.pvo_obj = None
 
-        try: self.occ_obj = dictionary['occlude']
+        try: self.occ_obj = dictionary['occ']
         except: self.occ_obj = None
 
         # The lg_groups (lights) which should be added to the layer
@@ -72,15 +70,19 @@ class Layer( object ):
 
 
 class SortControl( object ):
-    """SortControl is a struct intended for assisting the building of render layers,
-    render settings and framebuffers for a given element in a scene.  For example, the main logo, the 
-    environment, a particular character, or any category of object requiring sorting into separate
-    render layers with different visibility flags on each one."""
+    """ SortControl is a struct intended for assisting the building of render 
+        layers, render settings and framebuffers for a given element in a scene.  
+        For example, the main logo, the environment, a particular character, 
+        or any category of object requiring sorting into separate
+        render layers with different visibility flags on each one.
+        """
 
     def __init__(self, element):
-        """'Element' is the type of object requesting a sort controller.  Potential keywords would be
-        things like CFB_Logo, Team_Logo, Environment, etc.  See sorting.yaml's ELEMENT: attribute for the
-        full list. """
+        """ 'Element' is the type of object requesting a sort controller.  
+            Potential keywords would be things like CFB_Logo, Team_Logo, 
+            Environment, etc.  See sorting.yaml's ELEMENT: attribute for the
+            full list. 
+            """
 
         self.element = element
         self.framebuffers = cfb.FRAMEBUFFERS
@@ -106,7 +108,7 @@ class SortControl( object ):
 
         # If the loop breaks/ends with no match, it will remain None
         if element_dictionary == None:
-            pm.error('Sort Control  Element not found in dictionary: {0}'.format(element))
+            pm.error('Sort Control  Element not found in dictionary:\ {0}'.format(element))
         yaml_stream.close()
 
         # The name of this dictionary is no longer needed, so we delete it to make parsing easier.
@@ -125,13 +127,15 @@ class SortControl( object ):
 
 
     def run(self): 
-        """ Sorts the objects under this controller into their designated layers, set their
-        corresponding visibility flags, and enable the correct framebuffers."""
+        """ Sorts the objects under this controller into their designated 
+            layers, set their corresponding visibility flags, and enable the 
+            correct framebuffers.
+            """
 
         vrayUtils.initVray()
         vrayUtils.setVrayDefaults()
 
-        for layer in self.layers:
+        for layer in sorted(self.layers):
 
             # Create the render layer, if it doesn't exist.
             makeLayer(layer.name)
@@ -159,7 +163,7 @@ class SortControl( object ):
             if layer.occ_obj:
                 for sg in layer.occ_obj:
                     addToLayer( sg, layer.name )
-                    setVisibility( sg, 'occlude')
+                    setVisibility( sg, 'occ')
 
             # Add the lg_groups (lights) to the layer
             if layer.lights:
@@ -171,7 +175,7 @@ class SortControl( object ):
                 pass
 
             # Enable framebuffers for the layer, based on type
-            setFramebuffers( layer.type, self.framebuffers )
+            setFramebuffers( layer.name, layer.type, self.framebuffers )
             # Set any hard-coded exceptions for this element / layer
             setExceptions( layer.type, self.element, layer.name )
 
@@ -207,10 +211,10 @@ def addToLayer(  sort_set, layer, rm=False ):
             else: # Remove flag is false (aka add)
                 [pm.editRenderLayerMembers( layer, n ) for n in nodes]
         except:
-            pm.warning('Sort Control  ERROR!!! {:>20} XX {:<20}'.format(sort_set, layer))
+            pm.warning('Sort Control  ERROR  {:>25} XX {:<25}'.format(sort_set, layer))
         
-        # Not so much a warning as an echo.
-        pm.warning('Sort Control  SORTING! {:>20} >> {:<20}'.format(sort_set, layer))
+        # Print progress repot.
+        print 'Sort Control  SORTING {:>25} >> {:<25}'.format(sort_set, layer)
 
 
 def setVisibility( sort_set, override ):
@@ -242,7 +246,7 @@ def setVisibility( sort_set, override ):
             sort_set.alphaContribution.set(1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(1)        
-        elif override == 'occlude':
+        elif override == 'occ':
             sort_set.matteSurface.set(1)
             sort_set.alphaContribution.set(-1)
             sort_set.primaryVisibility.set(1)
@@ -253,14 +257,14 @@ def setVisibility( sort_set, override ):
             sort_set.primaryVisibility.set(0)
             sort_set.generateRenderElements.set(0)
         elif override == 'aov':
-            sort_set.matteSurface.set(0)
-            sort_set.alphaContribution.set(1)
+            sort_set.matteSurface.set(1)
+            sort_set.alphaContribution.set(-1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(1)        
         return True
 
 
-def setFramebuffers( layer_type, framebuffers ):
+def setFramebuffers( layer_name, layer_type, framebuffers ):
     """ Enables the passes specified in the sort module global variables. """
     try:
         layer_buffers = framebuffers[layer_type]
@@ -277,30 +281,51 @@ def setFramebuffers( layer_type, framebuffers ):
 
     # Lighting component framebuffers (beauty passes)
     if layer_type == 'beauty':
+        print 'Sort Control  BUFFERS Generating lighting buffers ...\n'
+
+        # MASTER LAYER LOOP
+        pm.editRenderLayerGlobals(crl='defaultRenderLayer')
         for fb in layer_buffers:
-            print 'Enabling buffer: ' + str(fb)
             fb = aov.makeLightComponentBuffer(fb)
+
+        # ACTIVE LAYER LOOP
+        pm.editRenderLayerGlobals(crl=layer_name)
+        for fb in layer_buffers:
+            fb = pm.PyNode(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
     # AOV / data framebuffers (utility passes)
     elif layer_type == 'utility':
+        print 'Sort Control  BUFFERS Generating utility buffers ...\n'
+
+        # MASTER LAYER LOOP
+        pm.editRenderLayerGlobals(crl='defaultRenderLayer')
         for fb in layer_buffers:
-            print 'Enabling buffer: ' + str(fb)
             fb = aov.makeUtilityBuffer(fb)
+
+        # ACTIVE LAYER LOOP
+        pm.editRenderLayerGlobals(crl=layer_name)
+        for fb in layer_buffers:
+            fb = pm.PyNode(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
     elif layer_type == 'matte':
-        print 'Generating mattes ...'
+        print 'Sort Control  BUFFERS Generating mattes ...\n'
+        """
         fb = espnMatteTags.parseVrayUserAttributes()
         espnMatteTags.createRenderElements(fb)
-
+        """
+        pass
 
 
 def setExceptions( layer_type=None, element_name=None, layer_name=None ):
+    ''' A catch-all function for performing nonstandard operations based on combinations
+        of layer types, layer names, or element names. '''
+
     # Set up additional shader framebuffers for CFB Logos
-    if element_name == ('CFB_Logo') or ('SNF_Logo') and layer_type == 'beauty':
+    if (element_name == ('CFB_Logo' or 'SNF_Logo')) and (layer_type == 'beauty'):
         try:
             shader = pm.PyNode('CFB_LOGO:FRONT_GLASS_BLENDMTL')
             fb     = aov.makeExTex('clearCoat', shader.outColor)
@@ -328,19 +353,33 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
         # Override values
         vr.samplerType.set(0)
         vr.fixedSubdivs.set(10)
-        vr.globopt_light_doLights.set(0)
+        vr.globopt_light_doLights.set(1)
         vr.globopt_mtl_reflectionRefraction.set(0)
 
+    # SNF logo requires GI
     if element_name == 'SNF_Logo' and layer_type == 'beauty':
-        print '????'
         vr = pm.PyNode('vraySettings')
         enableOverride(vr.giOn)
         enableOverride(vr.dmc_depth)
         vr.giOn.set(True)
         vr.dmc_depth.set(1)
 
-# Helper Functions
+    # Matte painting layers get automatically renamed based on asset currently loaded
+    if ('MP0') in layer_name:
+        # Regex match for 'MPdd' where d is a single-digit integer
+        reg = re.compile('(MP\d{2})')
+        try:
+            # Get the top node of the region asset.  Major assumptions being made here
+            asset_name = pm.PyNode('REGION:GEO').getParent().attr('assetName').get()
+            # Match the MPdd in the assetName attr
+            new_name   = re.findall(reg, asset_name)[0]
+            # Rename our default MP00 with MPdd
+            pm.rename(pm.PyNode(layer_name), layer_name.replace('MP00', new_name))
+        except: pass
+        print 'Sort Control  Matte painting layer detected.  Renaming ...\n'
 
+
+# Helper Functions
 def sceneTeardown(*a):
     ''' Tears down all rendering-related elements created by the sort controller.'''
     # Get all framebuffers that aren't referenced
