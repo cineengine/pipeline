@@ -260,7 +260,7 @@ def setVisibility( sort_set, override ):
             sort_set.generateRenderElements.set(0)
         elif override == 'aov':
             sort_set.matteSurface.set(1)
-            sort_set.alphaContribution.set(-1)
+            sort_set.alphaContribution.set(1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(1)        
         return True

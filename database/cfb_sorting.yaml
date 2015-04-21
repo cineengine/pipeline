@@ -64,7 +64,7 @@ matteLogo :
 ...
 ---
 ELEMENT: Studio_Home_Team
-btyHomeLogo:
+btyHomeLogoNoon:
     type: beauty
     rgba:
         - "HOMELOGO:sg_sign"
@@ -77,9 +77,8 @@ utilHomeLogo:
     type: utility
     aov:
         - "HOMELOGO:sg_sign"
-        - "HOMESIGN:sg_sign"
-matteHomeAll:
-    type: matte
+utilHomeAll:
+    type: utility
     aov:
         - "HOMELOGO:sg_sign"
         - "HOMESIGN:sg_sign"
@@ -87,6 +86,7 @@ matteHomeAll:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
         - "REGION:sg_homeside"
+        - "CFB_LOGO:sg_cfb_logo"
 btyHomeSign:
     type: beauty
     rgba:
@@ -98,7 +98,7 @@ utilHomeSign:
     type: utility
     aov:
         - "HOMESIGN:sg_sign"
-btyHomeMP00:
+btyHomeMP00Noon:
     type: beauty
     rgba:
         - "REGION:sg_homeside"
@@ -109,7 +109,7 @@ utilHomeMP00:
     type: utility
     aov:
         - "REGION:sg_homeside"
-btyLayout:
+btyLayoutNoon:
     type: beauty
     rgba:
         - "LAYOUT:sg_layout"
