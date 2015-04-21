@@ -2,19 +2,21 @@
 import re
 
 # External modules
+import maya.cmds as cmds
 import pymel.core as pm
 import yaml
 
 # Internal ESPN modules
 from pipeline import cfb
 from pipeline.vray import aov
-from pipeline.vray.stringMattes import espnMatteTags
+
+import pipeline.vray.vrayMatteTags as vmt
 
 import pipeline.vray.utils as vrayUtils
 
 reload(cfb)
 reload(aov)
-
+reload(vmt)
 
 class Layer( object ):
     """ Layer is an object used by the sort controller to parse information 
@@ -136,6 +138,13 @@ class SortControl( object ):
         vrayUtils.initVray()
         vrayUtils.setVrayDefaults()
 
+        # Create matte framebuffers
+        geometry = cmds.ls( geometry=True )
+        shapes = cmds.listRelatives( geometry, p=True, path=True )
+
+        allAttributes = vmt.parseVrayUserAttributes( shapes )
+        vmt.createRenderElements( allAttributes )
+
         for layer in sorted(self.layers):
 
             # Create the render layer, if it doesn't exist.
@@ -176,9 +185,9 @@ class SortControl( object ):
                 pass
 
             # Enable framebuffers for the layer, based on type
-            setFramebuffers( layer.name, layer.type, self.framebuffers )
+            setFramebuffers( layer, self.framebuffers )
             # Set any hard-coded exceptions for this element / layer
-            setExceptions( layer.type, self.element, layer.name )
+            setExceptions( layer, self.element )
 
 
 #####################################
@@ -266,10 +275,10 @@ def setVisibility( sort_set, override ):
         return True
 
 
-def setFramebuffers( layer_name, layer_type, framebuffers ):
+def setFramebuffers( layer, framebuffers ):
     """ Enables the passes specified in the sort module global variables. """
     try:
-        layer_buffers = framebuffers[layer_type]
+        layer_buffers = framebuffers[layer.type]
     except:
         pm.warning('Sort Control  Error creating framebuffers / looking up framebuffer list.')
         return False
@@ -282,7 +291,7 @@ def setFramebuffers( layer_name, layer_type, framebuffers ):
             fb.enabled.set(0)
 
     # Lighting component framebuffers (beauty passes)
-    if layer_type == 'beauty':
+    if layer.type == 'beauty':
         print 'Sort Control  BUFFERS Generating lighting buffers ...\n'
 
         # MASTER LAYER LOOP
@@ -291,14 +300,14 @@ def setFramebuffers( layer_name, layer_type, framebuffers ):
             fb = aov.makeLightComponentBuffer(fb)
 
         # ACTIVE LAYER LOOP
-        pm.editRenderLayerGlobals(crl=layer_name)
+        pm.editRenderLayerGlobals(crl=layer.name)
         for fb in layer_buffers:
             fb = pm.PyNode(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
     # AOV / data framebuffers (utility passes)
-    elif layer_type == 'utility':
+    elif layer.type == 'utility':
         print 'Sort Control  BUFFERS Generating utility buffers ...\n'
 
         # MASTER LAYER LOOP
@@ -307,13 +316,20 @@ def setFramebuffers( layer_name, layer_type, framebuffers ):
             fb = aov.makeUtilityBuffer(fb)
 
         # ACTIVE LAYER LOOP
-        pm.editRenderLayerGlobals(crl=layer_name)
+        pm.editRenderLayerGlobals(crl=layer.name)
         for fb in layer_buffers:
             fb = pm.PyNode(fb)
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
-    elif layer_type == 'matte':
+        matte_list = vmt.getCurrentLayerVrayMatteTagRE()
+        for m in matte_list:
+            fb = pm.PyNode('m_'+m)
+            enableOverride(fb.enabled)
+            fb.enabled.set(1)
+        #vmt.toggleRenderElements(matte_list)
+
+    elif layer.type == 'matte':
         print 'Sort Control  BUFFERS Generating mattes ...\n'
         """
         fb = espnMatteTags.parseVrayUserAttributes()
@@ -322,13 +338,13 @@ def setFramebuffers( layer_name, layer_type, framebuffers ):
         pass
 
 
-def setExceptions( layer_type=None, element_name=None, layer_name=None ):
+def setExceptions( layer, element_name ):
     ''' A catch-all function for performing nonstandard operations based on 
         combinations of layer types, layer names, or element names. '''
 
     # Set up additional shader framebuffers for CFB Logos
     if (element_name == ('CFB_Logo' or 'SNF_Logo')) and\
-            (layer_type == 'beauty'):
+            (layer.type == 'beauty'):
         try:
             shader = pm.PyNode('CFB_LOGO:FRONT_GLASS_BLENDMTL')
             fb     = aov.makeExTex('clearCoat', shader.outColor)
@@ -341,13 +357,13 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
             pm.warning('Sort Control  setExceptions() Couldn\'t connect carbon fiber shader to extraTex')
 
     # Flag all utility passes as 32-bit
-    if layer_type == 'utility':
+    if layer.type == 'utility':
         vr = pm.PyNode('vraySettings')
         enableOverride(vr.imgOpt_exr_bitsPerChannel)
         vr.imgOpt_exr_bitsPerChannel.set(32)
 
     # Utility and matte passes require fixed sampling
-    if layer_type == 'utility' or layer_type == 'matte':
+    if layer.type == 'utility' or layer.type == 'matte':
         vr = pm.PyNode('vraySettings')
         # Enable overrides on sampler type, lights and reflections
         enableOverride(vr.samplerType)
@@ -360,7 +376,7 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
         vr.globopt_mtl_reflectionRefraction.set(0)
 
     # SNF logo requires GI
-    if element_name == 'SNF_Logo' and layer_type == 'beauty':
+    if element_name == 'SNF_Logo' and layer.type == 'beauty':
         vr = pm.PyNode('vraySettings')
         enableOverride(vr.giOn)
         enableOverride(vr.dmc_depth)
@@ -369,7 +385,7 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
 
     # Matte painting layers get automatically renamed based on asset currently
     # loaded
-    if ('MP0') in layer_name:
+    if ('MP0') in layer.name:
         # Regex match for 'MPdd' where d is a single-digit integer
         reg = re.compile('(MP\d{2})')
         try:
@@ -380,8 +396,8 @@ def setExceptions( layer_type=None, element_name=None, layer_name=None ):
             new_name   = re.findall(reg, asset_name)[0]
             # Rename our default MP00 with MPdd
             pm.rename(
-                pm.PyNode(layer_name), 
-                layer_name.replace('MP00', new_name)
+                pm.PyNode(layer.name), 
+                layer.name.replace('MP00', new_name)
                 )
         except: pass
         print 'Sort Control  Matte painting layer detected.  Renaming ...\n'
