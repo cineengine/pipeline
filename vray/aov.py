@@ -46,13 +46,13 @@ def makeExTex( name=None, inTex=None ):
     return _fb
 
 
-def make1DTex( name, inTex_X=None, inTex_Y=None, inTex_Z=None ):
+def make1DTex( name, inTex_X=None, inTex_Y=None, inTex_Z=None, aa=False ):
     ''' Make an extraTex framebuffer.  Optional flags for naming (node and 
         channel) and for individually specified scalar map channels. '''
     
     pm.mel.eval('vrayAddRenderElement ExtraTexElement;')
     _fb = __getLast()
-    _fb.vray_considerforaa_extratex.set(0)
+    _fb.vray_considerforaa_extratex.set(1)
     if inTex_X: inTex_X >> _fb.vray_texture_extratex.vray_texture_extratexR
     if inTex_Y: inTex_Y >> _fb.vray_texture_extratex.vray_texture_extratexG
     if inTex_Z: inTex_Z >> _fb.vray_texture_extratex.vray_texture_extratexB
@@ -176,6 +176,15 @@ def makeMultiMatte( name=None, r=None, g=None, b=None, mat=False ):
     return _fb
 
 
+def makeFresnel( name=None ):
+    ''' Make a fresnel framebuffer. '''
+    #si = samplerInfo()
+    #fb = make1DTex('Fresnel', si.facingRatio, si.facingRatio, si.facingRatio)
+    fresnel = pm.mel.eval('shadingNode -asTexture VRayFresnel;')
+    fb = makeExTex('Fresnel', pm.PyNode(fresnel).outColor)
+    return fb
+
+
 def makeUserColor( name=None ):
     ''' Make a VRay User Color node. '''
 
@@ -233,6 +242,7 @@ def makeUtilityBuffer( name ):
                         AO
                         PPW
                         MV
+                        fresnel
                         matte(A-Z) '''
 
     # Check that the node doesn't already exist.  This will also check that the node is actually
@@ -275,6 +285,10 @@ def makeUtilityBuffer( name ):
 
     elif name == 'MV':
         fb = makeMVector( name )
+        return fb
+
+    elif name == 'fresnel':
+        fb = makeFresnel( name )
         return fb
 
     elif 'matte' in name:
