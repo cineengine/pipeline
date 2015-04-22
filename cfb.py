@@ -20,7 +20,8 @@ ANIMATION_PROJECT_DIR = PROJECT_BASE_DIR + "PROJECTS\\000_Animation\\"
 
 # Database locations
 TEAM_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_teams.yaml"
-SORTING_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_sorting.yaml"
+#SORTING_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_sorting.yaml"
+SORTING_DATABASE = "V:\\dev\\pipeline\\database\\cfb_sorting.yaml"
 TEMPLATES_DATABASE = "Y:\\Workspace\MASTER_PROJECTS\\CFB_15\\TOOLKIT\\097_SCRIPTS\\pipeline\\database\\cfb_templates.yaml"
 
 # Factory location
@@ -64,7 +65,8 @@ FRAMEBUFFERS = {
         'SSS',
         'lighting',
         'selfIllum',
-        'GI'
+        'GI',
+        'totalLight'
         ],
     'team_logo':[
         'reflection',
