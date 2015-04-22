@@ -85,6 +85,7 @@ FRAMEBUFFERS = {
     'utility':[
         'zDepth',
         'normals',
+        'bumpNormals',
         'UV',
         'AO',
         'PPW',
