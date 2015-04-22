@@ -122,7 +122,7 @@ def makeBumpNormal( name=None ):
     #_fb.vray_filtering_bumpnormals.set(aa)
     
     if name:
-        _fb.vray_name_normals.set(name)
+        _fb.vray_name_bumpnormals.set(name)
         pm.rename(_fb, name)
 
     return _fb
@@ -291,6 +291,10 @@ def makeUtilityBuffer( name ):
 
     elif name == 'normals':
         fb = makeNormal(name)
+        return fb
+
+    elif name == 'bumpNormals':
+        fb = makeBumpNormal(name)
         return fb
 
     elif name == 'UV':
