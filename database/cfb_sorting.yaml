@@ -387,3 +387,26 @@ utilLayout:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
 ...
+---
+ELEMENT: SNF_City_Basic
+btyBuildings:
+    type: beauty
+    rgba:
+        - sg_buildings
+    occ:
+        - sg_streets
+    lights:
+        - lg_all
+btyStreets:
+    type: beauty
+    rgba:
+        - sg_street
+    pv_off:
+        - sg_buildings
+    lights:
+        - lg_all
+utilAll:
+    type: utility
+    aov:
+        - sg_all
+...
