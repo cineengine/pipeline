@@ -676,7 +676,7 @@ def removeDuplicates(myList):
 # main()
 #
 #################################################################################################### 
-def main():
+def main(*a):
 
     # Tries to close the window if it exists before creating a new window
     try:
