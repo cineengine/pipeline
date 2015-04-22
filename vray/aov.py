@@ -114,6 +114,20 @@ def makeNormal( name=None ):
     return _fb
 
 
+def makeBumpNormal( name=None ):
+    '''Make a bumped-normals framebuffer. '''
+
+    pm.Mel.eval('vrayAddRenderElement bumpNormalsChannel;')
+    _fb = __getLast()
+    #_fb.vray_filtering_bumpnormals.set(aa)
+    
+    if name:
+        _fb.vray_name_normals.set(name)
+        pm.rename(_fb, name)
+
+    return _fb
+
+
 def makeZDepth( name=None, aa=False, minMax=(0,20) ):
     '''Make a depth framebuffer.  Optional flag controls anti-aliasing.'''
 
@@ -185,6 +199,13 @@ def makeFresnel( name=None ):
     return fb
 
 
+def makeFacingRatio( name=None ):
+    ''' Make a facing ratio framebuffer. '''
+    si = samplerInfo()
+    fb = make1DTex('facingRatio', si.facingRatio, si.facingRatio, si.facingRatio)
+    return fb
+
+
 def makeUserColor( name=None ):
     ''' Make a VRay User Color node. '''
 
@@ -243,6 +264,7 @@ def makeUtilityBuffer( name ):
                         PPW
                         MV
                         fresnel
+                        facingRatio
                         matte(A-Z) '''
 
     # Check that the node doesn't already exist.  This will also check that the node is actually
@@ -289,6 +311,10 @@ def makeUtilityBuffer( name ):
 
     elif name == 'fresnel':
         fb = makeFresnel( name )
+        return fb
+
+    elif name == 'facingRatio':
+        fb = makeFacingRatio( name )
         return fb
 
     elif 'matte' in name:

@@ -88,7 +88,8 @@ FRAMEBUFFERS = {
         'UV',
         'AO',
         'PPW',
-        'MV'
+        'MV',
+        'facingRatio'
         ],
     'matte':['']
     }
