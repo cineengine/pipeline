@@ -37,10 +37,6 @@ utilLogo :
     type: utility
     aov :
         - sg_cfb_logo
-matteLogo :
-    type: matte
-    aov :
-        - sg_cfb_logo
 ...
 ---
 ELEMENT : SNF_Logo
@@ -53,11 +49,6 @@ btyLogo :
         - lg_cfb_logo
 utilLogo :
     type: utility
-    aov :
-        - sg_cfb_logo
-        - sg_cfb_logo_nogi
-matteLogo :
-    type: matte
     aov :
         - sg_cfb_logo
         - sg_cfb_logo_nogi

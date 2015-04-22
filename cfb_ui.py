@@ -172,8 +172,8 @@ class SortControlLayout(pm.uitypes.Window):
                             #width=(self.wh[0]-5),
                             )
         pm.text(label='Select elements to sort', align='left', font='tinyBoldLabelFont', p=column)
-        self.sel_box    = pm.textScrollList('sel_box', p=column)
-        pm.textScrollList('sel_box',
+        self.sel_box    = pm.textScrollList('sort_sel_box', p=column)
+        pm.textScrollList('sort_sel_box',
             e=True,
             ams=True,
             append=self.element_list,
@@ -202,7 +202,7 @@ class SortControlLayout(pm.uitypes.Window):
 
     def sortBtn(self, *a):
         sel = pm.textScrollList(
-                'sel_box',
+                'sort_sel_box',
                 q=True,
                 si=True
                 )
