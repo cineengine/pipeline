@@ -10,7 +10,7 @@ from pipeline.maya import anim
 from pipeline.database import team
 
 import pipeline.vray.utils as vrayutils
-import pipeline.vray.mattes as vraymattes
+import pipeline.vray.vrayMatteTags as vmt
 
 import yaml
 
@@ -28,7 +28,6 @@ reload(project)
 reload(anim)
 reload(team)
 reload(vrayutils)
-reload(vraymattes)
 reload(rendering)
 reload(selection)
 reload(cfb)
@@ -329,7 +328,7 @@ pm.menuItem(l="Make New Asset", c=asset.makeNew)
 pm.menuItem(divider=True)
 pm.menuItem(l="Geometry Sort Group / V-Ray OPG", c=vrayutils.makeObjectProperties)
 pm.menuItem(l="Light Sort Group / V-Ray LSS", c=vrayutils.makeLightSelectSet)
-pm.menuItem(l="Matte Assignment", c=vraymattes.run)
+pm.menuItem(l="Matte Assignment", c=vmt.main)
 pm.menuItem(divider=True)
 pm.menuItem(l="Check Model", c=lambda *args: asset.sanityCheck(report=True, model=True))
 pm.menuItem(l="Check Shading", c=lambda *args: asset.sanityCheck(report=True, shading=True))
