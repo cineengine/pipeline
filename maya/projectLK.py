@@ -316,7 +316,11 @@ class Scene(object):
             self._nameScene()
             self.version = 1.0
             self._pushPull()
-            self.save()
+            if os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
+                self.save()
+            else:
+                pm.warning('Scene folder not found for some reason.  Rename failed.')
+                return
         else:
             return False
 
