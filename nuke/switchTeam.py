@@ -74,7 +74,7 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
     selectTeamPodThree(tricode)
 
     if matchup:
-        print 'i a ma matchup'
+        print 'i am a matchup'
         away_tricode = ctrlNode.knob('awayTeamTricode').getValue()
         selectColors(away_tricode, away=True)
         selectTeamLogo(away_tricode, away=True)
@@ -90,7 +90,7 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
         try:
             wn = nuke.toNode(write_node)
             proj_name = getProject()
-            out_folder = 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/' + proj_name + '/render_2d/' + tricode
+            out_folder = cfb.ANIMATION_PROJECT_DIR + proj_name + '/render_2d/' + tricode
             if not exists(out_folder):
                 mkdir(out_folder)
             wn.knob('file').setValue(out_folder + '/' + proj_name + '_' + tricode + '.#.PNG')
@@ -169,24 +169,24 @@ def selectTeamPodThree(tricode, away=False):
 def selectLogoRender(tricode):
     # figure out which project this scene is in
     proj_name = getProject()
-    logo_path = "//cagenas/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/" + proj_name + "/render_3d/LOGOS/" + tricode + "/"
+    logo_path = cfb.ANIMATION_PROJECT_DIR + proj_name + "/render_3d/LOGOS/" + tricode + "/"
     
     for r in logo_read_nodes:
         pass_path = ""
-        #try:
-        # get the read node
-        rn = nuke.toNode(r)
-        # figure out the file names on this node
-        pass_path = rn.knob('file').getValue().split('/')
-        if len(pass_path) == 1:
+        try:
+            # get the read node
+            rn = nuke.toNode(r)
+            # figure out the file names on this node
             pass_path = rn.knob('file').getValue().split('/')
-        # getting layerName/layerName.#.ext
-        pass_path = pass_path[len(pass_path)-2] + "/" + pass_path[len(pass_path)-1]
-        # replace the path prefix with the correct project/team logo version
-        rn.knob('file').setValue(logo_path + pass_path)
-        print logo_path + pass_path
-        #except:
-        #    nuke.warning('Error finding replacement for: ' + r)
+            if len(pass_path) == 1:
+                pass_path = rn.knob('file').getValue().split('/')
+            # getting layerName/layerName.#.ext
+            pass_path = pass_path[len(pass_path)-2] + "/" + pass_path[len(pass_path)-1]
+            # replace the path prefix with the correct project/team logo version
+            rn.knob('file').setValue(logo_path + pass_path)
+            #print logo_path + pass_path
+        except:
+            nuke.warning('Error finding replacement for: ' + r)
 
 
 def getProject(*a):
