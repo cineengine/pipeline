@@ -157,7 +157,8 @@ class SortControlLayout(pm.uitypes.Window):
             bgc=red,
             c=self.loadBtn,
             p=column
-            )
+            ) 
+        
             
         column.redistribute()
 
