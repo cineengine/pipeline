@@ -64,6 +64,7 @@ NAMESPACES = [
 FRAMEBUFFERS = {
     'beauty':[
         'reflection',
+        'refraction',
         'specular',
         'diffuse',
         'SSS',
