@@ -79,6 +79,7 @@ utilHomeAll:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
         - "REGION:sg_homeside"
+        - "REGION:sg_ground"
         - "CFB_LOGO:sg_cfb_logo"
 btyHomeSignNoon:
     type: beauty
@@ -146,6 +147,7 @@ utilAwayAll:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
         - "REGION:sg_awayside"
+        - "REGION:sg_ground"
         - "CFB_LOGO:sg_cfb_logo"
 btyAwaySignNoon:
     type: beauty
@@ -222,6 +224,7 @@ utilHomeAll:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
         - "REGION:sg_homeside"
+        - "REGION:sg_ground"
         - "CFB_LOGO:sg_cfb_logo"
 btyHomeSignSunset:
     type: beauty
@@ -322,6 +325,7 @@ utilAwayAll:
         - "LAYOUT:sg_flags"
         - "LAYOUT:sg_roadsideBanners"
         - "REGION:sg_awayside"
+        - "REGION:sg_ground"
         - "CFB_LOGO:sg_cfb_logo"
 btyAwaySignSunset:
     type: beauty
