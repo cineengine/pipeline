@@ -1,5 +1,7 @@
 import pymel.core as pm
 import cg.maya.selection as select
+import os
+from subprocess import Popen
 
 ########################
 ### SCENE MANAGEMENT ###
@@ -219,6 +221,8 @@ def convertTextures(*a):
         # Get the texture path
         tex_path = tex.fileTextureName.get()
 
+        if tex.isReferenced(): continue
+
         # Assume that any file with a _vray tag is already converted, and skip it.
         if '_vray.' in tex_path:
             pm.warning('Tiled EXR Conversion  Not necessary for {0}.'.format(tex_path))
@@ -228,7 +232,7 @@ def convertTextures(*a):
         # (frame numbers, UDIM tags) are bracketed by dots.
         opt_basename    = os.path.basename(tex_path).split('.')[:-1]
         opt_basename[0] = opt_basename[0] + '_vray'
-        opt_basename    = ''.join(opt_basename) + '.exr'
+        opt_basename    = '.'.join(opt_basename) + '.exr'
         # Get the destination folder for the converted texture
         tex_folder      = os.path.dirname(tex_path)
         # Generate a new full path for the converted texture
