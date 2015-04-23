@@ -68,6 +68,9 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
     tricode = ctrlNode.knob('teamTricode').getValue()
 
     selectColors(tricode)
+    selectRegions(tricode)
+    selectSkies(tricode)
+    selectSigns(tricode)
     selectTeamLogo(tricode)
     selectTeamBanner(tricode)
     selectTeamPodTwo(tricode)
@@ -77,6 +80,9 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
         print 'i am a matchup'
         away_tricode = ctrlNode.knob('awayTeamTricode').getValue()
         selectColors(away_tricode, away=True)
+        selectRegions(away_tricode, away=True)
+        selectSkies(away_tricode, away=True)
+        selectSigns(away_tricode, away=True)
         selectTeamLogo(away_tricode, away=True)
         selectTeamBanner(away_tricode, away=True)
         selectTeamPodTwo(away_tricode, away=True)
@@ -111,6 +117,45 @@ def selectColors(tricode, away=False):
         try:
             ctrlNode.knob('awayPrimaryColor').setValue(convertColor( team.primary, toFloat=True ))
             ctrlNode.knob('awaySecondaryColor').setValue(convertColor( team.secondary, toFloat=True ))
+        except: pass
+
+
+def selectRegions(tricode, away=False):    
+    team = t.Team(tricode)
+    ctrlNode = nuke.toNode(MASTER_CTRL)
+    if not away:
+        try:
+            ctrlNode.knob('Region').setValue( team.matte )
+        except: pass
+    elif away:
+        try:
+            ctrlNode.knob('AwayRegion').setValue( team.matte )
+        except: pass
+
+
+def selectSkies(tricode, away=False):    
+    team = t.Team(tricode)
+    ctrlNode = nuke.toNode(MASTER_CTRL)
+    if not away:
+        try:
+            ctrlNode.knob('Sky').setValue( team.sky )
+        except: pass
+    elif away:
+        try:
+            ctrlNode.knob('AwaySky').setValue( team.sky )
+        except: pass
+
+
+def selectSigns(tricode, away=False):    
+    team = t.Team(tricode)
+    ctrlNode = nuke.toNode(MASTER_CTRL)
+    if not away:
+        try:
+            ctrlNode.knob('Sign').setValue( team.sign )
+        except: pass
+    elif away:
+        try:
+            ctrlNode.knob('AwaySign').setValue( team.primary )
         except: pass
 
 
