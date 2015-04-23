@@ -52,6 +52,7 @@ class Team(object):
 
             # Team internal information
             self.sign     = team['sign']
+            self.signNum  = signToInt(team['sign'])
             self.matte    = matte_conv[team['matte']]
             self.sky      = team['sky']
             self.acc      = (self.db['five'], self.db['six'])
@@ -80,3 +81,16 @@ def getAllTeams( database, asNames=False, asDict=False ):
         return [t['team'] for t in stream]
     elif asDict:
         return [t for t in stream]
+
+def signToInt( sign, flip=False ):
+  teamNum=0
+  if team is 'A':
+    teamNum = 1
+  if team is 'B'
+    teamNum = 2
+  if team is 'C'
+    teamNum = 3
+  if flip:
+    teamNum = teamNum + 3
+  return teamNum
+
