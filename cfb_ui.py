@@ -309,6 +309,9 @@ def lk_rename_ui(*a):
 def init_scene(*a):
     scene = project.Scene()
 
+def lk_init_scene(*a):
+    scene = projectLK.Scene()
+
 try:
     pm.deleteUI('cfbTools')
 except: pass
@@ -337,6 +340,7 @@ pm.menuItem(subMenu=True, to=True, l='LK Project Tools')
 pm.menuItem(l="LK Open Scene", c=lk_open_ui)
 pm.menuItem(l="LK Save Scene", c=lk_save_ui)
 pm.menuItem(l="LK Rename Scene", c=lk_rename_ui)
+pm.menuItem(l='LK Scene Setup', c=lk_init_scene)
 pm.menuItem(divider=True)
 pm.menuItem(l='LK Reference Asset', c=lambda *args: assetLK.assetSelector(init=True, mode='reference'))
 pm.menuItem(l='LK Import Asset', c=lambda *args: assetLK.assetSelector(init=True, mode='import'))
