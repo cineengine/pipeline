@@ -9,7 +9,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : A
 ...
@@ -69,7 +69,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 04
+matte      : 4
 sky        : 01
 sign       : A
 ...
@@ -84,7 +84,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 04
+matte      : 4
 sky        : 01
 sign       : C
 ...
@@ -174,7 +174,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : B
 ...
@@ -189,7 +189,7 @@ tier       : 1
 five       : False
 six        : False
 conference : MWC
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : B
 ...
@@ -249,7 +249,7 @@ tier       : 2
 five       : False
 six        : False
 conference : Independent
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : B
 ...
@@ -264,7 +264,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 02
+matte      : 2
 sky        : 03
 sign       : B
 ...
@@ -294,7 +294,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : A
 ...
@@ -354,7 +354,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : C
 ...
@@ -369,7 +369,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : B
 ...
@@ -429,7 +429,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : B
 ...
@@ -504,7 +504,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 02
+matte      : 2
 sky        : 03
 sign       : C
 ...
@@ -594,7 +594,7 @@ tier       : 2
 five       : False
 six        : False
 conference : American
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : C
 ...
@@ -609,7 +609,7 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : C
 ...
@@ -654,7 +654,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
-matte      : 09
+matte      : 9
 sky        : 04
 sign       : A
 ...
@@ -669,7 +669,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 09
+matte      : 9
 sky        : 04
 sign       : C
 ...
@@ -684,7 +684,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 09
+matte      : 9
 sky        : 04
 sign       : A
 ...
@@ -699,7 +699,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 09
+matte      : 9
 sky        : 04
 sign       : C
 ...
@@ -879,7 +879,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : B
 ...
@@ -894,7 +894,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : A
 ...
@@ -924,7 +924,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : A
 ...
@@ -954,7 +954,7 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
-matte      : 09
+matte      : 9
 sky        : 04
 sign       : C
 ...
@@ -984,7 +984,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big Ten
-matte      : 09
+matte      : 9
 sky        : 04
 sign       : A
 ...
@@ -999,7 +999,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 04
+matte      : 4
 sky        : 01
 sign       : A
 ...
@@ -1014,7 +1014,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 04
+matte      : 4
 sky        : 01
 sign       : A
 ...
@@ -1029,7 +1029,7 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
-matte      : 04
+matte      : 4
 sky        : 01
 sign       : C
 ...
@@ -1074,7 +1074,7 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : A
 ...
@@ -1164,7 +1164,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 07
+matte      : 7
 sky        : 03
 sign       : C
 ...
@@ -1179,7 +1179,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 07
+matte      : 7
 sky        : 03
 sign       : B
 ...
@@ -1224,7 +1224,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 01
+matte      : 1
 sky        : 02
 sign       : C
 ...
@@ -1239,7 +1239,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 01
+matte      : 1
 sky        : 02
 sign       : B
 ...
@@ -1299,7 +1299,7 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : A
 ...
@@ -1329,7 +1329,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 03
+matte      : 3
 sky        : 03
 sign       : C
 ...
@@ -1344,7 +1344,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 02
+matte      : 2
 sky        : 03
 sign       : A
 ...
@@ -1404,7 +1404,7 @@ tier       : 2
 five       : False
 six        : False
 conference : American
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : C
 ...
@@ -1434,7 +1434,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 02
+matte      : 2
 sky        : 03
 sign       : A
 ...
@@ -1464,7 +1464,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : A
 ...
@@ -1509,7 +1509,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : A
 ...
@@ -1524,7 +1524,7 @@ tier       : 1
 five       : False
 six        : False
 conference : SEC
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : B
 ...
@@ -1539,7 +1539,7 @@ tier       : 2
 five       : False
 six        : False
 conference : Sun Belt
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : A
 ...
@@ -1554,7 +1554,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Big 12
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : B
 ...
@@ -1614,7 +1614,7 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
-matte      : 07
+matte      : 7
 sky        : 03
 sign       : A
 ...
@@ -1629,7 +1629,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 03
+matte      : 3
 sky        : 03
 sign       : C
 ...
@@ -1674,7 +1674,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 04
+matte      : 4
 sky        : 01
 sign       : C
 ...
@@ -1689,7 +1689,7 @@ tier       : 1
 five       : True
 six        : False
 conference : Pac-12
-matte      : 03
+matte      : 3
 sky        : 03
 sign       : C
 ...
@@ -1704,7 +1704,7 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : A
 ...
@@ -1719,7 +1719,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : A
 ...
@@ -1734,7 +1734,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : A
 ...
@@ -1749,7 +1749,7 @@ tier       : 2
 five       : False
 six        : False
 conference : C-USA
-matte      : 06
+matte      : 6
 sky        : 03
 sign       : C
 ...
@@ -1824,7 +1824,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 01
+matte      : 1
 sky        : 02
 sign       : B
 ...
@@ -1839,7 +1839,7 @@ tier       : 1
 five       : False
 six        : False
 conference : Pac-12
-matte      : 01
+matte      : 1
 sky        : 02
 sign       : A
 ...
@@ -1884,7 +1884,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MAC
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : B
 ...
@@ -1899,7 +1899,7 @@ tier       : 1
 five       : True
 six        : True
 conference : Big Ten
-matte      : 08
+matte      : 8
 sky        : 01
 sign       : A
 ...
@@ -1914,7 +1914,7 @@ tier       : 2
 five       : False
 six        : False
 conference : MWC
-matte      : 05
+matte      : 5
 sky        : 03
 sign       : B
 ...
