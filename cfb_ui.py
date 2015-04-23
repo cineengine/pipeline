@@ -9,6 +9,10 @@ from pipeline.maya import project
 from pipeline.maya import anim
 from pipeline.database import team
 
+# LK-specific modules
+from pipeline.maya import projectLK
+from pipeline.maya import assetLK
+
 import pipeline.vray.utils as vrayutils
 import pipeline.vray.vrayMatteTags as vmt
 
@@ -31,6 +35,8 @@ reload(vrayutils)
 reload(rendering)
 reload(selection)
 reload(cfb)
+reload(projectLK)
+reload(assetLK)
 
 
 blue = [0,0.38,0.52]
@@ -276,10 +282,29 @@ def open_ui(*a):
 
 def rename_ui(*a):
     if project.isScene():
-        scene = project.Scene()    
+        scene = projectLK.Scene()    
         scene.rename()
     else:
         return
+
+def lk_save_ui(*a):
+    if project.isScene():
+        scene = projectLK.Scene()
+        scene.save()
+    else: 
+        return
+
+def lk_open_ui(*a):
+    projectLK.Scene.open()
+    #scene.open()
+
+def lk_rename_ui(*a):
+    if project.isScene():
+        scene = projectLK.Scene()    
+        scene.rename()
+    else:
+        return
+
 
 def init_scene(*a):
     scene = project.Scene()
@@ -308,13 +333,19 @@ pm.setParent(menu=True)
 pm.menuItem(l="Open Scene", c=open_ui)
 pm.menuItem(l="Save Scene", c=save_ui)
 pm.menuItem(l="Rename Scene", c=rename_ui)
+pm.menuItem(subMenu=True, to=True, l='LK Project Tools')
+pm.menuItem(l="LK Open Scene", c=lk_open_ui)
+pm.menuItem(l="LK Save Scene", c=lk_save_ui)
+pm.menuItem(l="LK Rename Scene", c=lk_rename_ui)
+pm.menuItem(l="LK Export Asset", c=assetLK.export)
+pm.setParent(mmenu, menu=True)
 
 pm.menuItem(divider=True)
 pm.menuItem(subMenu=True, to=True, l='General Utilities')
 pm.menuItem(l="Select Meshes in Group", c=lambda *args: selection.shapes( pm.ls(sl=True), xf=True, do=True ))
 pm.menuItem(l="Select Shader on Selected", c=lambda *args: rendering.getShader(select_result=True))
 pm.menuItem(l="Make Offset Group", c=lambda *args: selection.createOffsetGrp( pm.ls(sl=True) ))
-pm.menuItem(l="Lookup Tricode", c=lookupTricode, p=mmenu)
+pm.menuItem(l="Lookup Tricode", c=lookupTricode)
 pm.setParent(mmenu, menu=True)
 
 pm.menuItem(divider=True)
