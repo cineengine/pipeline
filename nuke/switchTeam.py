@@ -152,10 +152,12 @@ def selectSigns(tricode, away=False):
     if not away:
         try:
             ctrlNode.knob('Sign').setValue( team.sign )
+            ctrlNode.knob('SignNum').setValue( team.signNum )
         except: pass
     elif away:
         try:
             ctrlNode.knob('AwaySign').setValue( team.primary )
+            ctrlNode.knob('AwaySignNum').setValue( team.signNum )
         except: pass
 
 

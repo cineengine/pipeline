@@ -83,14 +83,13 @@ def getAllTeams( database, asNames=False, asDict=False ):
         return [t for t in stream]
 
 def signToInt( sign, flip=False ):
-  teamNum=0
-  if team is 'A':
-    teamNum = 1
-  if team is 'B'
-    teamNum = 2
-  if team is 'C'
-    teamNum = 3
+  signNum=0
+  if sign == 'A':
+    signNum = 0
+  if sign == 'B':
+    signNum = 1
+  if sign == 'C':
+    signNum = 2
   if flip:
-    teamNum = teamNum + 3
-  return teamNum
-
+    signNum = signNum + 3
+  return signNum
