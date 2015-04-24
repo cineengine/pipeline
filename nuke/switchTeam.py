@@ -126,10 +126,12 @@ def selectRegions(tricode, away=False):
     if not away:
         try:
             ctrlNode.knob('Region').setValue( team.matte )
+            ctrlNode.knob('RegionNum').setValue( team.matteNum )
         except: pass
     elif away:
         try:
             ctrlNode.knob('AwayRegion').setValue( team.matte )
+            ctrlNode.knob('AwayRegionNum').setValue( team.matteNum )
         except: pass
 
 
@@ -139,10 +141,12 @@ def selectSkies(tricode, away=False):
     if not away:
         try:
             ctrlNode.knob('Sky').setValue( team.sky )
+            ctrlNode.knob('SkyNum').setValue( team.skyNum )
         except: pass
     elif away:
         try:
             ctrlNode.knob('AwaySky').setValue( team.sky )
+            ctrlNode.knob('AwaySkyNum').setValue( team.skyNum )
         except: pass
 
 
@@ -156,7 +160,7 @@ def selectSigns(tricode, away=False):
         except: pass
     elif away:
         try:
-            ctrlNode.knob('AwaySign').setValue( team.primary )
+            ctrlNode.knob('AwaySign').setValue( team.sign )
             ctrlNode.knob('AwaySignNum').setValue( team.signNum )
         except: pass
 
