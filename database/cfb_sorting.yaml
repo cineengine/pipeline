@@ -33,6 +33,7 @@ btyLogo :
         - sg_cfb_logo
     lights : 
         - lg_cfb_logo
+    gi: 0
 utilLogo :
     type: utility
     aov :
