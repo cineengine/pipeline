@@ -75,7 +75,6 @@ class Layer( object ):
         except: self.lights = None
 
 
-
     def __repr__(self):
         return str(self.name)
 
@@ -166,88 +165,102 @@ class SortControl( object ):
             # Beauty objects
             if layer.bty_obj:
                 for sg in layer.bty_obj: 
-                    addToLayer( sg, layer.name )
-                    setVisibility( sg, 'rgba')
+                    addGroupToLayer( sg, layer.name )
+                    setGroupVisibility( sg, 'rgba')
+
             # Utility objects
             if layer.aov_obj:
                 for sg in layer.aov_obj:
-                    addToLayer( sg, layer.name )
-                    setVisibility( sg, 'aov')
+                    addGroupToLayer( sg, layer.name )
+                    setGroupVisibility( sg, 'aov')
+
             # Primary visibility disabled objects
             if layer.pvo_obj:
                 for sg in layer.pvo_obj:
-                    addToLayer( sg, layer.name )
-                    setVisibility( sg, 'pv_off')
+                    addGroupToLayer( sg, layer.name )
+                    setGroupVisibility( sg, 'pv_off')
+
             # Occlusion objects
             if layer.occ_obj:
                 for sg in layer.occ_obj:
-                    addToLayer( sg, layer.name )
-                    setVisibility( sg, 'occ')
+                    addGroupToLayer( sg, layer.name )
+                    setGroupVisibility( sg, 'occ')
 
             # Add the lg_groups (lights) to the layer
             if layer.lights:
                 for lg in layer.lights:
-                    addToLayer( lg, layer.name )
+                    addGroupToLayer( lg, layer.name )
 
             # Create matte framebuffers on matte layers
             if layer.type == 'matte':
                 pass
 
-            # Enable framebuffers for the layer, based on type
-            setFramebuffers( layer, self.framebuffers )
+            # Set core renderer overrides by layer type
+            setLayerOverrides( layer )
+            # Enable framebuffers based on layer type
+            setLayerFramebuffers( layer, self.framebuffers )
             # Set any hard-coded exceptions for this element / layer
             setExceptions( layer, self.element )
 
 
-#####################################
-### LAYER ASSIGNMENT & OVERRIDING ###
-#####################################
+def getMatchingSets( sort_set_string ):
+    ''' Get all matching sets based on a raw input string from a sort control
+        dictionary. '''
 
+    all_matching = []
 
-def addToLayer(  sort_set, layer, rm=False ):
-    """ Assign the objects in a sortgroup to a render layer. """
-    
     # Since some scenes will have multiple sort sets with the same name, 
     # including a namespace, we will have to include logic to account for this
-    # Search for all sortgroups matching the name passed to the function
-    
+
     # Case: ALL sort sets, regardless of namespace
-    if ('sg_all' in sort_set) and not (':' in sort_set):
+    if ('sg_all' in sort_set_string) and not (':' in sort_set_string):
         all_matching = pm.ls(typ='VRayObjectProperties')
     
     # Case: ALL light select sets, regardless of namespace
-    elif ('lg_all' in sort_set) and not (':' in sort_set):
+    elif ('lg_all' in sort_set_string) and not (':' in sort_set_string):
         all_matching = pm.ls(typ='VRayRenderElementSet')
 
     # Case: All sort sets under a specific namespace
-    elif ('sg_all' in sort_set) and (':' in sort_set):
-        reg = re.compile(sort_set.split(':')[0])
+    elif ('sg_all' in sort_set_string) and (':' in sort_set_string):
+        reg = re.compile(sort_set_string.split(':')[0])
         all_matching = pm.ls(regex=reg, typ='VRayObjectProperties')
 
     # Case: All light select sets under a specific namespace
-    elif ('lg_all' in sort_set) and (':' in sort_set):
-        reg = re.compile(sort_set.split(':')[0])
+    elif ('lg_all' in sort_set_string) and (':' in sort_set_string):
+        reg = re.compile(sort_set_string.split(':')[0])
         all_matching = pm.ls(regex=reg, typ='VRayRenderElementSet')
 
     # Case: specific exact-match sort set
-    elif ('sg_' in sort_set):
-        reg = re.compile(sort_set)
+    elif ('sg_' in sort_set_string):
+        reg = re.compile(sort_set_string)
         all_matching = pm.ls(regex=reg, typ='VRayObjectProperties')
     
     # Case: specific exact-match light select set
-    elif ('lg_' in sort_set):
-        reg = re.compile(sort_set)
+    elif ('lg_' in sort_set_string):
+        reg = re.compile(sort_set_string)
         all_matching = pm.ls(regex=reg, typ='VRayRenderElementSet')
-        
+
+    return all_matching
+
+
+#####################################
+### LAYER & GROUP LOGIC FUNCTIONS ###
+#####################################
+
+def addGroupToLayer( sort_set, layer, rm=False ):
+    """ Assign the objects in a sortgroup to a render layer. """
+    
+    # Get a list of sets to operate on, and bail if it is empty
+    all_matching = getMatchingSets(sort_set)
+    if all_matching == []:
+        return
+
     # Loop through all the matching sets and add them to their assigned layer
     for sort_set in all_matching:
         try:
             # The nodes / sorting set members that will be assigned to the lyr
             nodes = sort_set.inputs()         
-            if rm: # Remove flag is true
-                [pm.editRenderLayerMembers( layer, n, r=True ) for n in nodes]
-            else: # Remove flag is false (aka add)
-                [pm.editRenderLayerMembers( layer, n ) for n in nodes]
+            [pm.editRenderLayerMembers( layer, n, r=rm ) for n in nodes]
         except:
             pm.warning('Sort Control  ERROR {:>25} XX {:<25}'.format(sort_set, layer))
         
@@ -255,21 +268,18 @@ def addToLayer(  sort_set, layer, rm=False ):
         print 'Sort Control  SORTING {:>25} >> {:<25}'.format(sort_set, layer)
 
 
-def setVisibility( sort_set, override ):
+def setGroupVisibility( sort_set, override ):
     """ Enables the visibility state overrides on sortgroups based on 
         keyword inputs. """
 
     # Ignore light and displacement groups
     if 'lg_' in sort_set or 'dg_' in sort_set:
-        return None
+        return
 
-    ## Since some scenes will have multiple sort sets with the same name, 
-    ## including a namespace, we will have to include logic to account for it
-    reg = re.compile(sort_set)
-    all_matching = pm.ls(regex=reg)
-    
+    # Get the list of sets to operate on, and bail if it is empty
+    all_matching = getMatchingSets(sort_set)
     if all_matching == []:
-        return None
+        return
 
     # Loop through all matching sort sets, enable RL override on the relevant
     # attrs, and set the flags for each type of visibility.
@@ -303,7 +313,39 @@ def setVisibility( sort_set, override ):
         return True
 
 
-def setFramebuffers( layer, framebuffers ):
+def setLayerOverrides( layer ):
+    ''' Sets core rendering overrides on the layer passed to it (based on type).
+        This includes things like DMC sampling, bit depth, and GI '''
+    
+    # Enable GI
+    if (layer.gi == True):
+        vr = pm.PyNode('vraySettings')
+        enableOverride(vr.giOn)
+        enableOverride(vr.dmc_depth)
+        vr.giOn.set(True)
+        vr.dmc_depth.set(1)
+
+    # Flag all utility passes as 32-bit
+    if layer.type == 'utility':
+        vr = pm.PyNode('vraySettings')
+        enableOverride(vr.imgOpt_exr_bitsPerChannel)
+        vr.imgOpt_exr_bitsPerChannel.set(32)
+
+    # Utility and matte passes require fixed sampling
+    if layer.type == 'utility' or layer.type == 'matte':
+        vr = pm.PyNode('vraySettings')
+        # Enable overrides on sampler type, lights and reflections
+        enableOverride(vr.samplerType)
+        enableOverride(vr.globopt_light_doLights)
+        enableOverride(vr.globopt_mtl_reflectionRefraction)
+        # Override values
+        vr.samplerType.set(0)
+        vr.fixedSubdivs.set(10)
+        vr.globopt_light_doLights.set(1)
+        vr.globopt_mtl_reflectionRefraction.set(0)
+
+
+def setLayerFramebuffers( layer, framebuffers ):
     """ Enables the passes specified in the sort module global variables. """
     try:
         layer_buffers = framebuffers[layer.type]
@@ -384,33 +426,6 @@ def setExceptions( layer, element_name ):
         except:
             pm.warning('Sort Control  setExceptions() Couldn\'t connect carbon fiber shader to extraTex')
 
-    # Flag all utility passes as 32-bit
-    if layer.type == 'utility':
-        vr = pm.PyNode('vraySettings')
-        enableOverride(vr.imgOpt_exr_bitsPerChannel)
-        vr.imgOpt_exr_bitsPerChannel.set(32)
-
-    # Utility and matte passes require fixed sampling
-    if layer.type == 'utility' or layer.type == 'matte':
-        vr = pm.PyNode('vraySettings')
-        # Enable overrides on sampler type, lights and reflections
-        enableOverride(vr.samplerType)
-        enableOverride(vr.globopt_light_doLights)
-        enableOverride(vr.globopt_mtl_reflectionRefraction)
-        # Override values
-        vr.samplerType.set(0)
-        vr.fixedSubdivs.set(10)
-        vr.globopt_light_doLights.set(1)
-        vr.globopt_mtl_reflectionRefraction.set(0)
-
-    # Enable GI
-    if (layer.gi):
-        vr = pm.PyNode('vraySettings')
-        enableOverride(vr.giOn)
-        enableOverride(vr.dmc_depth)
-        vr.giOn.set(True)
-        vr.dmc_depth.set(1)
-
     # Matte painting layers get automatically renamed based on asset currently
     # loaded
     if ('MP0') in layer.name:
@@ -451,13 +466,12 @@ def sceneTeardown(*a):
 
 def getAllSortgroups( sg=True, lg=False ):
     '''Return a list of all Light Select Sets and Object Properties Groups'''
-    if sg and not lg:
+    if sg:
         return pm.ls(type='VRayObjectProperties')
-    elif lg and not sg:
+    if lg:
         return pm.ls(type='VRayRenderElementSet')
-    elif lg and sg:
-        return pm.ls(type='VRayObjectProperties') +\
-            pm.ls(type='VRayRenderElementSet')
+    
+    return (sg+lg)    
 
 
 def makeLayer( name=None ):
@@ -501,6 +515,7 @@ def enableOverride( attr ):
         pm.editRenderLayerAdjustment( attr )
 
     return True
+
 
 def factory(*a):
     sorter = SortControl('Factory')
