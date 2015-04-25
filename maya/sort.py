@@ -18,6 +18,8 @@ reload(cfb)
 reload(aov)
 reload(vmt)
 
+DEFAULT_GI = True
+
 class Layer( object ):
     """ Layer is an object used by the sort controller to parse information 
         about a layer currently under control by the script.  This object 
@@ -48,6 +50,11 @@ class Layer( object ):
         elif self.type == 'utility':
             self.depth = 32
 
+        # Check for a GI override
+        if self.type == 'beauty':
+            try: self.gi = dictionary['gi']
+            except KeyError: self.gi = DEFAULT_GI
+
         # Each of these contains a list of sg_groups in the scene, and decides
         # how their visibilty is flagged to the renderer.  Beauty, aov-only, 
         # primary visibility, occlusion (black holed)     
@@ -66,6 +73,8 @@ class Layer( object ):
         # The lg_groups (lights) which should be added to the layer
         try: self.lights = dictionary['lights']
         except: self.lights = None
+
+
 
     def __repr__(self):
         return str(self.name)
@@ -201,14 +210,33 @@ def addToLayer(  sort_set, layer, rm=False ):
     # Since some scenes will have multiple sort sets with the same name, 
     # including a namespace, we will have to include logic to account for this
     # Search for all sortgroups matching the name passed to the function
-    reg = re.compile(sort_set)
-    if 'sg_all' in sort_set:
+    
+    # Case: ALL sort sets, regardless of namespace
+    if ('sg_all' in sort_set) and not (':' in sort_set):
         all_matching = pm.ls(typ='VRayObjectProperties')
-    elif 'lg_all' in sort_set:
+    
+    # Case: ALL light select sets, regardless of namespace
+    elif ('lg_all' in sort_set) and not (':' in sort_set):
         all_matching = pm.ls(typ='VRayRenderElementSet')
-    elif 'sg_' in sort_set:
+
+    # Case: All sort sets under a specific namespace
+    elif ('sg_all' in sort_set) and (':' in sort_set):
+        reg = re.compile(sort_set.split(':')[0])
         all_matching = pm.ls(regex=reg, typ='VRayObjectProperties')
-    elif 'lg_' in sort_set:
+
+    # Case: All light select sets under a specific namespace
+    elif ('lg_all' in sort_set) and (':' in sort_set):
+        reg = re.compile(sort_set.split(':')[0])
+        all_matching = pm.ls(regex=reg, typ='VRayRenderElementSet')
+
+    # Case: specific exact-match sort set
+    elif ('sg_' in sort_set):
+        reg = re.compile(sort_set)
+        all_matching = pm.ls(regex=reg, typ='VRayObjectProperties')
+    
+    # Case: specific exact-match light select set
+    elif ('lg_' in sort_set):
+        reg = re.compile(sort_set)
         all_matching = pm.ls(regex=reg, typ='VRayRenderElementSet')
         
     # Loop through all the matching sets and add them to their assigned layer
@@ -280,7 +308,7 @@ def setFramebuffers( layer, framebuffers ):
     try:
         layer_buffers = framebuffers[layer.type]
     except:
-        pm.warning('Sort Control  Error creating framebuffers / looking up framebuffer list.')
+        pm.warning('Sort Control  Error looking up framebuffer list.')
         return False
 
     # First step: check that all existing framebuffers are disabled
@@ -375,8 +403,8 @@ def setExceptions( layer, element_name ):
         vr.globopt_light_doLights.set(1)
         vr.globopt_mtl_reflectionRefraction.set(0)
 
-    # SNF logo requires GI
-    if element_name == 'SNF_Logo' and layer.type == 'beauty':
+    # Enable GI
+    if (layer.gi):
         vr = pm.PyNode('vraySettings')
         enableOverride(vr.giOn)
         enableOverride(vr.dmc_depth)
