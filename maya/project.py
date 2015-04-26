@@ -318,9 +318,11 @@ class Scene(object):
             self._pushPull()
             if os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
                 self.save()
-            self.save()
+            else:
+                pm.warning('SAVE SCENE  ERROR One or more destination folders does not exist.')
+                return
         else:
-            return False
+            return
 
 
     ##########################################################################
