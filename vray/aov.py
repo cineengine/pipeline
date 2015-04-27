@@ -240,8 +240,9 @@ def makeLightComponentBuffer( name ):
         'GI'        : 'vrayAddRenderElement giChannel;',
         'selfIllum' : 'vrayAddRenderElement selfIllumChannel;',
         'shadow'    : 'vrayAddRenderElement shadowChannel;',
-        'totalLight': 'vrayAddRenderElement totalLightChannel;'
+        'totalLight': 'vrayAddRenderElement totalLightChannel;',
     }
+    
 
     try:
         exists = pm.PyNode(name)

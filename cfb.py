@@ -71,7 +71,8 @@ FRAMEBUFFERS = {
         'lighting',
         'selfIllum',
         'GI',
-        'totalLight'
+        'totalLight',
+        'shadow'
         ],
     'utility':[
         'zDepth',
