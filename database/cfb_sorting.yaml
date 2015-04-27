@@ -1,4 +1,5 @@
----
+
+        - "REGION:lg_night"---
 ELEMENT : Factory
 SUNSET :
     type: beauty
@@ -33,6 +34,7 @@ btyLogo :
         - sg_cfb_logo
     lights : 
         - lg_cfb_logo
+    gi: 0
 utilLogo :
     type: utility
     aov :
@@ -113,7 +115,7 @@ btyLayoutNoon:
         - "LAYOUT:sg_roadsideBanners"
     lights:
         - "LAYOUT:lg_noon"
-        - "HOME_ENV_LGT:lg_noon"
+        - "LAYOUT_ENV_LGT:lg_noon"
 utilLayout:
     type: utility
     aov:
@@ -181,7 +183,7 @@ btyLayoutNoon:
         - "LAYOUT:sg_roadsideBanners"
     lights:
         - "LAYOUT:lg_noon"
-        - "AWAY_ENV_LGT:lg_noon"
+        - "LAYOUT_ENV_LGT:lg_noon"
 utilLayout:
     type: utility
     aov:
@@ -273,7 +275,7 @@ btyLayoutSunset:
         - "LAYOUT:sg_roadsideBanners"
     lights:
         - "LAYOUT:lg_sunset"
-        - "HOME_ENV_LGT:lg_sunset"
+        - "LAYOUT_ENV_LGT:lg_sunset"
 btyLayoutNight:
     type: beauty
     rgba:
@@ -282,7 +284,7 @@ btyLayoutNight:
         - "LAYOUT:sg_roadsideBanners"
     lights:
         - "LAYOUT:lg_night"
-        - "HOME_ENV_LGT:lg_night"
+        - "LAYOUT_ENV_LGT:lg_night"
 utilLayout:
     type: utility
     aov:
@@ -359,7 +361,6 @@ btyAwayMP00Night:
         - "REGION:sg_awayside"
         - "REGION:sg_ground"
     lights:
-        - "REGION:lg_night"
         - "AWAY_ENV_LGT:lg_night"
 utilAwayMP00:
     type: utility
@@ -374,7 +375,7 @@ btyLayoutSunset:
         - "LAYOUT:sg_roadsideBanners"
     lights:
         - "LAYOUT:lg_sunset"
-        - "AWAY_ENV_LGT:lg_sunset"
+        - "LAYOUT_ENV_LGT:lg_sunset"
 btyLayoutNight:
     type: beauty
     rgba:
@@ -383,7 +384,7 @@ btyLayoutNight:
         - "LAYOUT:sg_roadsideBanners"
     lights:
         - "LAYOUT:lg_night"
-        - "AWAY_ENV_LGT:lg_night"
+        - "LAYOUT_ENV_LGT:lg_night"
 utilLayout:
     type: utility
     aov:
