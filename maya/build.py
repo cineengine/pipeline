@@ -124,10 +124,14 @@ def attachToSign(location):
     # Get basic attachment points
     try:
         sign_atch_board  = pm.PyNode('{0}:ATTACH_01'.format(sign_namespace))
+        print sign_atch_board
         sign_atch_bldg   = pm.PyNode('{0}:ATTACH_05'.format(sign_namespace))
+        print sign_atch_bldg
         sign_atch_mascot = pm.PyNode('{0}:ATTACH_06'.format(sign_namespace))
+        print sign_atch_mascot
 
         logo_atch_board  = pm.PyNode('{0}:ATTACH_01'.format(logo_namespace))
+        print logo_atch_board
 
     except:
         pm.warning('Build Scene  ERROR Critical attachment points not found for {0} team.'.format(location))

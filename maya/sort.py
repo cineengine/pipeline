@@ -391,7 +391,10 @@ def setExceptions( layer, element_name ):
         try:
             # Get the top node of the region asset.  
             # Major assumptions being made here
-            asset_name = pm.PyNode('REGION:GEO').getParent().attr('assetName').get()
+            if 'Away' in layer.name:
+                asset_name = pm.PyNode('AWAYREGION:GEO').getParent().attr('assetName').get()
+            elif 'Home' in layer.name:
+                asset_name = pm.PyNode('HOMEREGION:GEO').getParent().attr('assetName').get()               
             # Match the MPdd in the assetName attr
             new_name   = re.findall(reg, asset_name)[0]
             # Rename our default MP00 with MPdd

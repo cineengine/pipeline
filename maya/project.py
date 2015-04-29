@@ -335,10 +335,10 @@ class Scene(object):
 
         # Save the backup
         self.backup_path = self._incrVersion()
-        if not os.path.exists(self.backup_path) or not\
-                os.path.exists(self.maya_project_folder):     
-            pm.warning('Save Scene  ERROR Could not find one or more destination folders.  Aborting save.')
-            return   
+        #if not os.path.exists(self.backup_path) or not\
+        #        os.path.exists(self.maya_project_folder):     
+        #    pm.warning('Save Scene  ERROR Could not find one or more destination folders.  Aborting save.')
+        #    return   
         try:
             cmds.file(rename=self.backup_path)
             cmds.file(save=True, type='mayaBinary')
