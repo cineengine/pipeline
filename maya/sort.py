@@ -287,6 +287,7 @@ def setGroupVisibility( sort_set, override ):
 
     # Loop through all matching sort sets, enable RL override on the relevant
     # attrs, and set the flags for each type of visibility.
+
     for sort_set in all_matching:
 
         enableOverride( sort_set.attr('primaryVisibility') )
@@ -314,7 +315,8 @@ def setGroupVisibility( sort_set, override ):
             sort_set.alphaContribution.set(1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(1)        
-        return True
+    
+    return True
 
 
 def setLayerOverrides( layer ):
@@ -452,6 +454,12 @@ def setExceptions( layer, element_name ):
                 )
         except: pass
         print 'Sort Control  Matte painting layer detected.  Renaming ...\n'
+
+    # Remove CFB logo lights from all but btyLogo beauty layer
+    if (layer.name != 'btyLogo') and (layer.type == 'beauty'):
+        try:
+            addGroupToLayer('CFB_LOGO:lg_cfb_logo', layer.name, rm=True)
+        except: pass
 
 
 # Helper Functions
