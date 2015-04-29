@@ -61,7 +61,7 @@ btyBuildings:
     rgba:
         - sg_buildings
     occ:
-        - sg_streets
+        - sg_street
     lights:
         - lg_all
 btyStreets:
