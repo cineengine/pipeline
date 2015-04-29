@@ -50,12 +50,9 @@ NAMESPACES = [
         'AWAYLOGO',
         'HOMESIGN',
         'AWAYSIGN',
-        'LAYOUT',
         'HOMEREGION',
         'AWAYREGION',
-        'HOME_ENV_LGT',
-        'AWAY_ENV_LGT',
-        'LAYOUT_ENV_LGT',
+        'LAYOUT',
         'CAM',
         'CLOTH',
         'FACTORY'
