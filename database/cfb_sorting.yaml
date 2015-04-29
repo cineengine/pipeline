@@ -100,7 +100,7 @@ utilHomeAll:
         - "HOMELOGO:sg_sign"
         - "HOMESIGN:sg_sign"
         - "HOMEREGION:sg_ground"
-        - "HOMEREGION:sg_decor"
+        - "HOMEREGION:sg_homeside"
         - "CFB_LOGO:sg_cfb_logo"
         - sg_lay_homeside
 btyHomeSignNoon:
@@ -162,7 +162,7 @@ utilAwayAll:
         - "AWAYLOGO:sg_sign"
         - "AWAYSIGN:sg_sign"
         - "AWAYREGION:sg_ground"
-        - "AWAYREGION:sg_decor"
+        - "AWAYREGION:sg_awayside"
         - "CFB_LOGO:sg_cfb_logo"
         - sg_lay_awayside
 btyAwaySignNoon:
@@ -233,7 +233,7 @@ utilHomeAll:
         - "HOMELOGO:sg_sign"
         - "HOMESIGN:sg_sign"
         - "HOMEREGION:sg_ground"
-        - "HOMEREGION:sg_decor"
+        - "HOMEREGION:sg_homeside"
         - "CFB_LOGO:sg_cfb_logo"
         - sg_lay_homeside
 btyHomeSignSunset:
@@ -326,7 +326,7 @@ utilAwayAll:
         - "AWAYLOGO:sg_sign"
         - "AWAYSIGN:sg_sign"
         - "AWAYREGION:sg_ground"
-        - "AWAYREGION:sg_decor"
+        - "AWAYREGION:sg_awayside"
         - "CFB_LOGO:sg_cfb_logo"
         - sg_lay_awayside
 btyAwaySignSunset:
