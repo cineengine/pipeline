@@ -118,7 +118,7 @@ btyHomeMP00Noon:
     type: beauty
     rgba:
         - "HOMEREGION:sg_ground"
-        - "HOMEREGION:sg_decor"
+        - "HOMEREGION:sg_homeside"
     lights:
         - "HOMEREGION:lg_noon"
         - "HOME_ENV_LGT:lg_noon"
@@ -126,7 +126,7 @@ utilHomeMP00:
     type: utility
     aov:
         - "HOMEREGION:sg_ground"
-        - "HOMEREGION:sg_decor"
+        - "HOMEREGION:sg_homeside"
 btyLayoutNoon:
     type: beauty
     rgba:
@@ -138,4 +138,252 @@ utilLayout:
     type: utility
     aov:
         - sg_lay_homeside
+...
+---
+ELEMENT: Studio_Away_Team
+btyAwayLogoNoon:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_noon"
+        - "AWAY_ENV_LGT:lg_noon"
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+utilAwayAll:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+        - "AWAYSIGN:sg_sign"
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_decor"
+        - "CFB_LOGO:sg_cfb_logo"
+        - sg_lay_awayside
+btyAwaySignNoon:
+    type: beauty
+    rgba:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYSIGN:lg_noon"
+        - "AWAY_ENV_LGT:lg_noon"
+utilAwaySign:
+    type: utility
+    aov:
+        - "AWAYSIGN:sg_sign"
+btyAwayMP00Noon:
+    type: beauty
+    rgba:
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_awayside"
+    lights:
+        - "AWAYREGION:lg_noon"
+        - "AWAY_ENV_LGT:lg_noon"
+utilAwayMP00:
+    type: utility
+    aov:
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_awayside"
+btyLayoutNoon:
+    type: beauty
+    rgba:
+        - sg_lay_awayside
+    lights:
+        - lg_lay_awayside
+        - "AWAY_ENV_LGT:lg_noon"
+utilLayout:
+    type: utility
+    aov:
+        - sg_lay_awayside
+...
+---
+ELEMENT: Event_Home_Team
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyHomeLogoNight:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+utilHomeAll:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+        - "HOMEREGION:sg_ground"
+        - "HOMEREGION:sg_decor"
+        - "CFB_LOGO:sg_cfb_logo"
+        - sg_lay_homeside
+btyHomeSignSunset:
+    type: beauty
+    rgba:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMESIGN:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyHomeSignNight:
+    type: beauty
+    rgba:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMESIGN:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+utilHomeSign:
+    type: utility
+    aov:
+        - "HOMESIGN:sg_sign"
+btyHomeMP00Sunset:
+    type: beauty
+    rgba:
+        - "HOMEREGION:sg_ground"
+        - "HOMEREGION:sg_homeside"
+    lights:
+        - "HOMEREGION:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyHomeMP00Night:
+    type: beauty
+    rgba:
+        - "HOMEREGION:sg_ground"
+        - "HOMEREGION:sg_homeside"
+    lights:
+        - "HOMEREGION:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+utilHomeMP00:
+    type: utility
+    aov:
+        - "HOMEREGION:sg_ground"
+        - "HOMEREGION:sg_homeside"
+btyLayoutSunset:
+    type: beauty
+    rgba:
+        - sg_lay_homeside
+    lights:
+        - lg_lay_homeside
+        - "HOME_ENV_LGT:lg_sunset"
+btyLayoutNight:
+    type: beauty
+    rgba:
+        - sg_lay_homeside
+    lights:
+        - lg_lay_homeside
+        - "HOME_ENV_LGT:lg_night"
+utilLayout:
+    type: utility
+    aov:
+        - sg_lay_homeside
+...
+---
+ELEMENT: Event_Away_Team
+btyAwayLogoSunset:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_sunset"
+        - "AWAY_ENV_LGT:lg_sunset"
+btyAwayLogoNight:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_night"
+        - "AWAY_ENV_LGT:lg_night"
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+utilAwayAll:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+        - "AWAYSIGN:sg_sign"
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_decor"
+        - "CFB_LOGO:sg_cfb_logo"
+        - sg_lay_awayside
+btyAwaySignSunset:
+    type: beauty
+    rgba:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYSIGN:lg_sunset"
+        - "AWAY_ENV_LGT:lg_sunset"
+btyAwaySignNight:
+    type: beauty
+    rgba:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYSIGN:lg_night"
+        - "AWAY_ENV_LGT:lg_night"
+utilAwaySign:
+    type: utility
+    aov:
+        - "AWAYSIGN:sg_sign"
+btyAwayMP00Sunset:
+    type: beauty
+    rgba:
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_awayside"
+    lights:
+        - "AWAYREGION:lg_sunset"
+        - "AWAY_ENV_LGT:lg_sunset"
+btyAwayMP00Night:
+    type: beauty
+    rgba:
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_awayside"
+    lights:
+        - "AWAYREGION:lg_night"
+        - "AWAY_ENV_LGT:lg_night"
+utilAwayMP00:
+    type: utility
+    aov:
+        - "AWAYREGION:sg_ground"
+        - "AWAYREGION:sg_awayside"
+btyLayoutSunset:
+    type: beauty
+    rgba:
+        - sg_lay_awayside
+    lights:
+        - lg_lay_awayside
+        - "AWAY_ENV_LGT:lg_sunset"
+btyLayoutNight:
+    type: beauty
+    rgba:
+        - sg_lay_awayside
+    lights:
+        - lg_lay_awayside
+        - "AWAY_ENV_LGT:lg_night"
+utilLayout:
+    type: utility
+    aov:
+        - sg_lay_awayside
 ...
