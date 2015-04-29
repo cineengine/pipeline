@@ -99,6 +99,9 @@ def loadAssets(tricode, location, diagnostic=True, clean=True):
         pm.warning('Build Scene  WARNING could not find {0}'.format(lgtrig_path))
         lgtrig_path = None
 
+    if (diagnostic):
+        return
+
     # Generate namespaces
     sign_nspc = '{0}SIGN'.format(location)
     logo_nspc = '{0}LOGO'.format(location)
@@ -189,6 +192,9 @@ def attachTeamToSign(location):
     sign_namespace = '{0}SIGN'.format(location)
     logo_namespace = '{0}LOGO'.format(location)
 
+    sign_atch_board = None
+    logo_atch_board = None
+
     # Get basic attachment points
     try:
         sign_atch_board  = pm.PyNode('{0}:ATTACH_01'.format(sign_namespace))
@@ -212,7 +218,9 @@ def attachTeamToSign(location):
         logo_atch_mascot = pm.PyNode('{0}:ATTACH_06'.format(logo_namespace))
     except: logo_atch_mascot = None
 
-    attach(sign_atch_board, logo_atch_board)
+    if (sign_atch_board) and (logo_atch_board):
+        attach(sign_atch_board, logo_atch_board)
+
     if (logo_atch_bldg):
         attach(sign_atch_bldg, logo_atch_bldg)
     if (logo_atch_mascot):
@@ -225,6 +233,9 @@ def attachSignToScene(location):
     location = location.upper()
 
     sign_namespace = '{0}SIGN'.format(location)
+
+    scene_loc = None
+    sign_loc = None
 
     # Check for attachment locators
     try:
@@ -239,7 +250,9 @@ def attachSignToScene(location):
         pm.warning('Build Scene  ERROR Could not find sign master control curve for {0} team.'.format(location))
         return
 
-    attach(scene_loc, sign_loc)
+    if (scene_loc) and (sign_loc):
+        attach(scene_loc, sign_loc)
+
     return
 
 
@@ -249,6 +262,9 @@ def attachRegion(location):
     location = location.upper()
 
     region_namespace = '{0}REGION'.format(location)
+
+    scene_loc = None
+    region_loc = None
 
     try:
         scene_loc = pm.PyNode('REGION_LOCATOR')
@@ -260,7 +276,9 @@ def attachRegion(location):
     except:
         pm.warning('Build Scene  ERROR Missing region attchment locator.')
 
-    attach(scene_loc, region_loc)
+    if (scene_loc) and (region_loc):
+        attach(scene_loc, region_loc)
+
     return
 
 
@@ -269,6 +287,9 @@ def attachLightRig(location):
     location = location.upper()
 
     lgtrig_namespace = '{0}_ENV_LGT'.format(location)
+
+    scene_loc = None
+    lgtrig_loc = None
 
     try:
         scene_loc = pm.PyNode('{}_LOCATOR'.format(location))
@@ -280,13 +301,20 @@ def attachLightRig(location):
     except:
         pm.warning('Build Scene  ERROR Missing attachment locator for light rig for {0} team'.format(location))
 
-    attach(scene_loc, lgtrig_loc)
+    if (scene_loc) and (lgtrig_loc):
+        attach(scene_loc, lgtrig_loc)
+
     return
 
 
 def attachLayout(project):
     ''' Attaches a layout to its corresponding locator in the scene. 
         NOTE:  THIS ALSO INCLUDES THE LAYOUT LIGHT RIG FOR CONVENIENCE  '''
+    
+    scene_loc = None
+    layout_loc = None
+    lgtrig_loc = None
+
     try:
         scene_loc = pm.PyNode('LAYOUT_LOCATOR')
     except:
@@ -298,8 +326,9 @@ def attachLayout(project):
     except:
         pm.warning('Build Scene  ERROR Missing layout attachment locator or layout light rig locator.')
 
-    attach(scene_loc, layout_loc)
-    attach(scene_loc, lgtrig_loc)
+    if (scene_loc) and (layout_loc) and (lgtrig_loc):
+        attach(scene_loc, layout_loc)
+        attach(scene_loc, lgtrig_loc)
 
     return
 
