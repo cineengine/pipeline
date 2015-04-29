@@ -50,18 +50,50 @@ def loadAssets(tricode, location, clean=True):
 
     # Generate string for the name of the school's sign
     sign = 'SIGN_{0}'.format(team.sign.upper())
+    # Generate string for the school's matte painting ID
+    mp_id = str(team.matte).zfill(2)
 
-    # Create paths for signs / team logo scenes
+    
+    ''' LK SPECIFIC SECTION '''
+    # The full path of this scene
+    this_scene = pm.sceneName()
+    # Split into tokens
+    scene_token = this_scene.split('/')
+    # 4th from the right is the project name
+    this_project = this_scene[len(this_scene)-4]
+    # Form the path for the region file
+    ''' END LK '''
+
+
+    # Create paths for signs / team logo / region / layout scenes
     sign_path = os.path.join(cfb.MAIN_ASSET_DIR, sign, (sign+'.mb'))
     logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    regn_path = os.path.join(pm.sceneName().dirname(), '{0}_MP{1}.mb'.format(this_project, mp_id))
+    layout_path = os.path.join(pm.sceneName().dirname(), '{0}_LAYOUT.mb'.format(this_project))
+
+    # Check for missing files and print warnings
+    if not os.path.exists(sign_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(sign_path))
+        sign_path = None
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        logo_path = None
+    if not os.path.exists(regn_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(regn_path))
+        regn_path = None
+    if not os.path.exists(layout_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(layout_path))
+        layout_path = None
 
     # Generate namespaces
     sign_nspc = '{0}SIGN'.format(location)
     logo_nspc = '{0}LOGO'.format(location)
+    regn_nspc = '{0}REGION'.format(location)
 
     # Check for existing references
     sign_ref = None
     logo_ref = None
+    regn_ref = None
 
     # Get those reference nodess
     for ref in pm.listReferences():
@@ -71,9 +103,12 @@ def loadAssets(tricode, location, clean=True):
         elif ref.namespace == logo_nspc:
             logo_ref = ref
 
+        elif ref.namespace == regn_nspc:
+            regn_ref = ref
+
     # If there are references missing, force a clean run for simplicity's sake (i implore you)
-    if (sign_ref) or (logo_ref) == None and clean == False:
-        pm.warning('Build Scene  WARNING Existing reference not found.  Forcing clean reference.')
+    if (sign_ref) or (logo_ref) or (regn_ref) == None and clean == False:
+        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
         clean = True
 
     # If the user has asked to do a clean reference of the asset, including attachment
@@ -81,9 +116,18 @@ def loadAssets(tricode, location, clean=True):
         # If there's already references in those namespaces, just delete them
         if (logo_ref): logo_ref.remove()
         if (sign_ref): sign_ref.remove()
+        if (regn_ref): regn_ref.remove()
         # Reference in the asset to the namespace
-        asset.reference(sign_path, sign_nspc)
-        asset.reference(logo_path, logo_nspc)
+        if sign_path: asset.reference(sign_path, sign_nspc)
+        if logo_path: asset.reference(logo_path, logo_nspc)
+        if regn_path: asset.reference(regn_path, regn_nspc)
+        if layout_path: 
+            pm.importFile(
+                layout_path, 
+                defaultNamespace=True, 
+                preserveReferences=True
+                )
+
         # Attach them to their parent locators
         attachToSign(location)
         attachToScene(location)
@@ -107,9 +151,11 @@ def loadAssets(tricode, location, clean=True):
     try:
         sign_re = re.compile('{0}RNfosterParent.'.format(sign_nspc))
         logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
+        regn_re = re.compile('{0}RNfosterParent.'.format(regn_nspc))
 
         pm.delete(pm.ls(regex=sign_re))
         pm.delete(pm.ls(regex=logo_re))
+        pm.delete(pm.ls(regex=regn_re))
     except:
         pass
 
