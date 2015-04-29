@@ -146,9 +146,9 @@ class SortControlLayout(pm.uitypes.Window):
             p=column
             )
 
-        clean_tgl = pm.checkBox('clean_toggle')
-        clean_tgl.setLabel('Clean')
-        clean_tgl.setValue(1)
+        diagnose_tgl = pm.checkBox('diagnose_tgl')
+        diagnose_tgl.setLabel('Diagnose')
+        diagnose_tgl.setValue(0)
 
 
         switchteam_btn = pm.button(
@@ -220,17 +220,17 @@ class SortControlLayout(pm.uitypes.Window):
 
     def loadBtn(self, *a):
         home_team = pm.textFieldGrp('home_team_txt', q=True, text=True)
-        clean = pm.checkBox('clean_toggle', q=True, value=True)
+        diag = pm.checkBox('diagnose_tgl', q=True, value=True)
 
         if home_team == '':
             pm.warning('Build Scene  ERROR Please enter a team name / tricode before proceeding.')
 
         if (pm.radioButtonGrp('matchup_toggle', q=True, sl=True)) == 1:
-            build.loadTeams(home_team, clean=clean)
+            build.loadTeams(home_team, diagnostic=diag)
 
         elif (pm.radioButtonGrp('matchup_toggle', q=True, sl=True)) == 2:
             away_team = pm.textFieldGrp('away_team_txt', q=True, text=True)
-            build.loadTeams(home_team, away_team, clean=clean)
+            build.loadTeams(home_team, away_team, diagnostic=diag)
 
 
     def teardownBtn(self, *a):

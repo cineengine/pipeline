@@ -27,16 +27,16 @@ def factory( *a ):
     sc.run()
 
 
-def loadTeams(home, away=None, clean=True, *a):
+def loadTeams(home, away=None, diagnostic=False, clean=True, *a):
     ''' Loads a home team and an optional away team into the scene.  Includes many checks, but 
         also makes many assumptions about the scenes preparedness in the pipeline. '''
-    loadAssets(home, 'HOME', clean)
+    loadAssets(home, 'HOME', diagnostic, clean)
     if away:
-        loadAssets(away, 'AWAY', clean)
+        loadAssets(away, 'AWAY', diagnostic, clean)
     return
 
 
-def loadAssets(tricode, location, clean=True):
+def loadAssets(tricode, location, diagnostic=True, clean=True):
     ''' Load the selected team sign and logo pair into the specified 'location' (home/away)
         as a namespace. In clean mode, it removes any existing references and creates fresh 
         constraints. In 'dirty' mode, it will simply replace the existing references. '''
@@ -51,7 +51,7 @@ def loadAssets(tricode, location, clean=True):
     # Generate string for the name of the school's sign
     sign = 'SIGN_{0}'.format(team.sign.upper())
     # Generate string for the school's matte painting ID
-    mp_id = str(team.matte).zfill(2)
+    mp_id = str(team.matteNum).zfill(2)
 
     
     ''' LK SPECIFIC SECTION '''
@@ -60,8 +60,7 @@ def loadAssets(tricode, location, clean=True):
     # Split into tokens
     scene_token = this_scene.split('/')
     # 4th from the right is the project name
-    this_project = this_scene[len(this_scene)-4]
-    # Form the path for the region file
+    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
     ''' END LK '''
 
 
@@ -70,6 +69,18 @@ def loadAssets(tricode, location, clean=True):
     logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
     regn_path = os.path.join(pm.sceneName().dirname(), '{0}_MP{1}.mb'.format(this_project, mp_id))
     layout_path = os.path.join(pm.sceneName().dirname(), '{0}_LAYOUT.mb'.format(this_project))
+    lgtrig_path = os.path.join(cfb.MAIN_ASSET_DIR, 'LIGHTING_BASE', 'LIGHTING_BASE.mb')
+    
+    if (diagnostic):
+        print '\n'
+        print '{} Team:   {}'.format(location, team.tricode)
+        print 'Project:     {}'.format(this_project)
+        print '{} Sign:   {}'.format(location, sign_path)
+        print '{} Logo:   {}'.format(location, logo_path)
+        print '{} Region: {}'.format(location, regn_path)
+        print 'Layout:      {}'.format(layout_path)
+        print 'Light Rig:   {}'.format(lgtrig_path)
+
 
     # Check for missing files and print warnings
     if not os.path.exists(sign_path):
@@ -84,6 +95,9 @@ def loadAssets(tricode, location, clean=True):
     if not os.path.exists(layout_path):
         pm.warning('Build Scene  WARNING could not find {0}'.format(layout_path))
         layout_path = None
+    if not os.path.exists(lgtrig_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(lgtrig_path))
+        lgtrig_path = None
 
     # Generate namespaces
     sign_nspc = '{0}SIGN'.format(location)
@@ -121,16 +135,24 @@ def loadAssets(tricode, location, clean=True):
         if sign_path: asset.reference(sign_path, sign_nspc)
         if logo_path: asset.reference(logo_path, logo_nspc)
         if regn_path: asset.reference(regn_path, regn_nspc)
-        if layout_path: 
-            pm.importFile(
-                layout_path, 
-                defaultNamespace=True, 
-                preserveReferences=True
-                )
+
+        # Some elements should only be ref'd or imported once.  So we only do it for
+        # the "home" team.    
+        if location.upper() == 'HOME':
+            if layout_path: 
+                pm.importFile(layout_path, defaultNamespace=True, preserveReferences=True)
+            if lgtrig_path:
+                pm.importFile(lgtrig_path, defaultNamespace=True, preserveReferences=True)
 
         # Attach them to their parent locators
-        attachToSign(location)
-        attachToScene(location)
+        attachTeamToSign(location)
+        attachSignToScene(location)
+        attachLightRig(location)
+        attachRegion(location)
+        attachLightRig(location)
+        if location.upper() == 'HOME': 
+            attachLayout(this_project)
+
 
     # (If) there are already references in the namespaces, and the user is requesting
     # to replace the reference and maintain reference edits (dirty mode)
@@ -160,7 +182,7 @@ def loadAssets(tricode, location, clean=True):
         pass
 
 
-def attachToSign(location):
+def attachTeamToSign(location):
     ''' Attaches a team logo to its corresponding sign.  Location refers to home/away. '''
     location = location.upper()
 
@@ -194,7 +216,7 @@ def attachToSign(location):
     return
 
 
-def attachToScene(location):
+def attachSignToScene(location):
     ''' Attaches a sign to its corresponding locator in the scene.  Location refers to home/away '''
     location = location.upper()
 
@@ -214,6 +236,67 @@ def attachToScene(location):
         return
 
     attach(scene_loc, sign_loc)
+    return
+
+
+def attachRegion(location):
+    ''' Attaches a region object to its corresponding locator in the scene.  Location refers to
+        home/away '''
+    location = location.upper()
+
+    region_namespace = '{0}REGION'.format(location)
+
+    try:
+        scene_loc = pm.PyNode('REGION_LOCATOR')
+    except:
+        pm.warning('Build Scene  ERROR Missing scene attachment locator for region.')
+    
+    try:
+        region_loc = pm.PyNode('{0}REGION:MAIN_POS'.format(location))
+    except:
+        pm.warning('Build Scene  ERROR Missing region attchment locator.')
+
+    attach(scene_loc, region_loc)
+    return
+
+
+def attachLightRig(location):
+    ''' Attaches a light rig to its corresponding home/away locator in the scene.'''
+    location = location.upper()
+
+    lgtrig_namespace = '{0}_ENV_LGT'.format(location)
+
+    try:
+        scene_loc = pm.PyNode('{}_LOCATOR'.format(location))
+    except:
+        pm.warning('Build Scene  ERROR Missing scene attachment locator for {0} team'.format(location))
+
+    try:
+        lgtrig_loc = pm.PyNode('{}_ENV_LGT:MAIN_POS'.format(location))
+    except:
+        pm.warning('Build Scene  ERROR Missing attachment locator for light rig for {0} team'.format(location))
+
+    attach(scene_loc, lgtrig_loc)
+    return
+
+
+def attachLayout(project):
+    ''' Attaches a layout to its corresponding locator in the scene. 
+        NOTE:  THIS ALSO INCLUDES THE LAYOUT LIGHT RIG FOR CONVENIENCE  '''
+    try:
+        scene_loc = pm.PyNode('LAYOUT_LOCATOR')
+    except:
+        pm.warning('Build Scene  ERROR Missing scene attachment locator for layout.')
+
+    try:
+        layout_loc = pm.PyNode('{}_LAYOUT|RIG|MAIN_POS'.format(project))
+        lgtrig_loc = pm.PyNode('LAYOUT_ENV_LGT:MAIN_POS')
+    except:
+        pm.warning('Build Scene  ERROR Missing layout attachment locator or layout light rig locator.')
+
+    attach(scene_loc, layout_loc)
+    attach(scene_loc, lgtrig_loc)
+
     return
 
 

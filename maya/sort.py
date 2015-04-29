@@ -50,10 +50,12 @@ class Layer( object ):
         elif self.type == 'utility':
             self.depth = 32
 
+        self.gi = DEFAULT_GI
+
         # Check for a GI override
         if self.type == 'beauty':
             try: self.gi = dictionary['gi']
-            except KeyError: self.gi = DEFAULT_GI
+            except: pass
 
         # Each of these contains a list of sg_groups in the scene, and decides
         # how their visibilty is flagged to the renderer.  Beauty, aov-only, 
@@ -154,6 +156,8 @@ class SortControl( object ):
         vmt.createRenderElements( allAttributes )
 
         for layer in sorted(self.layers):
+
+            print "SORT CONTROL  {}".format(layer.name)
 
             # Create the render layer, if it doesn't exist.
             makeLayer(layer.name)
@@ -434,7 +438,10 @@ def setExceptions( layer, element_name ):
         try:
             # Get the top node of the region asset.  
             # Major assumptions being made here
-            asset_name = pm.PyNode('REGION:GEO').getParent().attr('assetName').get()
+            if 'Home' in layer.name:
+                asset_name = pm.PyNode('HOMEREGION:GEO').getParent().attr('assetName').get()
+            elif 'Away' in layer.name:
+                asset_name = pm.PyNode('AWAYREGION:GEO').getParent().attr('assetName').get()
             # Match the MPdd in the assetName attr
             new_name   = re.findall(reg, asset_name)[0]
             # Rename our default MP00 with MPdd
@@ -454,6 +461,7 @@ def sceneTeardown(*a):
     buffers = pm.ls(typ='VRayRenderElement')
     for b in buffers:
         if b.isReferenced(): buffers.remove(b)
+        if b.nodeType() == 'VRayRenderElementSet': buffers.remove(b)
     # And delete them
     pm.delete(buffers)
     # Get all render layers
