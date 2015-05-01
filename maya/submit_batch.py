@@ -4,33 +4,37 @@ import pymel.core as pm
 import pprint
 
 default_priority = '5000'
+default_threads  = '16'
+default_chunk    = '5'
+default_maxcpu   = '183'
 
 class RenderSubmitWindow(pm.uitypes.Window):
 
-    def __init__(self):
+    def __init__(self, *a):
         try:
             pm.deleteUI('qubeSubmitWindow')
         except: pass
 
-        self.mw = 780
-        self.setTitle('Submit Scene to Qube')
-        self.setToolbox()
-        self.setResizeToFitChildren(1)
-        self.setSizeable(0)
-        self.setWidth(self.mw)
-        self.setHeight(250)
+        self.submit_dict = self.getSceneData()
 
-        self.submit_dict = self.gatherSceneData()
-        
+        self.default_name = pm.sceneName().basename().rstrip('.mb')
+
         #################################################################################
         ## UI LAYOUT
         #################################################################################
+        
+        self.setTitle('Submit Scene to Qube')
+        self.setToolbox()
+        #self.setResizeToFitChildren(1)
+        self.setSizeable(0)
 
         main_layout = pm.formLayout(p=self)
 
         # input / output paths
-        column = pm.columnLayout(p=main_layout, width=720)
-        job_text = pm.textFieldGrp(
+        column = pm.formLayout(p=main_layout)
+
+
+        self.job_text = pm.textFieldGrp(
             'job_text',
             label='Job Name', 
             text=self.submit_dict['name'], 
@@ -39,7 +43,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
             p=column,
             cw2=(110,655)
             )
-        scene_text = pm.textFieldGrp(
+        self.scene_text = pm.textFieldGrp(
             'scene_text',
             label='Scene File', 
             text=self.submit_dict['package']['scenefile'], 
@@ -48,7 +52,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
             p=column,
             cw2=(110,655)
             )
-        project_text = pm.textFieldGrp(
+        self.project_text = pm.textFieldGrp(
             'project_text',
             label='Project Path', 
             text=self.submit_dict['package']['-proj'],
@@ -56,7 +60,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
             p=column,
             cw2=(110,655)
             )
-        outdir_text = pm.textFieldGrp(
+        self.outdir_text = pm.textFieldGrp(
             'outdir_text',
             label='Render Path (optional)', 
             text='',
@@ -64,13 +68,15 @@ class RenderSubmitWindow(pm.uitypes.Window):
             p=column,
             cw2=(110,655)
             )
+        column.redistribute()
 
         # 2 columns
-        column = pm.rowLayout(p=main_layout, nc=2)
-        rows = pm.columnLayout(width=200, p=column)
+        column = pm.formLayout(p=main_layout)
+        column.flip()
+        rows = pm.formLayout(p=column)
        
         # frame range
-        frange_text = pm.textFieldGrp(
+        self.frange_text = pm.textFieldGrp(
             'frange_text',
             l='Frame Range', 
             text=self.submit_dict['package']['range'], 
@@ -79,11 +85,10 @@ class RenderSubmitWindow(pm.uitypes.Window):
             cw2=(110, 80), 
             p=rows
             )
-
-        chunk_text = pm.textFieldGrp(
+        self.chunk_text = pm.textFieldGrp(
             'chunk_text',
             l='Chunk Size',
-            text='5',
+            text=default_chunk,
             cc=self.setChunk,
             tcc=self.setChunk,
             cw2=(110, 80),
@@ -92,16 +97,15 @@ class RenderSubmitWindow(pm.uitypes.Window):
 
         # num. threads
         threads_col = pm.rowLayout(p=rows, nc=2)
-        threads_text = pm.textFieldGrp(
+        self.threads_text = pm.textFieldGrp(
             'threads_text',
             l='Num. Threads',
-            text='16',
+            text=default_threads,
             tcc=self.setThreads,
             cw2=(110, 40),
             p=threads_col
             )
-
-        threads_chkbox = pm.checkBox(
+        self.threads_chkbox = pm.checkBox(
             'threads_chkbox',
             l='All',
             value=False,
@@ -110,7 +114,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
             )
 
         # priority
-        priority_text = pm.textFieldGrp(
+        self.priority_text = pm.textFieldGrp(
             'priority_text',
             l='Priority', 
             text=default_priority, 
@@ -121,7 +125,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
 
         # cluster
         cluster_col = pm.rowLayout(p=rows, nc=2)
-        cluster_text = pm.textFieldGrp(
+        self.cluster_text = pm.textFieldGrp(
             'cluster_text',
             l='Cluster', 
             text='/',
@@ -130,16 +134,14 @@ class RenderSubmitWindow(pm.uitypes.Window):
             cw2=(110, 40), 
             p=cluster_col
             )
-
-        restrict_chkbox = pm.checkBox(
+        self.restrict_chkbox = pm.checkBox(
             'restrict_chkbox',
-            l='Res.',
+            l='Restrict?',
             value=False,
             cc=self.setCluster,
             p=cluster_col
             )
-
-        restrict_text = pm.textFieldGrp(
+        self.restrict_text = pm.textFieldGrp(
             'restrict_text',
             l='Restrict to Clusters',
             text='',
@@ -149,83 +151,86 @@ class RenderSubmitWindow(pm.uitypes.Window):
             enable=False,
             p=rows
             )
+        rows.redistribute()
 
-        buttons = pm.columnLayout(p=column)
-        submit_single_btn = pm.button(label='Submit Current Layer', width=565, height=60, c=self.submit, p=buttons)
-        submit_all_btn    = pm.button(label='Submit All Renderable Layers', width=565, height=60, c=self.submit_all, p=buttons)
+        rows = pm.formLayout(p=column)
+        self.submit_btn = pm.button(label='Submit Current Layer', height=10, c=self.__test, p=rows)
+        self.submit_all_btn = pm.button(label='Submit All Renderable Layers', height=10, c=self.submit_all, p=rows)
+        rows.redistribute()       
+ 
+        column.redistribute(1,2)
 
-        main_layout.redistribute()
+        main_layout.redistribute(1,1.5)
 
     ### UI FUNCTIONS
     def setChunk(self, *a):
-        new = pm.textFieldGrp('chunk_text', q=True, text=True)
+        new = self.chunk_text.getText()
         self.submit_dict['package']['rangeExecution'] = 'chunks:{}'.format(new)
+        return
+
+    def setName(self, *a):
+        new = self.job_text.getText()
+        self.submit_dict['name'] = new
+        return
+
+    def setPriority(self, *a):
+        new = self.priority_text.getText()
+        self.submit_dict['priority'] = new
+        return
+
+    def setScenePath(self, *a):
+        new = self.scene_text.getText()
+        self.submit_dict['package']['scenefile'] = new
+        return
+
+    def setRenderPath(self, *a):
+        new = self.outdir_text.getText()
+        self.submit_dict['package']['-rd'] = new
+        pass
+
+    def setRange(self, *a):
+        new = self.frange_text.getText()
+        self.submit_dict['package']['range'] = new
         return
 
     def setCluster(self, *a):
         # query the checkbox
-        box_checked  = pm.checkBox('restrict_chkbox', q=True, value=True)
-        cluster      = pm.textFieldGrp('cluster_text', q=True, text=True)
-        restrictions = pm.textFieldGrp('restrict_text', q=True, text=True)
-        
+        box_checked  = self.restrict_chkbox.getValue()
+        cluster      = self.cluster_text.getText()
+        restrictions = self.restrict_text.getText()
+
         self.submit_dict['cluster'] = cluster
 
         if box_checked:
-            pm.textFieldGrp('restrict_text', e=True, enable=True)
+            self.restrict_text.setEnable(1)
             self.submit_dict['restrictions'] = restrictions
 
         elif not box_checked:
-            pm.textFieldGrp('restrict_text', e=True, enable=False)
+            self.restrict_text.setEnable(0)
             self.submit_dict['restrictions'] = ''
         return
 
     def setThreads(self, *a):
         # query the checkbox
-        box_checked = pm.checkBox('threads_chkbox', q=True, value=True)
+        box_checked = self.threads_chkbox.getValue()
 
         # if checked, ignore the text box, set threads to all
         if box_checked:
-            pm.textFieldGrp('threads_text', e=True, enable=False) 
-            self.submit_dict['reservations'] = ('host.processors=1+')
+            self.threads_text.setEnable(0)
             self.submit_dict['package']['renderThreads'] = 0
+            self.submit_dict['reservations'] = 'host.processors=1+'
             self.submit_dict['requirements'] = 'host.processors.used==0'
 
         # if unchecked, query the text field
         if not box_checked:
-            pm.textFieldGrp('threads_text', e=True, enable=True)
-            threads = pm.textFieldGrp('threads_text', q=True, text=True)
-            self.submit_dict['reservations'] = ('host.processors=' + str(threads))
+            self.threads_text.setEnable(1)
+            threads = self.threads_text.getText()
+            self.submit_dict['reservations'] = 'host.processors={}'.format(threads)
             self.submit_dict['package']['renderThreads'] = int(threads)
             self.submit_dict['requirements'] = ''
         return
 
-    def setName(self, *a):
-        new = pm.textFieldGrp('job_text', q=True, text=True)
-        self.submit_dict['name'] = new
-        return
-
-    def setPriority(self, *a):
-        new = pm.textFieldGrp('priority_text', q=True, text=True)
-        self.submit_dict['priority'] = new
-        return
-
-    def setScenePath(self, *a):
-        new = pm.textFieldGrp('scene_text', q=True, text=True)
-        self.submit_dict['package']['scenefile'] = new
-        return
-
-    def setRenderPath(self, *a):
-        new = pm.textFieldGrp('outdir_text', q=True, text=True)
-        self.submit_dict['package']['-rd'] = new
-        pass
-
-    def setRange(self, *a):
-        new = pm.textFieldGrp('frange_text', q=True, text=True)
-        self.submit_dict['package']['range'] = new
-        return
-
-    @classmethod
-    def gatherSceneData( self, *a ):
+    def getSceneData( self, *a ):
         """Gathers scene information and executes the shell command to open a Qube submission window"""
 
         rg = pm.PyNode('defaultRenderGlobals')
@@ -239,27 +244,54 @@ class RenderSubmitWindow(pm.uitypes.Window):
         render_layers   = [layer for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)]
         layer_name      = str(pm.editRenderLayerGlobals(q=True, crl=True))
 
-        submit_dict = {'name': pm.sceneName().basename().rstrip('.mb'),
-               'prototype':'cmdrange',
-               'package':{'simpleCmdType': 'Maya BatchRender (vray)',
-                          'scenefile':     toUNC(scene_file_path),
-                          '-proj':         toUNC(project_path), 
-                          'range':         frame_range,
-                          '-rl':           layer_name,
-                          'renderThreads': 16,
-                          'mayaExe':       "R:\\Program Files\\Autodesk\\Maya2015\\bin\\Render.exe",
-                          'rangeExecution': 'chunks:5'
-                          },
-                'cluster': '/',
-                'restrictions': '',
-                'requirements': '',
-                'kind': '',
-                'priority': str(5000),
-                'cpus': str(183),
-                'reservations': 'host.processors=16',
-                'flagsstring': 'auto_wrangling,disable_windows_job_object'
-              }
+        submit_dict = {
+            'name': pm.sceneName().basename().rstrip('.mb'),
+            'prototype':'cmdrange',
+            'package':{
+                'simpleCmdType': 'Maya BatchRender (vray)',
+                'scenefile': pathFormat(scene_file_path),
+                '-proj': pathFormat(project_path), 
+                'range': frame_range,
+                '-rl': layer_name,
+                '-rd': '',
+                'renderThreads': default_threads,
+                'mayaExe': "R:\\Program Files\\Autodesk\\Maya2015\\bin\\Render.exe",
+                'rangeExecution': 'chunks:5'
+                },
+            'cluster': '/',
+            'restrictions': '',
+            'requirements': '',
+            'priority': default_priority,
+            'cpus': default_maxcpu,
+            'reservations': 'host.processors={}'.format(default_threads),
+            'flagsstring': 'auto_wrangling,disable_windows_job_object'
+            }
 
+        submit_dict_mayapy = {
+            'name': pm.sceneName().basename().rstrip('.mb'),
+            'prototype':'maya',
+            'package':{
+                'scenefile': pathFormat(scene_file_path.replace('/','\\')),
+                'project': pathFormat(project_path), 
+                'range': frame_range, 
+                'cameras_all': listToStr( scene_cameras ), 
+                'layers_all': render_layers,
+                'layers': layer_name,
+                'mayaExecutable':' R:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe',
+                'renderDirectory': pathFormat(image_path),
+                'renderThreads': -1,
+                'ignoreRenderTimeErrors': True
+                },
+         'cluster': '/',
+         'restrictions': '',
+         'requirements': '',
+         'priority': default_priority,
+         'cpus': default_maxcpu,
+         'reservations': 'host.processors={}'.format(default_threads),
+         'flagsstring': 'auto_wrangling,disable_windows_job_object'
+        }
+
+        '''
         # SANITY CHECKS
         # 1- scene never saved
         if scene_file_path == '':
@@ -314,7 +346,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                               defaultButton='Whoops'
                               )
             return 'sanity check fail'        
-
+        '''
         return submit_dict
 
 
@@ -353,6 +385,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         pp.pprint(self.submit_dict)
         return
 
+
 def getSceneUserCameras( *a ):
     """Returns a list of all non-default cameras in the scene """
     default_cameras = ['topShape', 'sideShape', 'frontShape', 'perspShape']
@@ -362,7 +395,7 @@ def getSceneUserCameras( *a ):
     else: return None
 
 
-def toUNC( path ):
+def pathFormat( path ):
     """ Force updates drive mapping to unc paths """
     path = path.replace('\\','/')
     return str(path.replace('Y:/','//cagenas/'))
@@ -388,6 +421,7 @@ def listToStr( list_obj ):
             out_str = out_str + str(list_obj[i]) + " "        
         else: return '#EMPTY_LIST'
     return out_str
+
 
 def run(*a):
     submission = RenderSubmitWindow()
