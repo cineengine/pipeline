@@ -7,8 +7,7 @@ from pipeline.maya import sort
 from pipeline.maya import build
 from pipeline.maya import project
 from pipeline.maya import anim
-from pipeline.maya import submit
-from pipeline.maya import submit_batch
+#from pipeline.maya import submit
 from pipeline.database import team
 
 # LK-specific modules
@@ -40,7 +39,6 @@ reload(cfb)
 reload(projectLK)
 reload(assetLK)
 reload(submit)
-reload(submit_batch)
 
 
 blue = [0,0.38,0.52]
