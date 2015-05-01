@@ -291,7 +291,6 @@ class RenderSubmitWindow(pm.uitypes.Window):
          'flagsstring': 'auto_wrangling,disable_windows_job_object'
         }
 
-        '''
         # SANITY CHECKS
         # 1- scene never saved
         if scene_file_path == '':
@@ -346,7 +345,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                               defaultButton='Whoops'
                               )
             return 'sanity check fail'        
-        '''
+
         return submit_dict
 
 
