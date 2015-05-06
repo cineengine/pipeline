@@ -96,11 +96,11 @@ class Team(object):
             signNum = signNum + 3
         return signNum
 
-def getAllTeams( database, asNames=False, asDict=False ):
-    with open(database) as yaml_stream:
+def getAllTeams( asNames=False, asDict=False ):
+    with open(cfb.TEAM_DATABASE) as yaml_stream:
         stream = yaml.load_all(yaml_stream)
         
-    if asNames:
-        return [t['tricode'] for t in stream]
-    elif asDict:
-        return [t for t in stream]
+        if asNames:
+            return [t['tricode'] for t in stream if t['tricode']]
+        elif asDict:
+            return [t for t in stream]
