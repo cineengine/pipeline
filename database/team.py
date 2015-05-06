@@ -101,6 +101,6 @@ def getAllTeams( database, asNames=False, asDict=False ):
         stream = yaml.load_all(yaml_stream)
         
     if asNames:
-        return [t['team'] for t in stream]
+        return [t['tricode'] for t in stream]
     elif asDict:
         return [t for t in stream]
