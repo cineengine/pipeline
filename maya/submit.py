@@ -5,7 +5,8 @@ import pprint
 
 default_priority = '5000'
 default_threads  = '16'
-default_chunk    = '5'
+default_allcores = True
+default_chunk    = '1'
 default_maxcpu   = '183'
 
 class RenderSubmitWindow(pm.uitypes.Window):
@@ -105,10 +106,12 @@ class RenderSubmitWindow(pm.uitypes.Window):
             cw2=(110, 40),
             p=threads_col
             )
+        self.threads_text.setEnable(0)
+
         self.threads_chkbox = pm.checkBox(
             'threads_chkbox',
             l='All',
-            value=False,
+            value=default_allcores,
             cc=self.setThreads,
             p=threads_col
             )
@@ -161,6 +164,8 @@ class RenderSubmitWindow(pm.uitypes.Window):
         column.redistribute(1,2)
 
         main_layout.redistribute(1,1.5)
+
+        self.setThreads()
 
     ### UI FUNCTIONS
     def setChunk(self, *a):
@@ -256,7 +261,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                 '-rd': '',
                 'renderThreads': default_threads,
                 'mayaExe': "R:\\Program Files\\Autodesk\\Maya2015\\bin\\Render.exe",
-                'rangeExecution': 'chunks:5'
+                'rangeExecution': 'chunks:{}'.format(default_chunk)
                 },
             'cluster': '/',
             'restrictions': '',
