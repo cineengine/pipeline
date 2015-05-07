@@ -56,26 +56,18 @@ utilLogo :
 ...
 ---
 ELEMENT: SNF_City_Basic
-btyBuildings:
+btyCity:
     type: beauty
     rgba:
         - sg_buildings
-    occ:
         - sg_street
     lights:
         - lg_all
-btyStreets:
-    type: beauty
-    rgba:
-        - sg_street
-    pv_off:
-        - sg_buildings
-    lights:
-        - lg_all
-utilAll:
+utilCity:
     type: utility
     aov:
-        - sg_all
+        - sg_buildings
+        - sg_street
 ...
 ---
 ELEMENT: Studio_Home_Team
