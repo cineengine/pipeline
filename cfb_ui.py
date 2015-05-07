@@ -40,13 +40,8 @@ reload(selection)
 reload(cfb)
 reload(projectLK)
 reload(assetLK)
-<<<<<<< HEAD
 #reload(submit)
-=======
-reload(submit)
-reload(submit_old)
->>>>>>> 506582aae4e4df888926f4261587eb5689c2c47d
-
+#reload(submit_old)
 
 blue = [0,0.38,0.52]
 red  = [0.52,0,0]
