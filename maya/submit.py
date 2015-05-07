@@ -279,7 +279,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                 'scenefile': pathFormat(scene_file_path.replace('/','\\')),
                 'project': pathFormat(project_path), 
                 'range': frame_range, 
-                'cameras_all': listToStr( scene_cameras ), 
+                'cameras_all': ','.join(scene_cameras), 
                 'layers_all': render_layers,
                 'layers': layer_name,
                 'mayaExecutable':' R:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe',

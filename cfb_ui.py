@@ -7,8 +7,10 @@ from pipeline.maya import sort
 from pipeline.maya import build
 from pipeline.maya import project
 from pipeline.maya import anim
-#from pipeline.maya import submit
+from pipeline.maya import submit
+from pipeline.maya import submit_old
 from pipeline.database import team
+
 
 # LK-specific modules
 from pipeline.maya import projectLK
@@ -38,7 +40,12 @@ reload(selection)
 reload(cfb)
 reload(projectLK)
 reload(assetLK)
+<<<<<<< HEAD
 #reload(submit)
+=======
+reload(submit)
+reload(submit_old)
+>>>>>>> 506582aae4e4df888926f4261587eb5689c2c47d
 
 
 blue = [0,0.38,0.52]
