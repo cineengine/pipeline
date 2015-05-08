@@ -27,19 +27,29 @@ def factory( *a ):
     sc.run()
 
 
-def loadTeams(home, away=None, diagnostic=False, clean=True, *a):
+def loadTeams(home_team, away_team=None, diagnostic=False, clean=True, *a):
     ''' Loads a home team and an optional away team into the scene.  Includes many checks, but 
         also makes many assumptions about the scenes preparedness in the pipeline. '''
-    loadAssets(home, 'HOME', diagnostic, clean)
+    loadAssets(home_team, 'HOME', diagnostic, clean)
     if away:
-        loadAssets(away, 'AWAY', diagnostic, clean)
+        loadAssets(away_team, 'AWAY', diagnostic, clean)
+    return
+
+
+def loadTeamsLite(home_team, away_team=None, *a):
+    ''' A lite version of loadTeams that skips signs and major authoring steps,
+        only loading a team primary logo and attaching it to a scene locator.'''
+    loadAssetsLite(home_team, 'HOME')
+    if away:
+        loadAssetsLite(away_team, 'AWAY')
     return
 
 
 def loadAssets(tricode, location, diagnostic=True, clean=True):
-    ''' Load the selected team sign and logo pair into the specified 'location' (home/away)
-        as a namespace. In clean mode, it removes any existing references and creates fresh 
-        constraints. In 'dirty' mode, it will simply replace the existing references. '''
+    ''' Load the selected team sign and logo pair into the specified 'location' 
+        (home/away) as a namespace. In clean mode, it removes any existing 
+        references and creates fresh constraints. In 'dirty' mode, it will 
+        simply replace the existing references. '''
 
     # Get team info from database
     try:
@@ -183,6 +193,68 @@ def loadAssets(tricode, location, diagnostic=True, clean=True):
         pm.delete(pm.ls(regex=regn_re))
     except:
         pass
+
+
+def loadAssetsLite(tricode, location, diagnostic=True):
+    ''' Load the selected team logo (only) into the specificed 'location' (home/away)
+        as a namespace.
+        LITE version attaches only the logo to a locator called HOME_LOCATOR.'''
+
+    try:
+        team = Team(tricode)
+    except:
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
+
+    # Generate target logo path and namespace
+    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        return
+    logo_nspc = '{}LOGO'.format(location)
+
+    # Get existing reference nodes and kill them
+    logo_ref = None
+    for ref in pm.listReferences():
+        if ref.namespace == logo_nspc:
+            logo_ref = ref
+
+    if (logo_ref): logo_ref.remove()
+
+    # Reference the logo
+    try:
+        asset.reference(logo_path, logo_nspc)
+    except:
+        pm.warning('Build Scene  ERROR Could not reference {} logo.'.format(tricode))
+
+    # Attach the logo
+    try:
+        attachTeamLite(logo)
+    except:
+        pm.warning('Build Scene  ERROR Could not attach {} logo.'.format(tricode))       
+
+
+def attachTeamLite(location):
+    ''' Attaches a team logo to a locator called {LOCATION}_LOCATOR.'''
+    location = location.upper()
+
+    logo_namespace = '{0}LOGO'.format(location)
+
+    logo_atch = None
+    try:
+        logo_atch = pm.PyNode('{0}SIGN:ATTACH_01').format(location)
+    except:
+        pm.warning('Build Scene  ERROR Could not find logo attachment for {} team.'.format(location))
+
+    scene_atch = None
+    try:
+        scene_atch = pm.PyNode('{0}_LOCATOR').format(location)
+    except:
+        pm.warning('Build SCene  ERROR Could not find scene attachment for {} team.'.format(location))
+
+    if (logo_atch) and (scene_atch):
+        attach(scene_atch, logo_atch)
+    return
 
 
 def attachTeamToSign(location):
