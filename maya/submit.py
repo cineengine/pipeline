@@ -6,17 +6,17 @@ import pprint
 
 default_priority = '5000'
 default_threads  = '16'
-default_allcores = True
+default_allcores = False
 default_chunk    = '1'
 default_maxcpu   = '183'
 
 class RenderSubmitWindow(pm.uitypes.Window):
 
-    def __init__(self, jobtype, *a):
+    def __init__(self, *a):
         try: pass
             #pm.deleteUI(jobtype)
         except: pass
-        
+        jobtype = 'mayacmd'
         self.submit_dict = self.getSceneData(jobtype)
 
         self.default_name = pm.sceneName().basename().rstrip('.mb')
@@ -107,7 +107,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
             cw2=(110, 40),
             p=threads_col
             )
-        self.threads_text.setEnable(0)
+        self.threads_text.setEnable(1)
 
         self.threads_chkbox = pm.checkBox(
             'threads_chkbox',
@@ -158,7 +158,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         rows.redistribute()
 
         rows = pm.formLayout(p=column)
-        self.submit_btn = pm.button(label='Submit Current Layer', height=10, c=self.__test, p=rows)
+        self.submit_btn = pm.button(label='Submit Current Layer', height=10, c=self.submit, p=rows)
         self.submit_all_btn = pm.button(label='Submit All Renderable Layers', height=10, c=self.submit_all, p=rows)
         rows.redistribute()       
  
@@ -183,13 +183,15 @@ class RenderSubmitWindow(pm.uitypes.Window):
         self.setVersion(jobtype)
 
     def setChunk(self, jobtype, *a):
-        if jobtype == 'mayacmd':
-            self.chunk_text.setEnable(True)
-            new = self.chunk_text.getText()
-            self.submit_dict['package']['rangeExecution'] = 'chunks:{}'.format(new)
-        elif jobtype == 'mayapy':
-            self.chunk_text.setEnable(False)
-            self.submit_dict['package'].pop('rangeExecution', None)
+        #if jobtype == 'mayacmd':
+        self.chunk_text.setEnable(True)
+        new = self.chunk_text.getText()
+        self.submit_dict['package']['rangeExecution'] = 'chunks:' + str(new)
+        self.submit_dict['package']['rangeChunkSize'] = str(new)
+        #elif jobtype == 'mayapy':
+        #    self.chunk_text.setEnable(False)
+        #    self.submit_dict['package'].pop('rangeExecution', None)
+        #    self.submit_dict['package'].pop('rangeChunkSize', None)
         return
 
     def setName(self, *a):
@@ -253,7 +255,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         if not box_checked:
             self.threads_text.setEnable(1)
             threads = self.threads_text.getText()
-            self.submit_dict['reservations'] = 'host.processors={}'.format(threads)
+            self.submit_dict['reservations'] = 'host.processors=' + str(threads)
             self.submit_dict['package']['renderThreads'] = int(threads)
             self.submit_dict['package']['renderThreadCount'] = int(threads)
             self.submit_dict['requirements'] = ''
@@ -261,15 +263,15 @@ class RenderSubmitWindow(pm.uitypes.Window):
 
     def setVersion(self, jobtype, *a):
         if jobtype == 'mayacmd':
-            if versions.current() == versions.v2013:
+            if versions.current()/100 == 2013:
                 return "R:\\Program Files\\Autodesk\\Maya2013\\bin\\Render.exe"
-            if versions.current() == versions.v2015:
+            if versions.current()/100 == 2015:
                 return "R:\\Program Files\\Autodesk\\Maya2015\\bin\\Render.exe"
-        elif jobtype == 'mayapy':
-            if versions.current() == versions.v2013:
-                return "R:\\Program Files\\Autodesk\\Maya2013\\bin\\mayabatch.exe"
-            if versions.current() == versions.v2015:
-                return "R:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe"
+        #elif jobtype == 'mayapy':
+        #    if versions.current()/100 == 2013:
+        #        return "R:\\Program Files\\Autodesk\\Maya2013\\bin\\mayabatch.exe"
+        #    if versions.current()/100 == 2015:
+        #        return "R:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe"
 
     def getSceneData( self, jobtype, *a ):
         """Gathers scene information and executes the shell command to open a Qube submission window"""
@@ -281,7 +283,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         frame_range     = str(int(rg.startFrame.get())) + "-" + str(int(rg.endFrame.get()))
         scene_cameras   = ','.join(getSceneUserCameras())
         renderer        = rg.ren.get()
-        render_layers   = ','.join([layer for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)])
+        render_layers   = ','.join([str(layer) for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)])
         layer_name      = str(pm.editRenderLayerGlobals(q=True, crl=True))
         render_exe      = self.setVersion(jobtype)
 
@@ -292,22 +294,25 @@ class RenderSubmitWindow(pm.uitypes.Window):
                 'simpleCmdType': 'Maya BatchRender (vray)',
                 'scenefile': scene_file_path,
                 '-proj': project_path, 
+                '-cam' : scene_cameras,
                 'range': frame_range,
                 '-rl': layer_name,
                 '-rd': '',
+                '-threads' : default_threads,
                 'renderThreads': default_threads,
                 'mayaExe': render_exe,
-                'rangeExecution': 'chunks:{}'.format(default_chunk)
+                'rangeExecution': 'chunks:' + str(default_chunk),
+                'rangeChunkSize': str(default_chunk)
                 },
             'cluster': '/',
             'restrictions': '',
             'requirements': '',
             'priority': default_priority,
             'cpus': default_maxcpu,
-            'reservations': 'host.processors={}'.format(default_threads),
+            'reservations': 'host.processors=' + str(default_threads),
             'flagsstring': 'auto_wrangling,disable_windows_job_object'
             }
-
+        '''
         submit_dict_mayapy = {
             'name': 'maya(py) ' + pm.sceneName().basename().rstrip('.mb'),
             'prototype':'maya',
@@ -329,10 +334,10 @@ class RenderSubmitWindow(pm.uitypes.Window):
          'requirements': '',
          'priority': default_priority,
          'cpus': default_maxcpu,
-         'reservations': 'host.processors={}'.format(default_threads),
+         'reservations': 'host.processors=' + str(default_threads),
          'flagsstring': 'auto_wrangling,disable_windows_job_object'
         }
-        '''
+
         # SANITY CHECKS
         # 1- scene never saved
         if scene_file_path == '':
@@ -397,17 +402,17 @@ class RenderSubmitWindow(pm.uitypes.Window):
     def run(self):
         self.show()
 
-    def submit( self, qube_gui=0, *a ):
+    def submit( self, qube_gui=1, *a ):
         """ Runs the Qube submission console command for the current render layer. """
 
         layer = pm.editRenderLayerGlobals(q=True, crl=True)
         self.submit_dict['package']['-rl'] = str(layer)
         self.submit_dict['name'] = pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
 
-        if qube_gui:
-            subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--submitDict', str(self.submit_dict)])
-        else:
-            subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(self.submit_dict)])
+        #if qube_gui:
+        subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--submitDict', str(self.submit_dict)])
+        #else:
+        #    subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(self.submit_dict)])
 
     def submit_all(self, *a):
         """ Iterates over all active render layers and submits each one individually. """
