@@ -27,17 +27,39 @@ STUDIO :
 ...
 ---
 ELEMENT : CFB_Logo
-btyLogo :
+btyShieldStrap :
     type: beauty
     rgba :
-        - sg_cfb_logo
+        - sg_shield
+        - sg_strap
     lights : 
         - lg_cfb_logo
     gi: 0
-utilLogo :
+utilShieldStrap :
     type: utility
     aov :
-        - sg_cfb_logo
+        - sg_shield
+        - sg_strap
+...
+---
+ELEMENT : CFB_Hanger
+btyHanger :
+    type: beauty
+    occ :
+        - sg_shield
+        - sg_strap
+    rgba :
+        - sg_hanger
+    lights : 
+        - lg_cfb_logo
+    gi: 0
+utilHanger :
+    type: utility
+    occ :
+        - sg_shield
+        - sg_strap
+    aov :
+        - sg_hanger
 ...
 ---
 ELEMENT : SNF_Logo
@@ -102,7 +124,9 @@ utilHomeAll:
         - "HOMESIGN:sg_sign"
         - "HOMEREGION:sg_ground"
         - "HOMEREGION:sg_homeside"
-        - "CFB_LOGO:sg_cfb_logo"
+        - "CFB_LOGO:sg_shield"
+        - "CFB_LOGO:sg_strap"
+        - "CFB_LOGO:sg_hanger"
         - sg_lay_homeside
 btyHomeSignNoon:
     type: beauty
@@ -164,7 +188,9 @@ utilAwayAll:
         - "AWAYSIGN:sg_sign"
         - "AWAYREGION:sg_ground"
         - "AWAYREGION:sg_awayside"
-        - "CFB_LOGO:sg_cfb_logo"
+        - "CFB_LOGO:sg_shield"
+        - "CFB_LOGO:sg_strap"
+        - "CFB_LOGO:sg_hanger"
         - sg_lay_awayside
 btyAwaySignNoon:
     type: beauty
@@ -235,7 +261,9 @@ utilHomeAll:
         - "HOMESIGN:sg_sign"
         - "HOMEREGION:sg_ground"
         - "HOMEREGION:sg_homeside"
-        - "CFB_LOGO:sg_cfb_logo"
+        - "CFB_LOGO:sg_shield"
+        - "CFB_LOGO:sg_strap"
+        - "CFB_LOGO:sg_hanger"
         - sg_lay_homeside
 btyHomeSignSunset:
     type: beauty
@@ -328,7 +356,9 @@ utilAwayAll:
         - "AWAYSIGN:sg_sign"
         - "AWAYREGION:sg_ground"
         - "AWAYREGION:sg_awayside"
-        - "CFB_LOGO:sg_cfb_logo"
+        - "CFB_LOGO:sg_shield"
+        - "CFB_LOGO:sg_strap"
+        - "CFB_LOGO:sg_hanger"
         - sg_lay_awayside
 btyAwaySignSunset:
     type: beauty
