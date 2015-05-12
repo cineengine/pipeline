@@ -7,8 +7,6 @@ from pipeline.maya import sort
 from pipeline.maya import build
 from pipeline.maya import project
 from pipeline.maya import anim
-from pipeline.maya import submit
-from pipeline.maya import submit_old
 from pipeline.database import team
 
 
@@ -40,8 +38,6 @@ reload(selection)
 reload(cfb)
 reload(projectLK)
 reload(assetLK)
-#reload(submit)
-#reload(submit_old)
 
 blue = [0,0.38,0.52]
 red  = [0.52,0,0]
@@ -398,9 +394,7 @@ pm.menuItem(l="Export Camera", c=anim.exportCamera)
 pm.menuItem(l="Import Camera", c=anim.importCamera)
 pm.menuItem(l="Export Alembic", c=anim.exportAbc)
 
-#pm.menuItem(divider=True)
-#pm.menuItem(submenu=True, l='Rendering Setup')
 
-#pm.menuItem(divider=True, p=mmenu)
+
 
 
