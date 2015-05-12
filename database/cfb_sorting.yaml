@@ -55,6 +55,15 @@ utilLogo :
         - sg_cfb_logo_nogi
 ...
 ---
+ELEMENT : Quad
+SUNSET :
+    type: beauty
+    rgba :
+        - sg_sign
+    lights : 
+        - lg_sunset
+...
+---
 ELEMENT: SNF_City_Basic
 btyCity:
     type: beauty

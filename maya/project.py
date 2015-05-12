@@ -296,32 +296,40 @@ class Scene(object):
             pm.warning('Failed to set the specified project. It probably doesn\'t exist')
             return False
 
-    def rename(self):
+    def rename(self, name=None):
         x = isScene()
         if not (x):
             return
 
-        prompt = pm.promptDialog(
-                    title='Rename Scene',
-                    message='Enter new descriptor tag (i.e. PRIMETIME)',
-                    text='',
-                    button=['OK','Cancel'],
-                    db='OK',
-                    cb='Cancel',
-                    ds='Cancel'
-                    )
+        if not (name):
+            prompt = pm.promptDialog(
+                        title='Rename Scene',
+                        message='Enter new descriptor tag (i.e. PRIMETIME)',
+                        text='',
+                        button=['OK','Cancel'],
+                        db='OK',
+                        cb='Cancel',
+                        ds='Cancel'
+                        )
 
-        if prompt == 'OK':
-            self.custom_string = pm.promptDialog(q=True, text=True)
-            self._nameScene()
-            self.version = 1.0
-            self._pushPull()
-            if os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
-                self.save()
-            else:
-                pm.warning('SAVE SCENE  ERROR One or more destination folders does not exist.')
-                return
+            if prompt == 'OK':
+                self.custom_string = pm.promptDialog(q=True, text=True)
+            else: return
+
+        elif (name):
+            self.custom_string = name
+
+        else: return
+
+        self._nameScene()
+        self.version = 1.0
+        self._pushPull()
+        
+        if os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
+            self.save()
+            return
         else:
+            pm.warning('SAVE SCENE  ERROR One or more destination folders does not exist.')
             return
 
 

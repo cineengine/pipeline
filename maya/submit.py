@@ -160,7 +160,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         rows.redistribute()
 
         rows = pm.formLayout(p=column)
-        self.submit_btn = pm.button(label='Submit Current Layer', height=10, c=self.__test, p=rows)
+        self.submit_btn = pm.button(label='Submit Current Layer', height=10, c=self.submit, p=rows)
         self.submit_all_btn = pm.button(label='Submit All Renderable Layers', height=10, c=self.submit_all, p=rows)
         rows.redistribute()       
  
@@ -249,10 +249,12 @@ class RenderSubmitWindow(pm.uitypes.Window):
             
             if (self.jobtype) == 'mayacmd':
                 self.submit_dict['package']['-threads'] = 0
+            
             elif (self.jobtype) == 'mayapy':
                 self.submit_dict['package']['renderThreads'] = 0
                 self.submit_dict['package']['renderThreadCount'] = 1
             
+            self.submit_dict['package']['useAllCores'] = 1
             self.submit_dict['reservations'] = 'host.processors=1+'
             self.submit_dict['requirements'] = 'host.processors.used==0'
 
@@ -267,6 +269,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
                 self.submit_dict['package']['renderThreads'] = int(threads)
                 self.submit_dict['package']['renderThreadCount'] = int(threads)
 
+            self.submit_dict['package']['useAllCores'] = 0
             self.submit_dict['reservations'] = 'host.processors=' + str(threads)
             self.submit_dict['requirements'] = ''
         return

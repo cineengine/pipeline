@@ -31,7 +31,7 @@ def loadTeams(home_team, away_team=None, diagnostic=False, clean=True, *a):
     ''' Loads a home team and an optional away team into the scene.  Includes many checks, but 
         also makes many assumptions about the scenes preparedness in the pipeline. '''
     loadAssets(home_team, 'HOME', diagnostic, clean)
-    if away:
+    if away_team:
         loadAssets(away_team, 'AWAY', diagnostic, clean)
     return
 
@@ -40,7 +40,7 @@ def loadTeamsLite(home_team, away_team=None, *a):
     ''' A lite version of loadTeams that skips signs and major authoring steps,
         only loading a team primary logo and attaching it to a scene locator.'''
     loadAssetsLite(home_team, 'HOME')
-    if away:
+    if away_team:
         loadAssetsLite(away_team, 'AWAY')
     return
 
@@ -229,10 +229,12 @@ def loadAssetsLite(tricode, location, diagnostic=True):
 
     # Attach the logo
     try:
-        attachTeamLite(logo)
+        attachTeamLite(location)
     except:
         pm.warning('Build Scene  ERROR Could not attach {} logo.'.format(tricode))       
 
+    foster_re = re.compile('.RNfosterParent.')
+    pm.delete(pm.ls(regex=foster_re))
 
 def attachTeamLite(location):
     ''' Attaches a team logo to a locator called {LOCATION}_LOCATOR.'''
@@ -242,15 +244,15 @@ def attachTeamLite(location):
 
     logo_atch = None
     try:
-        logo_atch = pm.PyNode('{0}SIGN:ATTACH_01').format(location)
+        logo_atch = pm.PyNode('{0}LOGO:ATTACH_01'.format(location))
     except:
         pm.warning('Build Scene  ERROR Could not find logo attachment for {} team.'.format(location))
 
     scene_atch = None
     try:
-        scene_atch = pm.PyNode('{0}_LOCATOR').format(location)
+        scene_atch = pm.PyNode('{0}_LOCATOR'.format(location))
     except:
-        pm.warning('Build SCene  ERROR Could not find scene attachment for {} team.'.format(location))
+        pm.warning('Build Scene  ERROR Could not find scene attachment for {} team.'.format(location))
 
     if (logo_atch) and (scene_atch):
         attach(scene_atch, logo_atch)
@@ -407,4 +409,25 @@ def attach(parent, child):
     sc = pm.scaleConstraint(parent, child, mo=False)
     return (pc,sc)
 
+
+def quad(team, *a):
+
+    loadTeamsLite(team, team)
+    sorter = sort.SortControl('Quad')
+    sorter.run()
+
+    try:
+        pm.PyNode('HOMELOGO:GEO_05').visibility.set(0)
+        pm.PyNode('AWAYLOGO:GEO_05').visibility.set(0)
+    except: pass
+    try:
+        pm.PyNode('HOMELOGO:GEO_06').visibility.set(0)
+        pm.PyNode('AWAYLOGO:GEO_06').visibility.set(0)
+    except: pass
+
+    v_ray = pm.PyNode('vraySettings')
+    v_ray.fileNamePrefix.set("""{0}/{0}.#""".format(team))
+
+    scene = project.Scene()
+    scene.rename(team)
 

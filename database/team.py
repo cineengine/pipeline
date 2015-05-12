@@ -11,6 +11,7 @@ class Team(object):
         
         # Converts matte painting index to its full name
         matte_conv = {
+             0: 'MP00-generic',
              1: 'MP01-pacNW',
              2: 'MP02-noCal',
              3: 'MP03-soCal',
