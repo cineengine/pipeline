@@ -226,7 +226,17 @@ def export(*a):
         # Update the asset in the scene with the current version
         main_node.assetVersion.set(main_node.assetVersion.get()+1)
 
-    master_save = pm.exportSelected(export_name, type='mayaBinary')
+    master_save = pm.exportSelected(
+        export_name, 
+        constructionHistory=True,
+        channels=True,
+        constraints=True,
+        expressions=True,
+        shader=True,
+        preserveReferences=True,
+        type='mayaBinary'
+        )
+    
     pm.warning('Successfully wrote asset to: ' + master_save.replace('/','\\'))
 
 
