@@ -36,6 +36,13 @@ def loadTeams(home_team, away_team=None, diagnostic=False, clean=True, *a):
     return
 
 
+def loadTeamsStadium(home_team, away_team=None, diagnostic=False, clean=True, *a):
+    loadAssetsStadium(home_team, 'HOME', diagnostic, clean)
+    if away_team:
+        loadAssetsStadium(away_team, 'AWAY', diagnostic, clean)
+    return
+
+
 def loadTeamsLite(home_team, away_team=None, *a):
     ''' A lite version of loadTeams that skips signs and major authoring steps,
         only loading a team primary logo and attaching it to a scene locator.'''
@@ -195,6 +202,117 @@ def loadAssets(tricode, location, diagnostic=True, clean=True):
         pass
 
 
+def loadAssetsStadium(tricode, location, diagnostic=False, clean=True):
+    # Get team info from database
+    try:
+        team = Team(tricode)
+    except: 
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
+
+    # Generate string for the name of the school's sign
+    sign = 'SIGN_{0}'.format(team.sign.upper())
+    # Generate string for the school's matte painting ID
+    mp_id = str(team.matteNum).zfill(2)
+
+    
+    ''' LK SPECIFIC SECTION '''
+    # The full path of this scene
+    this_scene = pm.sceneName()
+    # Split into tokens
+    scene_token = this_scene.split('/')
+    # 4th from the right is the project name
+    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
+    ''' END LK '''
+
+
+    # Create paths for signs / team logo / region / layout scenes
+    sign_path = os.path.join(cfb.MAIN_ASSET_DIR, sign, (sign+'.mb'))
+    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    lgtrig_path = os.path.join(cfb.MAIN_ASSET_DIR, 'LIGHTING_BASE', 'LIGHTING_BASE.mb')
+    
+    if (diagnostic):
+        print '\n'
+        print '{} Team:   {}'.format(location, team.tricode)
+        print 'Project:     {}'.format(this_project)
+        print '{} Sign:   {}'.format(location, sign_path)
+        print '{} Logo:   {}'.format(location, logo_path)
+        print 'Light Rig:   {}'.format(lgtrig_path)
+
+
+    # Check for missing files and print warnings
+    if not os.path.exists(sign_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(sign_path))
+        sign_path = None
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        logo_path = None
+    if not os.path.exists(lgtrig_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(lgtrig_path))
+        lgtrig_path = None
+
+    if (diagnostic):
+        return
+
+    # Generate namespaces
+    sign_nspc = '{0}SIGN'.format(location)
+    logo_nspc = '{0}LOGO'.format(location)
+
+    # Check for existing references
+    sign_ref = None
+    logo_ref = None
+
+    # Get those reference nodess
+    for ref in pm.listReferences():
+        if ref.namespace == sign_nspc:
+            sign_ref = ref
+
+        elif ref.namespace == logo_nspc:
+            logo_ref = ref
+
+    # If there are references missing, force a clean run for simplicity's sake (i implore you)
+    if (sign_ref) or (logo_ref) == None and clean == False:
+        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
+        clean = True
+
+    # If the user has asked to do a clean reference of the asset, including attachment
+    if (clean):
+        # If there's already references in those namespaces, just delete them
+        if (logo_ref): logo_ref.remove()
+        if (sign_ref): sign_ref.remove()
+        # Reference in the asset to the namespace
+        if sign_path: asset.reference(sign_path, sign_nspc)
+        if logo_path: asset.reference(logo_path, logo_nspc)
+
+        # Attach them to their parent locators
+        attachTeamToSign(location)
+        attachSignToScene(location)
+
+    # (If) there are already references in the namespaces, and the user is requesting
+    # to replace the reference and maintain reference edits (dirty mode)
+    elif not (clean):
+        # If the right sign is already loaded, pass
+        if (sign+'.mb') in sign_ref.path:
+            pass
+        # Or else replace the sign reference
+        else:
+            sign_ref.replaceWith(sign_path)
+        # Same thing with school logos this time
+        if (team.tricode+'.mb') in logo_ref.path:
+            pass
+        else:
+            logo_ref.replaceWith(logo_path)
+
+    # Cleanup foster parents
+    try:
+        sign_re = re.compile('{0}RNfosterParent.'.format(sign_nspc))
+        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
+
+        pm.delete(pm.ls(regex=sign_re))
+        pm.delete(pm.ls(regex=logo_re))
+    except:
+        pass
+
 def loadAssetsLite(tricode, location, diagnostic=True):
     ''' Load the selected team logo (only) into the specificed 'location' (home/away)
         as a namespace.
@@ -235,6 +353,7 @@ def loadAssetsLite(tricode, location, diagnostic=True):
 
     foster_re = re.compile('.RNfosterParent.')
     pm.delete(pm.ls(regex=foster_re))
+
 
 def attachTeamLite(location):
     ''' Attaches a team logo to a locator called {LOCATION}_LOCATOR.'''

@@ -7,7 +7,7 @@ from os.path import split
 from os import mkdir
 from os.path import exists
 
-write_node = "WriteScenes"
+#write_node = "WriteScenes"
 
 # Node names from Nuke
 MASTER_CTRL = "MASTER_CTRL"
@@ -24,23 +24,17 @@ READ_AWAY_PODTHREE = "READ_AWAY_POD_THREE"
 
 
 # Team folder path
-#cfb.TEAMS_ASSET_DIR = "y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/002_3D_TEAMS/"
+TEAMS_ASSET_DIR = cfb.TEAMS_ASSET_DIR.replace('\\','/')
 
 
-logo_read_nodes = ['READ_TEAM_BTY',
-                   'READ_TEAM_DIFF',
-                   'READ_TEAM_TOTALLIGHT',
-                   'READ_TEAM_REFR',
-                   'READ_TEAM_SPEC',
-                   'READ_TEAM_REFL',
-                   'READ_TEAM_SHAD',
-                   'READ_TEAM_FRESNEL',
-                   'READ_TEAM_AO',
-                   'READ_TEAM_VEL',
-                   'READ_TEAM_PW',
-                   'READ_TEAM_NRMLCAM',
-                   'READ_TEAM_Z',
-                   'READ_TEAM_UV'
+logo_read_nodes = ['READ_TEAM_SUNSET',
+                   'READ_TEAM_NIGHT',
+                   'READ_TEAM_MATTE',
+                   'READ_TEAM_UTIL',
+                   'READ_AWAY_SUNSET',
+                   'READ_AWAY_NIGHT',
+                   'READ_AWAY_MATTE',
+                   'READ_AWAY_UTIL'
                    ]
 
 def convertColor( rgb_tuple, toFloat=True, toInt=False ):
@@ -169,12 +163,12 @@ def selectTeamLogo(tricode, away=False):
     if not away:
         try:
             logoReadNode = nuke.toNode(READ_LOGO)
-            logoReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_01.PNG")
+            logoReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_01.PNG")
         except: pass
     elif away:
         try:
             logoReadNode = nuke.toNode(READ_AWAY_LOGO)
-            logoReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_01.PNG")
+            logoReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_01.PNG")
         except: pass        
 
 
@@ -182,12 +176,12 @@ def selectTeamBanner(tricode, away=False):
     if not away:
         try:
             bannerReadNode = nuke.toNode(READ_BANNER)
-            bannerReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_04.PNG")
+            bannerReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_04.PNG")
         except: pass
     elif away:
         try:
             bannerReadNode = nuke.toNode(READ_AWAY_BANNER)
-            bannerReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_04.PNG")
+            bannerReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_04.PNG")
         except: pass
 
 
@@ -195,12 +189,12 @@ def selectTeamPodTwo(tricode, away=False):
     if not away:
         try:
             podTwoReadNode = nuke.toNode(READ_PODTWO)
-            podTwoReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_02.PNG")
+            podTwoReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_02.PNG")
         except: pass
     elif away:
         try:
             podTwoReadNode = nuke.toNode(READ_AWAY_PODTWO)
-            podTwoReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_02.PNG")
+            podTwoReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_02.PNG")
         except: pass
 
 
@@ -208,12 +202,12 @@ def selectTeamPodThree(tricode, away=False):
     if not away:
         try:
             podThreeReadNode = nuke.toNode(READ_PODTHREE)
-            podThreeReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_03.PNG")
+            podThreeReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_03.PNG")
         except: pass
     elif away:
         try:
             podThreeReadNode = nuke.toNode(READ_AWAY_PODTHREE)
-            podThreeReadNode.knob('file').setValue(cfb.TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_03.PNG")
+            podThreeReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_03.PNG")
         except: pass
 
 

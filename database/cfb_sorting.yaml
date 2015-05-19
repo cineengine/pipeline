@@ -101,6 +101,42 @@ utilCity:
         - sg_street
 ...
 ---
+ELEMENT: Single_Team_ST
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyHomeLogoNight:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+utilHomeAll:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+        - "HOMEREGION:sg_ground"
+        - "HOMEREGION:sg_homeside"
+        - "CFB_LOGO:sg_cfb_logo"
+        - sg_lay_homeside
+...
+---
 ELEMENT: Studio_Home_Team
 btyHomeLogoNoon:
     type: beauty
