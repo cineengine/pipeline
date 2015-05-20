@@ -1,13 +1,17 @@
 from pipeline import cfb
 import pipeline.database.team as t
+reload(t)
 
 import nuke
+import threading, thread
 
-from os.path import split
+import time
 from os import mkdir
 from os.path import exists
+from os.path import split
 
-#write_node = "WriteScenes"
+# Modify gvars for nuke-friendliness
+TEAMS_ASSET_DIR = cfb.TEAMS_ASSET_DIR.replace('\\','/')
 
 # Node names from Nuke
 MASTER_CTRL = "MASTER_CTRL"
@@ -22,11 +26,6 @@ READ_AWAY_BANNER = "READ_AWAY_BANNER"
 READ_AWAY_PODTWO = "READ_AWAY_POD_TWO"
 READ_AWAY_PODTHREE = "READ_AWAY_POD_THREE"
 
-
-# Team folder path
-TEAMS_ASSET_DIR = cfb.TEAMS_ASSET_DIR.replace('\\','/')
-
-
 logo_read_nodes = ['READ_TEAM_SUNSET',
                    'READ_TEAM_NIGHT',
                    'READ_TEAM_MATTE',
@@ -36,6 +35,7 @@ logo_read_nodes = ['READ_TEAM_SUNSET',
                    'READ_AWAY_MATTE',
                    'READ_AWAY_UTIL'
                    ]
+
 
 def convertColor( rgb_tuple, toFloat=True, toInt=False ):
     def __clamp(value):
@@ -71,7 +71,6 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
     selectTeamPodThree(tricode)
 
     if matchup:
-        print 'i am a matchup'
         away_tricode = ctrlNode.knob('awayTeamTricode').getValue()
         selectColors(away_tricode, away=True)
         selectRegions(away_tricode, away=True)
@@ -82,23 +81,65 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
         selectTeamPodTwo(away_tricode, away=True)
         selectTeamPodThree(away_tricode, away=True)
     
-    if not textTrans:
-        if renders:
-            selectLogoRender(tricode)
 
-    if not matchup:        
-        try:
-            wn = nuke.toNode(write_node)
-            proj_name = getProject()
-            out_folder = cfb.ANIMATION_PROJECT_DIR + proj_name + '/render_2d/' + tricode
-            if not exists(out_folder):
-                mkdir(out_folder)
-            wn.knob('file').setValue(out_folder + '/' + proj_name + '_' + tricode + '.#.PNG')
-        except:
-            print 'Error setting write node!'
+def writeThread(write_node, start_frame, end_frame):
+    nuke.executeInMainThread(nuke.execute, args=(write_node, start_frame, end_frame, 1), kwargs={'continueOnError':False})
 
 
-#nuke.addKnobChanged(loadTeam)
+def initTeamToRender(tricode, location):
+    m_ctrl = nuke.toNode('MASTER_CTRL')
+    m_write = nuke.toNode('MAIN_WRITE')
+
+    team = t.Team(tricode)
+
+    m_write.knob('{}_team'.format(location)).setValue(tricode)
+    m_write.knob('{}_sign'.format(location)).setValue(team.sign)
+    m_write.knob('{}_region'.format(location)).setValue(int(team.matteNum))
+    if location == 'home':
+        m_write.knob('sky').setValue(int(team.skyNum))
+
+
+def preRender():
+    m_ctrl = nuke.toNode('MASTER_CTRL')
+    m_write = nuke.toNode('MAIN_WRITE')
+
+    matchup = bool(m_write.knob('is_matchup').getValue())
+    
+    team_list = m_write.knob('team_list').getValue().split(',')
+
+    print team_list[0]
+
+    initTeamToRender(team_list[0], 'home')
+    
+    # make output folders
+
+def postRender():
+    m_write = nuke.toNode('MAIN_WRITE')
+
+    team_list = m_write.knob('team_list').getValue().split(',')
+    del team_list[0]
+    m_write.knob('team_list').setValue(','.join(team_list))
+    
+    if len(team_list) == 0:
+        return
+
+    else:
+        render_thread = threading.Thread(name='writeThread', target=writeThread, args=(m_write, 1, 1))
+        render_thread.setDaemon(False)
+        render_thread.start()
+
+        while render_thread.isAlive():
+            time.sleep(0.1)
+
+
+def preFrame():
+    pass
+
+
+def postFrame():
+    pass
+
+
 def selectColors(tricode, away=False):    
     team = t.Team(tricode)
     ctrlNode = nuke.toNode(MASTER_CTRL)
@@ -233,8 +274,3 @@ def selectLogoRender(tricode):
         except:
             nuke.warning('Error finding replacement for: ' + r)
 
-
-def getProject(*a):
-    scene_path, scene_name = split(nuke.root()['name'].value())
-    proj_name = scene_path.split('/')[6]
-    return (proj_name)
