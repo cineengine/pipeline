@@ -1,3 +1,5 @@
+import sys
+sys.path.append('f:/10_github/py-yaml-3.11/lib')
 import yaml
 
 from pipeline import cfb
@@ -5,7 +7,7 @@ from pipeline import cfb
 ## TEAM DATABASE OBJECT
 class Team(object):
     def __init__(self, team_tricode):
-        yaml_stream = open(cfb.TEAM_DATABASE)
+        yaml_stream = open('F:/10_GITHUB/pipeline/database/cfb_teams.yaml')
         db = yaml.load_all(yaml_stream)
         found = 0
         
@@ -97,11 +99,11 @@ class Team(object):
             signNum = signNum + 3
         return signNum
 
-def getAllTeams( asNames=False, asDict=False ):
-    with open(cfb.TEAM_DATABASE) as yaml_stream:
-        stream = yaml.load_all(yaml_stream)
-        
-        if asNames:
-            return [t['tricode'] for t in stream if t['tricode']]
-        elif asDict:
-            return [t for t in stream]
+#def getAllTeams( asNames=False, asDict=False ):
+#    with open(cfb.TEAM_DATABASE) as yaml_stream:
+#        stream = yaml.load_all(yaml_stream)
+#        
+##        if asNames:
+#            return [t['tricode'] for t in stream if t['tricode']]
+##        elif asDict:
+ #           return [t for t in stream]
