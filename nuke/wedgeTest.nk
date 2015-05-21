@@ -2,22 +2,21 @@
 version 8.0 v3
 define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 <layout version="1.0">
-    <window x="0" y="22" w="1464" h="1300" screen="0">
+    <window x="0" y="0" w="1506" h="1440" screen="0">
         <splitter orientation="1">
-            <split size="618"/>
+            <split size="941"/>
             <splitter orientation="1">
                 <split size="40"/>
                 <dock id="" hideTitles="1" activePageId="Toolbar.1">
                     <page id="Toolbar.1"/>
                 </dock>
-                <split size="574"/>
+                <split size="897"/>
                 <splitter orientation="2">
-                    <split size="725"/>
-                    <dock id="" activePageId="Properties.1">
+                    <split size="807"/>
+                    <dock id="" activePageId="Viewer.1">
                         <page id="Viewer.1"/>
-                        <page id="Properties.1"/>
                     </dock>
-                    <split size="510"/>
+                    <split size="568"/>
                     <dock id="" activePageId="DAG.1">
                         <page id="DAG.1"/>
                         <page id="Curve Editor.1"/>
@@ -25,9 +24,9 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
                     </dock>
                 </splitter>
             </splitter>
-            <split size="826"/>
-            <dock id="" activePageId="Script Editor.1">
-                <page id="Script Editor.1"/>
+            <split size="545"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
             </dock>
         </splitter>
     </window>
@@ -361,7 +360,7 @@ Gamma {
  ypos 1809
  postage_stamp true
 }
-set N32b65380 [stack 0]
+set N147b2c80 [stack 0]
 Constant {
  inputs 0
  color {{MASTER_CTRL.primaryColor} {MASTER_CTRL.primaryColor} {MASTER_CTRL.primaryColor} 1}
@@ -378,7 +377,7 @@ Gamma {
  ypos 1809
  postage_stamp true
 }
-set N32b65a60 [stack 0]
+set N147b3360 [stack 0]
 Switch {
  inputs 2
  which {{MASTER_CTRL.accentColor}}
@@ -415,8 +414,8 @@ Crop {
  xpos 37690
  ypos 2055
 }
-push $N32b65380
-push $N32b65a60
+push $N147b2c80
+push $N147b3360
 Switch {
  inputs 2
  which {{MASTER_CTRL.neonColor}}
@@ -511,7 +510,7 @@ Gamma {
  ypos 1785
  postage_stamp true
 }
-set N3582aa30 [stack 0]
+set N149102e0 [stack 0]
 Constant {
  inputs 0
  color {{MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor}}
@@ -528,7 +527,7 @@ Gamma {
  ypos 1785
  postage_stamp true
 }
-set N3582b110 [stack 0]
+set N149109c0 [stack 0]
 Switch {
  inputs 2
  which {{MASTER_CTRL.awayNeonColor}}
@@ -565,8 +564,8 @@ Crop {
  xpos 38130
  ypos 2079
 }
-push $N3582aa30
-push $N3582b110
+push $N149102e0
+push $N149109c0
 Switch {
  inputs 2
  which {{MASTER_CTRL.awayAccentColor}}
@@ -634,7 +633,7 @@ Merge2 {
  xpos 37910
  ypos 2391
 }
-set N3582d000 [stack 0]
+set N149128b0 [stack 0]
 Viewer {
  input_process false
  name Viewer2
@@ -718,7 +717,7 @@ Switch {
  xpos 38353
  ypos 2733
 }
-push $N3582d000
+push $N149128b0
 push 0
 push 0
 push 0
@@ -808,7 +807,6 @@ Viewer {
  inputs 5
  frame_range 1-300
  frame_range_lock true
- input_number 4
  full_frame_processing true
  roi {-0.5839999914 -0.008999999613 0.3019999862 0.5310000181}
  input_process false
@@ -816,42 +814,6 @@ Viewer {
  name Viewer1
  xpos 39196
  ypos 1858
-}
-NoOp {
- inputs 0
- name MASTER_CTRL
- knobChanged "n=nuke.thisNode() \nk=nuke.thisKnob() \nif k.name() == \"knob\": \n print k.value()"
- note_font "Verdana Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold"
- note_font_size 25
- xpos 37911
- ypos 1667
- addUserKnob {20 User}
- addUserKnob {1 teamTricode l "Team Tricode"}
- teamTricode FLA
- addUserKnob {22 switchTeamBtn l "Switch Home Team" T "from pipeline.nuke import switchTeam\nswitchTeam.loadTeam()" +STARTLINE}
- addUserKnob {1 awayTeamTricode l "Away Team Tricode"}
- awayTeamTricode "\[knob MASTER_WRITE.AwayTeamCurrent]"
- addUserKnob {22 switchAwayTeamBtn l "Switch Away Team" T "from pipeline.nuke import switchTeam\nswitchTeam.loadTeam(matchup=True)" +STARTLINE}
- addUserKnob {26 ""}
- addUserKnob {4 accentColor l "Billboard Color" M {Primary Secondary ""}}
- addUserKnob {4 neonColor l "Neon Color" M {Primary Secondary}}
- neonColor Secondary
- addUserKnob {18 primaryColor l "" +STARTLINE}
- primaryColor {0.05098039216 0.1607843137 0.4470588235}
- addUserKnob {6 primaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- addUserKnob {18 secondaryColor l "" +STARTLINE}
- secondaryColor {0.9607843137 0.2823529412 0}
- addUserKnob {6 secondaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- addUserKnob {26 "" +STARTLINE}
- addUserKnob {4 awayAccentColor l "Away Billboard Color" M {Primary Secondary}}
- addUserKnob {4 awayNeonColor l "Away Neon Color" M {Primary Secondary}}
- awayNeonColor Secondary
- addUserKnob {18 awayPrimaryColor l "" +STARTLINE}
- awayPrimaryColor {0 0.2941176471 0.5764705882}
- addUserKnob {6 awayPrimaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- addUserKnob {18 awaySecondaryColor l "" +STARTLINE}
- awaySecondaryColor {0.8823529412 0.4352941176 0.2196078431}
- addUserKnob {6 awaySecondaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
 }
 Constant {
  inputs 0
@@ -868,28 +830,50 @@ Write {
  beforeRender switchTeam.preRender()
  afterRender switchTeam.postRender()
  name MAIN_WRITE
- selected true
  xpos 38602
- ypos 1704
- addUserKnob {20 Wedge}
- addUserKnob {1 deliverable l Deliverable}
- deliverable CFB_E_TEAM_ENDSTAMP_01_ST_<TOD>_<HOME>
- addUserKnob {6 is_matchup l Matchup +STARTLINE}
+ ypos 1677
+}
+NoOp {
+ inputs 0
+ name MASTER_CTRL
+ knobChanged "n=nuke.thisNode() \nk=nuke.thisKnob() \nif k.name() == \"knob\": \n print k.value()"
+ note_font "Verdana Bold Bold"
+ note_font_size 25
+ xpos 37930
+ ypos 1652
+ addUserKnob {20 User}
+ addUserKnob {20 Home}
  addUserKnob {26 home_team_div l HOME}
  addUserKnob {1 home_team l Team}
- home_team TEX
+ addUserKnob {22 home_switch_btn l "Switch Home Team" +STARTLINE}
  addUserKnob {1 home_sign l Sign}
- home_sign A
  addUserKnob {3 home_region l Region}
- home_region 6
  addUserKnob {3 sky l Sky}
- sky 2
+ addUserKnob {4 home_bboard_color l "Billboard Color" M {Primary Secondary ""}}
+ addUserKnob {4 home_neon_color l "Neon Color" M {Primary Secondary}}
+ addUserKnob {18 home_primary l "" +STARTLINE}
+ home_primary {0 0 0}
+ addUserKnob {6 home_primary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {18 home_secondary l "" +STARTLINE}
+ home_secondary {0 0 0}
+ addUserKnob {6 home_secondary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {20 Away}
  addUserKnob {26 away_team_div l AWAY}
  addUserKnob {1 away_team l Team}
+ addUserKnob {22 away_switch_btn l "Switch Away Team" +STARTLINE}
  addUserKnob {1 away_sign l Sign}
  addUserKnob {3 away_region l Region}
- addUserKnob {26 "" +STARTLINE}
+ addUserKnob {4 away_bboard_color l "Billboard Color" M {Primary Secondary}}
+ addUserKnob {4 away_neon_color l "Neon Color" M {Primary Secondary}}
+ addUserKnob {18 away_primary l "" +STARTLINE}
+ away_primary {0 0 0}
+ addUserKnob {6 away_primary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {18 away_secondary l "" +STARTLINE}
+ away_secondary {0 0 0}
+ addUserKnob {6 away_secondary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {20 Wedge}
+ addUserKnob {6 is_matchup l Matchup +STARTLINE}
+ addUserKnob {1 deliverable l Deliverable}
+ deliverable CFB_E_TEAM_ENDSTAMP_01_ST_<TOD>_<HOME>
  addUserKnob {1 team_list l "Team List"}
- addUserKnob {3 ctr l Ctr}
- ctr 1
 }
