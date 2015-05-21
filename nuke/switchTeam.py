@@ -55,11 +55,11 @@ def convertColor( rgb_tuple, toFloat=True, toInt=False ):
 
 
 def loadTeam(textTrans=False, renders=True, matchup=False):
-    ctrlNode = nuke.toNode(MASTER_CTRL)
+    m_ctrl = nuke.toNode(MASTER_CTRL)
     #k = nuke.thisKnob()
     #if k.name() == "teamTricode":
     #    tricode = k.getValue()
-    tricode = ctrlNode.knob('teamTricode').getValue()
+    tricode = m_ctrl.knob('teamTricode').getValue()
 
     selectColors(tricode)
     selectRegions(tricode)
@@ -69,62 +69,63 @@ def loadTeam(textTrans=False, renders=True, matchup=False):
     selectTeamBanner(tricode)
     selectTeamPodTwo(tricode)
     selectTeamPodThree(tricode)
+    if renders: selectLogoRender(tricode)
 
     if matchup:
-        away_tricode = ctrlNode.knob('awayTeamTricode').getValue()
+        away_tricode = m_ctrl.knob('away_team').getValue()
         selectColors(away_tricode, away=True)
         selectRegions(away_tricode, away=True)
-        selectSkies(away_tricode, away=True)
         selectSigns(away_tricode, away=True)
         selectTeamLogo(away_tricode, away=True)
         selectTeamBanner(away_tricode, away=True)
         selectTeamPodTwo(away_tricode, away=True)
         selectTeamPodThree(away_tricode, away=True)
-    
+        if matchup: selectLogoRender(away_tricode, away=True)
+            
 
 def writeThread(write_node, start_frame, end_frame):
     nuke.executeInMainThread(nuke.execute, args=(write_node, start_frame, end_frame, 1), kwargs={'continueOnError':False})
 
 
 def initTeamToRender(tricode, location):
-    m_ctrl = nuke.toNode('MASTER_CTRL')
-    m_write = nuke.toNode('MAIN_WRITE')
+    m_ctrl = nuke.toNode(MASTER_CTRL)
 
     team = t.Team(tricode)
 
-    m_write.knob('{}_team'.format(location)).setValue(tricode)
-    m_write.knob('{}_sign'.format(location)).setValue(team.sign)
-    m_write.knob('{}_region'.format(location)).setValue(int(team.matteNum))
+    m_ctrl.knob('{}_team'.format(location)).setValue(tricode)
+    m_ctrl.knob('{}_sign'.format(location)).setValue(team.sign)
+    m_ctrl.knob('{}_region'.format(location)).setValue(int(team.matteNum))
     if location == 'home':
-        m_write.knob('sky').setValue(int(team.skyNum))
+        m_ctrl.knob('sky').setValue(int(team.skyNum))
 
 
 def preRender():
-    m_ctrl = nuke.toNode('MASTER_CTRL')
-    m_write = nuke.toNode('MAIN_WRITE')
+    m_ctrl = nuke.toNode(MASTER_CTRL)
 
-    matchup = bool(m_write.knob('is_matchup').getValue())
+    matchup = bool(m_ctrl.knob('is_matchup').getValue())
     
-    team_list = m_write.knob('team_list').getValue().split(',')
+    team_list = m_ctrl.knob('team_list').getValue().split(',')
 
     print team_list[0]
 
     initTeamToRender(team_list[0], 'home')
+    if matchup: 
+        initTeamToRender(team_list[0], 'away')
     
     # make output folders
 
 def postRender():
-    m_write = nuke.toNode('MAIN_WRITE')
+    m_ctrl = nuke.toNode(MASTER_CTRL)
 
-    team_list = m_write.knob('team_list').getValue().split(',')
+    team_list = m_ctrl.knob('team_list').getValue().split(',')
     del team_list[0]
-    m_write.knob('team_list').setValue(','.join(team_list))
+    m_ctrl.knob('team_list').setValue(','.join(team_list))
     
     if len(team_list) == 0:
         return
 
     else:
-        render_thread = threading.Thread(name='writeThread', target=writeThread, args=(m_write, 1, 1))
+        render_thread = threading.Thread(name='writeThread', target=writeThread, args=(m_ctrl, 1, 1))
         render_thread.setDaemon(False)
         render_thread.start()
 
@@ -142,61 +143,50 @@ def postFrame():
 
 def selectColors(tricode, away=False):    
     team = t.Team(tricode)
-    ctrlNode = nuke.toNode(MASTER_CTRL)
+    m_ctrl = nuke.toNode(MASTER_CTRL)
     if not away:
         try:
-            ctrlNode.knob('primaryColor').setValue(convertColor( team.primary, toFloat=True ))
-            ctrlNode.knob('secondaryColor').setValue(convertColor( team.secondary, toFloat=True ))
+            m_ctrl.knob('home_primary').setValue(convertColor( team.primary, toFloat=True ))
+            m_ctrl.knob('home_secondary').setValue(convertColor( team.secondary, toFloat=True ))
         except: pass
     elif away:
         try:
-            ctrlNode.knob('awayPrimaryColor').setValue(convertColor( team.primary, toFloat=True ))
-            ctrlNode.knob('awaySecondaryColor').setValue(convertColor( team.secondary, toFloat=True ))
+            m_ctrl.knob('away_primary').setValue(convertColor( team.primary, toFloat=True ))
+            m_ctrl.knob('away_secondary').setValue(convertColor( team.secondary, toFloat=True ))
         except: pass
 
 
 def selectRegions(tricode, away=False):    
     team = t.Team(tricode)
-    ctrlNode = nuke.toNode(MASTER_CTRL)
+    m_ctrl = nuke.toNode(MASTER_CTRL)
     if not away:
         try:
-            ctrlNode.knob('Region').setValue( team.matte )
-            ctrlNode.knob('RegionNum').setValue( team.matteNum )
+            m_ctrl.knob('home_region').setValue( team.matteNum )
         except: pass
     elif away:
         try:
-            ctrlNode.knob('AwayRegion').setValue( team.matte )
-            ctrlNode.knob('AwayRegionNum').setValue( team.matteNum )
+            m_ctrl.knob('away_region').setValue( team.matteNum )
         except: pass
 
 
 def selectSkies(tricode, away=False):    
     team = t.Team(tricode)
-    ctrlNode = nuke.toNode(MASTER_CTRL)
-    if not away:
-        try:
-            ctrlNode.knob('Sky').setValue( team.sky )
-            ctrlNode.knob('SkyNum').setValue( team.skyNum )
-        except: pass
-    elif away:
-        try:
-            ctrlNode.knob('AwaySky').setValue( team.sky )
-            ctrlNode.knob('AwaySkyNum').setValue( team.skyNum )
-        except: pass
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+    try:
+        m_ctrl.knob('sky').setValue( team.skyNum )
+    except: pass
 
 
 def selectSigns(tricode, away=False):    
     team = t.Team(tricode)
-    ctrlNode = nuke.toNode(MASTER_CTRL)
+    m_ctrl = nuke.toNode(MASTER_CTRL)
     if not away:
         try:
-            ctrlNode.knob('Sign').setValue( team.sign )
-            ctrlNode.knob('SignNum').setValue( team.signNum )
+            m_ctrl.knob('home_sign').setValue( team.signNum-1 )
         except: pass
     elif away:
         try:
-            ctrlNode.knob('AwaySign').setValue( team.sign )
-            ctrlNode.knob('AwaySignNum').setValue( team.signNum )
+            m_ctrl.knob('away_sign').setValue( team.signNum-1 )
         except: pass
 
 
