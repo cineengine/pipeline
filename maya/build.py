@@ -21,12 +21,6 @@ reload(project)
 
 
 def factory( *a ):
-    ## INITIALIZE V-RAY SETTINGS
-    #pm.Mel.eval('unifiedRenderGlobalsWindow;')
-    #try:
-    #utils.initVray()
-    #utils.setVrayDefaults()
-
     asset.reference(cfb.FACTORY_LIGHT_RIG, 'FACTORY')
     sc = sort.SortControl('Factory')
     sc.run()
@@ -318,6 +312,7 @@ def loadAssetsStadium(tricode, location, diagnostic=False, clean=True):
     except:
         pass
 
+
 def loadAssetsLite(tricode, location, diagnostic=True):
     ''' Load the selected team logo (only) into the specificed 'location' (home/away)
         as a namespace.
@@ -562,7 +557,7 @@ def singleTeamStadium(tricode):
     loadTeamsStadium(tricode, diagnostic=False, clean=True)
     #sort
     sort.sceneTeardown()
-    sc = sort.SortControl('Single_Team_ST')
+    sc = sort.SortControl('Single_Team_STADIUM')
     sc.run()
     #change output path
     vrs = pm.PyNode('vraySettings')
