@@ -54,12 +54,12 @@ def convertColor( rgb_tuple, toFloat=True, toInt=False ):
         return (out_r, out_g, out_b)
 
 
-def loadTeam(textTrans=False, renders=True, matchup=False):
+def loadTeam(textTrans=False, renders=False, matchup=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     #k = nuke.thisKnob()
     #if k.name() == "teamTricode":
     #    tricode = k.getValue()
-    tricode = m_ctrl.knob('teamTricode').getValue()
+    tricode = m_ctrl.knob('home_team').getValue()
 
     selectColors(tricode)
     selectRegions(tricode)
@@ -182,11 +182,11 @@ def selectSigns(tricode, away=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     if not away:
         try:
-            m_ctrl.knob('home_sign').setValue( team.signNum-1 )
+            m_ctrl.knob('home_sign').setValue( team.signNum )
         except: pass
     elif away:
         try:
-            m_ctrl.knob('away_sign').setValue( team.signNum-1 )
+            m_ctrl.knob('away_sign').setValue( team.signNum )
         except: pass
 
 
@@ -200,7 +200,7 @@ def selectTeamLogo(tricode, away=False):
         try:
             logoReadNode = nuke.toNode(READ_AWAY_LOGO)
             logoReadNode.knob('file').setValue(TEAMS_ASSET_DIR + tricode + "/includes/" + tricode + "_01.PNG")
-        except: pass        
+        except: pass
 
 
 def selectTeamBanner(tricode, away=False):
