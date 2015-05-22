@@ -294,29 +294,33 @@ def setGroupVisibility( sort_set, override ):
         enableOverride( sort_set.attr('matteSurface') )
         enableOverride( sort_set.attr('alphaContribution') )
         enableOverride( sort_set.attr('generateRenderElements') )
+        enableOverride( sort_set.attr('reflectionAmount') )
 
         if override == 'rgba':
             sort_set.matteSurface.set(0)
             sort_set.alphaContribution.set(1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(1)        
+            sort_set.reflectionAmount.set(1)        
         elif override == 'occ':
             sort_set.matteSurface.set(1)
             sort_set.alphaContribution.set(-1)
             sort_set.primaryVisibility.set(1)
             sort_set.generateRenderElements.set(0)
+            sort_set.reflectionAmount.set(0)
         elif override == 'pv_off':
             sort_set.matteSurface.set(0)
             sort_set.alphaContribution.set(0)
             sort_set.primaryVisibility.set(0)
             sort_set.generateRenderElements.set(0)
+            sort_set.reflectionAmount.set(1)
         elif override == 'aov':
             sort_set.matteSurface.set(1)
             sort_set.alphaContribution.set(1)
             sort_set.primaryVisibility.set(1)
-            sort_set.generateRenderElements.set(1)        
-    
-    return True
+            sort_set.generateRenderElements.set(1)
+            sort_set.reflectionAmount.set(0)      
+        return True
 
 
 def setLayerOverrides( layer ):
