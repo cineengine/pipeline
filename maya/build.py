@@ -14,6 +14,11 @@ import pipeline.vray.utils as utils
 import os.path
 import re
 
+reload(cfb)
+reload(asset)
+reload(sort)
+reload(project)
+
 
 def factory( *a ):
     ## INITIALIZE V-RAY SETTINGS
@@ -530,7 +535,7 @@ def attach(parent, child):
 
 
 def quad(team, *a):
-
+    ''' A full scene-building routine for 'quad' logo slicks '''
     loadTeamsLite(team, team)
     sorter = sort.SortControl('Quad')
     sorter.run()
@@ -550,3 +555,18 @@ def quad(team, *a):
     scene = project.Scene()
     scene.rename(team)
 
+
+def singleTeamStadium(tricode):
+    ''' A full scene-building routine for single-team Stadium elements.'''
+    #load in the new team
+    loadTeamsStadium(tricode, diagnostic=False, clean=True)
+    #sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Single_Team_ST')
+    sc.run()
+    #change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode)) 
+    #rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)
