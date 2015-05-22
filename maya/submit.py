@@ -505,7 +505,7 @@ def autoSubmitAll(frame_range, cluster, restrictions, priority):
     for layer in render_layers:
         pm.editRenderLayerGlobals(crl=layer)
     
-        submit_dict['package']['layer'] = str(layer)
+        submit_dict['package']['layers'] = str(layer)
         submit_dict['name'] = pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
 
         submit_dict['package']['range'] = frame_range
