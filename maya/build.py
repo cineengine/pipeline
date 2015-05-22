@@ -551,13 +551,13 @@ def quad(team, *a):
     scene.rename(team)
 
 
-def singleTeamStadium(tricode):
-    ''' A full scene-building routine for single-team Stadium elements.'''
+def singleTeam(tricode, package):
+    ''' A full scene-building routine for single-team elements.'''
     #load in the new team
     loadTeamsStadium(tricode, diagnostic=False, clean=True)
     #sort
     sort.sceneTeardown()
-    sc = sort.SortControl('Single_Team_STADIUM')
+    sc = sort.SortControl('Single_Team_{}'.format(package.upper()))
     sc.run()
     #change output path
     vrs = pm.PyNode('vraySettings')
