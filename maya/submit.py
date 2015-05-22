@@ -16,7 +16,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         
         self.jobtype = jobtype
 
-        self.submit_dict = self.getSceneData()
+        self.submit_dict = getSceneData()
 
         self.default_name = pm.sceneName().basename().rstrip('.mb')
 
@@ -274,142 +274,6 @@ class RenderSubmitWindow(pm.uitypes.Window):
             self.submit_dict['requirements'] = ''
         return
 
-    def setVersion(self, *a):
-        if self.jobtype == 'mayacmd':
-            if versions.current()/100 == 2013:
-                return "R:/Program Files/Autodesk/Maya2013/bin/Render.exe"
-            if versions.current()/100 == 2015:
-                return "R:/Program Files/Autodesk/Maya2015/bin/Render.exe"
-        
-        elif self.jobtype == 'mayapy':
-            if versions.current()/100 == 2013:
-                return "R:/Program Files/Autodesk/Maya2013/bin/mayabatch.exe"
-            if versions.current()/100 == 2015:
-                return "R:/Program Files/Autodesk/Maya2015/bin/mayabatch.exe"
-
-    def getSceneData( self, *a ):
-        """Gathers scene information and executes the shell command to open a Qube submission window"""
-        rg = pm.PyNode('defaultRenderGlobals')
-
-        scene_file_path = pathFormat(pm.system.sceneName())
-        project_path    = pathFormat(pm.workspace(q=True, rd=True).replace('/','\\'))
-        image_path      = pathFormat(os.path.join(project_path, pm.workspace('images', q=True, fre=True)).replace('/','\\'))
-        frame_range     = str(int(rg.startFrame.get())) + "-" + str(int(rg.endFrame.get()))
-        scene_cameras   = ','.join(getSceneUserCameras())
-        renderer        = rg.ren.get()
-        render_layers   = ','.join([str(layer) for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)])
-        layer_name      = str(pm.editRenderLayerGlobals(q=True, crl=True))
-        render_exe      = self.setVersion()
-
-        submit_dict = {
-            'name': 'maya(cmd) ' + pm.sceneName().basename().rstrip('.mb'),
-            'prototype':'cmdrange',
-            'package':{
-                'simpleCmdType': 'Maya BatchRender (vray)',
-                'scenefile': scene_file_path,
-                '-r': 'vray',
-                '-proj': project_path, 
-                'range': frame_range,
-                '-rl': layer_name,
-                '-rd': '',
-                '-threads': default_threads,
-                'mayaExe': render_exe,
-                'rangeExecution': 'chunks:' + str(default_chunk)
-                },
-            'cluster': '/',
-            'restrictions': '',
-            'requirements': '',
-            'priority': default_priority,
-            'cpus': default_maxcpu,
-            'reservations': 'host.processors=' + str(default_threads),
-            'flagsstring': 'auto_wrangling,disable_windows_job_object'
-            }
-
-        submit_dict_mayapy = {
-            'name': 'maya(py) ' + pm.sceneName().basename().rstrip('.mb'),
-            'prototype':'maya',
-            'package':{
-                'scenefile': scene_file_path.replace('/','\\'),
-                'project': project_path, 
-                'range': frame_range, 
-                'cameras_all': scene_cameras, 
-                'layers_all': render_layers,
-                'layers': layer_name,
-                'mayaExecutable': render_exe,
-                'renderDirectory': image_path,
-                'renderThreads': default_threads,
-                'renderThreadCount': default_threads,
-                'ignoreRenderTimeErrors': True
-                },
-         'cluster': '/',
-         'restrictions': '',
-         'requirements': '',
-         'priority': default_priority,
-         'cpus': default_maxcpu,
-         'reservations': 'host.processors=' + str(default_threads),
-         'flagsstring': 'auto_wrangling,disable_windows_job_object'
-        }
-        '''
-        # SANITY CHECKS
-        # 1- scene never saved
-        if scene_file_path == '':
-            pm.confirmDialog( title='Scene not saved.',
-                              button='Whoops',
-                              message='Please save scene on cagenas before submitting.',
-                              defaultButton='Whoops'
-                              )
-            return 'sanity check fail'
-
-        # 2- no user cameras in scene
-        if scene_cameras == None:
-            pm.confirmDialog( title='No renderable camera.',
-                              button='Whoops',
-                              message='No renderable cameras found in your scene.',
-                              defaultButton='Whoops'
-                              )
-            return 'sanity check fail'
-
-        elif len(scene_cameras) > 1:
-            confirm = pm.confirmDialog( title='Multiple renderable cameras.',
-                              button=('Whoops', 'That\'s fine'),
-                              cancelButton='That\'s fine',
-                              message='You have multiple renderable cameras in your scene.  All of them will be rendered.  Proceed?',
-                              defaultButton='Whoops',
-                              dismissString='That\'s fine'
-                              )
-            if confirm == 'That\'s fine':
-                pass
-            elif confirm == 'Whoops':
-                return 'sanity check fail'
-
-        # 3- animation rendering not enabled
-        if rg.animation.get() == False:
-            check = pm.confirmDialog( title='Animation not enabled.',
-                                      button=('Whoops', 'That\'s fine'),
-                                      cancelButton='That\'s fine',
-                                      message='Animation is not enabled in your render globals.',
-                                      defaultButton='Whoops',
-                                      dismissString='That\'s fine'
-                                      )
-            print check
-            if check == 'Whoops':
-                return 'sanity check fail'
-            else: pass
-
-        # 4- framerate weirdness
-        if (rg.endFrame.get() % int(rg.endFrame.get())):
-            pm.confirmDialog( title='Framge range is strange!',
-                              button='Whoops',
-                              message='Animation frame range is wonky.  Did you change framerate?',
-                              defaultButton='Whoops'
-                              )
-            return 'sanity check fail'        
-        '''
-        if self.jobtype == 'mayacmd':
-            return submit_dict
-        elif self.jobtype == 'mayapy':
-            return submit_dict_mayapy
-
 
     def run(self):
         self.show()
@@ -422,7 +286,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
             self.submit_dict['package']['-rl'] = str(layer)
             name_prefix = 'maya(cmd) '
         elif self.jobtype == 'mayapy':
-            self.submit_dict['package']['layer'] = str(layer)
+            self.submit_dict['package']['layers'] = str(layer)
             name_prefix = 'maya(py) '
 
         self.submit_dict['name'] = name_prefix + pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
@@ -459,6 +323,144 @@ class RenderSubmitWindow(pm.uitypes.Window):
         return
 
 
+def getSceneData(jobtype, *a ):
+    """Gathers scene information and executes the shell command to open a Qube submission window"""
+    rg = pm.PyNode('defaultRenderGlobals')
+
+    # GET MAYA VERSION
+    if jobtype == 'mayacmd':
+        if versions.current()/100 == 2013:
+            render_exe = "R:/Program Files/Autodesk/Maya2013/bin/Render.exe"
+        if versions.current()/100 == 2015:
+            render_exe = "R:/Program Files/Autodesk/Maya2015/bin/Render.exe"
+    
+    elif jobtype == 'mayapy':
+        if versions.current()/100 == 2013:
+            render_exe = "R:/Program Files/Autodesk/Maya2013/bin/mayabatch.exe"
+        if versions.current()/100 == 2015:
+            render_exe = "R:/Program Files/Autodesk/Maya2015/bin/mayabatch.exe"
+
+    # Populate base scene information
+    scene_file_path = pathFormat(pm.system.sceneName())
+    project_path    = pathFormat(pm.workspace(q=True, rd=True).replace('/','\\'))
+    image_path      = pathFormat(os.path.join(project_path, pm.workspace('images', q=True, fre=True)).replace('/','\\'))
+    frame_range     = str(int(rg.startFrame.get())) + "-" + str(int(rg.endFrame.get()))
+    scene_cameras   = ','.join(getSceneUserCameras())
+    renderer        = rg.ren.get()
+    render_layers   = ','.join([str(layer) for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)])
+    layer_name      = str(pm.editRenderLayerGlobals(q=True, crl=True))
+
+    submit_dict = {
+        'name': 'maya(cmd) ' + pm.sceneName().basename().rstrip('.mb'),
+        'prototype':'cmdrange',
+        'package':{
+            'simpleCmdType': 'Maya BatchRender (vray)',
+            'scenefile': scene_file_path,
+            '-r': 'vray',
+            '-proj': project_path, 
+            'range': frame_range,
+            '-rl': layer_name,
+            '-rd': '',
+            '-threads': default_threads,
+            'mayaExe': render_exe,
+            'rangeExecution': 'chunks:' + str(default_chunk)
+            },
+        'cluster': '/',
+        'restrictions': '',
+        'requirements': '',
+        'priority': default_priority,
+        'cpus': default_maxcpu,
+        'reservations': 'host.processors=' + str(default_threads),
+        'flagsstring': 'auto_wrangling,disable_windows_job_object'
+        }
+
+    submit_dict_mayapy = {
+        'name': 'maya(py) ' + pm.sceneName().basename().rstrip('.mb'),
+        'prototype':'maya',
+        'package':{
+            'scenefile': scene_file_path.replace('/','\\'),
+            'project': project_path, 
+            'range': frame_range, 
+            'cameras_all': scene_cameras, 
+            'layers_all': render_layers,
+            'layers': layer_name,
+            'mayaExecutable': render_exe,
+            'renderDirectory': image_path,
+            'renderThreads': default_threads,
+            'renderThreadCount': default_threads,
+            'ignoreRenderTimeErrors': True
+            },
+     'cluster': '/',
+     'restrictions': '',
+     'requirements': '',
+     'priority': default_priority,
+     'cpus': default_maxcpu,
+     'reservations': 'host.processors=' + str(default_threads),
+     'flagsstring': 'auto_wrangling,disable_windows_job_object'
+    }
+    '''
+    # SANITY CHECKS
+    # 1- scene never saved
+    if scene_file_path == '':
+        pm.confirmDialog( title='Scene not saved.',
+                          button='Whoops',
+                          message='Please save scene on cagenas before submitting.',
+                          defaultButton='Whoops'
+                          )
+        return 'sanity check fail'
+
+    # 2- no user cameras in scene
+    if scene_cameras == None:
+        pm.confirmDialog( title='No renderable camera.',
+                          button='Whoops',
+                          message='No renderable cameras found in your scene.',
+                          defaultButton='Whoops'
+                          )
+        return 'sanity check fail'
+
+    elif len(scene_cameras) > 1:
+        confirm = pm.confirmDialog( title='Multiple renderable cameras.',
+                          button=('Whoops', 'That\'s fine'),
+                          cancelButton='That\'s fine',
+                          message='You have multiple renderable cameras in your scene.  All of them will be rendered.  Proceed?',
+                          defaultButton='Whoops',
+                          dismissString='That\'s fine'
+                          )
+        if confirm == 'That\'s fine':
+            pass
+        elif confirm == 'Whoops':
+            return 'sanity check fail'
+
+    # 3- animation rendering not enabled
+    if rg.animation.get() == False:
+        check = pm.confirmDialog( title='Animation not enabled.',
+                                  button=('Whoops', 'That\'s fine'),
+                                  cancelButton='That\'s fine',
+                                  message='Animation is not enabled in your render globals.',
+                                  defaultButton='Whoops',
+                                  dismissString='That\'s fine'
+                                  )
+        print check
+        if check == 'Whoops':
+            return 'sanity check fail'
+        else: pass
+
+    # 4- framerate weirdness
+    if (rg.endFrame.get() % int(rg.endFrame.get())):
+        pm.confirmDialog( title='Framge range is strange!',
+                          button='Whoops',
+                          message='Animation frame range is wonky.  Did you change framerate?',
+                          defaultButton='Whoops'
+                          )
+        return 'sanity check fail'        
+    '''
+    if jobtype == 'mayacmd':
+        return submit_dict
+    elif jobtype == 'mayapy':
+        return submit_dict_mayapy
+
+
+
 def getSceneUserCameras( *a ):
     """Returns a list of all non-default cameras in the scene """
     default_cameras = ['topShape', 'sideShape', 'frontShape', 'perspShape']
@@ -492,7 +494,23 @@ def mayajob(*a):
     submission = RenderSubmitWindow(wn,'mayapy')
     submission.run()
     return
+
+
+def autoSubmitAll(frame_range, cluster, restrictions, priority):
+
+    render_layers = [layer for layer in pm.ls(type='renderLayer') if (not 'defaultRenderLayer' in str(layer)) and layer.renderable.get()]
+
+    submit_dict = getSceneData('mayapy')
+
+    for layer in render_layers:
+        pm.editRenderLayerGlobals(crl=layer)
     
-mayajob()
+        submit_dict['package']['layer'] = str(layer)
+        submit_dict['name'] = pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
 
-
+        submit_dict['package']['range'] = frame_range
+        submit_dict['cluster'] = cluster
+        submit_dict['restrictions'] = restrictions
+        submit_dict['priority'] = priority
+        
+        subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])      
