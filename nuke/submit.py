@@ -10,39 +10,44 @@ cpus = 95
 
 #cmdline version
 def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
-    submit_dict = {'prototype'         : 'cmdrange',
-                   'name'              : job_name,
-                   'priority'          : str(priority),
-                   'cpus'              : str(cpus),
-                   'groups'            : 'Nuke',
-                   'reservations': 'host.processors=16',
-                   'package'    :{'simpleCmdType'    : 'Nuke (cmdline)',
-                                  'executable'       : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
-                                  'script'           : str(script),
-                                  'executeNodes'     : write_node,
-                                  'range'            : frange,
-                                  '-m'               : '16',
-                                  'minOpenSlots'     : 16,
-                                  'renderThreadCount': 16
-                                  }
-                   }
+    submit_dict = {
+        'prototype'    : 'cmdrange',
+        'name'         : job_name,
+        'priority'     : str(priority),
+        'cpus'         : str(cpus),
+        'groups'       : 'Nuke',
+        'reservations' : 'host.processors=16',
+        'package'      : {
+            'simpleCmdType'    : 'Nuke (cmdline)',
+            'executable'       : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
+            'script'           : str(script),
+            'executeNodes'     : write_node,
+            'range'            : frange,
+            '-m'               : '16',
+            'minOpenSlots'     : 16,
+            'renderThreadCount': 16
+            }
+           
+        }
 
     return submit_dict
 
 # pyNuke version
 
 def generatePackagePY(job_name, script, frange, priority, cpus, write_node=''):
-    submit_dict = {'prototype': 'pyNuke',
-                   'name'     : job_name,
-                   'priority' : str(priority),
-                   'cpus'     : str(cpus),
-                   'groups'   : 'Nuke',
-                   'package'  :{'pyExecutable' : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
-                                'scriptPath'   : script,
-                                'executeNodes' : write_node,
-                                'range'        : frange
-                                }
-                   }
+    submit_dict = {
+        'prototype': 'pyNuke',
+        'name'     : job_name,
+        'priority' : str(priority),
+        'cpus'     : str(cpus),
+        'groups'   : 'Nuke',
+        'package'  : {
+            'pyExecutable' : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
+            'scriptPath'   : script,
+            'executeNodes' : write_node,
+            'range'        : frange
+            }
+        }
 
     return submit_dict
 
