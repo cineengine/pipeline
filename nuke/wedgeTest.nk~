@@ -1,0 +1,895 @@
+#! C:/Program Files/Nuke8.0v3/nuke-8.0.v3.dll -nx
+version 8.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="22" w="1464" h="1300" screen="0">
+        <splitter orientation="1">
+            <split size="618"/>
+            <splitter orientation="1">
+                <split size="40"/>
+                <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                    <page id="Toolbar.1"/>
+                </dock>
+                <split size="574"/>
+                <splitter orientation="2">
+                    <split size="725"/>
+                    <dock id="" activePageId="Properties.1">
+                        <page id="Viewer.1"/>
+                        <page id="Properties.1"/>
+                    </dock>
+                    <split size="510"/>
+                    <dock id="" activePageId="DAG.1">
+                        <page id="DAG.1"/>
+                        <page id="Curve Editor.1"/>
+                        <page id="DopeSheet.1"/>
+                    </dock>
+                </splitter>
+            </splitter>
+            <split size="826"/>
+            <dock id="" activePageId="Script Editor.1">
+                <page id="Script Editor.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name F:/10_GITHUB/pipeline/nuke/wedgeTest.nk
+ frame 300
+ last_frame 300
+ lock_range true
+ fps 30
+ format "1920 1080 0 0 1920 1080 1 HD"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ addUserKnob {20 mariTab l Mari}
+ addUserKnob {26 cmdStatus l "listen status" t "The status of Nuke's command port" T <b>Disabled</b>}
+ addUserKnob {26 sendStatus l "send status" t "The status of Nuke's connection to Mari" T <b>Inactive</b>}
+ addUserKnob {3 socketPort l "nuke command port" t "Port to listen on. Make sure this matches the command port set in Mari's \"Nuke\" Palette."}
+ socketPort 50107
+ addUserKnob {6 enableSocket l enabled -STARTLINE}
+ addUserKnob {26 divider l "" +STARTLINE}
+ addUserKnob {20 advanced n 1}
+ advanced 0
+ addUserKnob {3 portRange l "port range" t "If the main specified command port is unavailable, Nuke will try using the next port number, and continue until successful or the indicated number of ports have been tried."}
+ portRange 200
+ addUserKnob {4 enablePortRange l "" t "Indicates whether to use a range of ports up to the given number, or to use only the single one specified." -STARTLINE M {"use range" "single port only"}}
+ addUserKnob {6 localhostOnly l "local host only" t "This determines whether the Mari bridge server will listen for connections from any machine, or from \"localhost\" (the local machine) only.<p>Only allowing connections from localhost is more secure, but will prevent you from using the Nuke&lt;&gt;Mari workflow across the network." +STARTLINE}
+ addUserKnob {1 hostName l "mari host" t "The machine name or IP address that Mari is running on.\nLeave empty if both Mari and Nuke are running on the same machine."}
+ hostName localhost
+ addUserKnob {3 socketPortSend l port t "Port that Mari is listening to. Make sure this matches the command port set in Mari's preferences." -STARTLINE}
+ socketPortSend 6100
+ addUserKnob {2 mariDataDir l "mari data dir" t "Path to directory that will hold transient data to be sent to Mari (exrs, objs and fbx files). If this is left empty, a \"mari\" directory will be created in the nk file's location"}
+ mariDataDir "\[getenv NUKE_TEMP_DIR]/mariData"
+ addUserKnob {2 mariLocation l "mari launch path" t "The path to launch Mari from.<br>This can also be set using the <b>MARI_INSTALL_PATH</b> environment variable."}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {20 Deadline}
+ addUserKnob {1 FrameListMode l frameListMode}
+ FrameListMode Global
+ addUserKnob {1 CustomFrameList l customFrameList}
+ CustomFrameList 1-200
+ addUserKnob {1 Department l department}
+ addUserKnob {1 Pool l pool}
+ Pool boxxes
+ addUserKnob {1 SecondaryPool l secondaryPool}
+ SecondaryPool " "
+ addUserKnob {1 Group l group}
+ Group none
+ addUserKnob {1 Priority l priority}
+ Priority 60
+ addUserKnob {1 MachineLimit l machineLimit}
+ MachineLimit 0
+ addUserKnob {1 IsBlacklist l isBlacklist}
+ IsBlacklist False
+ addUserKnob {1 MachineList l machineList}
+ addUserKnob {1 LimitGroups l limitGroups}
+ addUserKnob {1 SubmitSuspended l submitSuspended}
+ SubmitSuspended False
+ addUserKnob {1 ChunkSize l chunkSize}
+ ChunkSize 22
+ addUserKnob {1 ConcurrentTasks l concurrentTasks}
+ ConcurrentTasks 1
+ addUserKnob {1 LimitConcurrentTasks l limitConcurrentTasks}
+ LimitConcurrentTasks True
+ addUserKnob {1 Threads l threads}
+ Threads 0
+ addUserKnob {1 SubmitScene l submitScene}
+ SubmitScene False
+ addUserKnob {1 BatchMode l batchMode}
+ BatchMode False
+ addUserKnob {1 ContinueOnError l continueOnError}
+ ContinueOnError False
+ addUserKnob {1 UseNodeRange l useNodeRange}
+ UseNodeRange True
+ addUserKnob {1 UseGpu l useGpu}
+ UseGpu False
+ addUserKnob {1 EnforceRenderOrder l enforceRenderOrder}
+ EnforceRenderOrder False
+ addUserKnob {1 ProxyMode l proxyMode}
+ ProxyMode False
+ addUserKnob {1 PerformanceProfiler l performanceProfiler}
+ addUserKnob {1 PerformanceProfilerPath l performanceProfilerPath}
+ addUserKnob {1 CreateUploadMovie l createUploadMovie}
+ CreateUploadMovie False
+ addUserKnob {1 CreateUploadFilmStrip l createUploadFilmStrip}
+ CreateUploadFilmStrip False
+ addUserKnob {1 UseDraft l useDraft}
+ UseDraft False
+ addUserKnob {1 DraftTemplate l draftTemplate}
+ addUserKnob {1 DraftUser l draftUser}
+ addUserKnob {1 DraftEntity l draftEntity}
+ addUserKnob {1 DraftVersion l draftVersion}
+ addUserKnob {1 DraftExtraArgs l draftExtraArgs}
+ addUserKnob {1 ProjectManagement l projectManagement}
+ ProjectManagement Shotgun
+ addUserKnob {1 DeadlineSGData l shotgunKVPs}
+ DeadlineSGData "\{\}"
+ addUserKnob {1 DeadlineFTData l ftrackKVPs}
+ DeadlineFTData "\{\}"
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode17
+ tile_color 0x388e8e00
+ label "TOOLKIT \nMASTER \nCONTROL"
+ note_font ImpactaLK
+ note_font_size 100
+ note_font_color 0xdbff00ff
+ xpos 37341
+ ypos 1551
+ bdwidth 779
+ bdheight 450
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ transforms {{0 2}
+   }
+ center {960 540}
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text3
+ xpos 37250
+ ypos 2367
+}
+Write {
+ inputs 0
+ file "R:\\Projects\\3013_ESPN_CFB_2015\\04_Prod\\ASSETS_ESPN\\000_Animation\\CFB_foo/render_2d/MSU/CFB_foo_MSU.#.PNG"
+ file_type png
+ checkHashOnRead false
+ name WriteScenes
+ xpos 37470
+ ypos 1929
+ disable true
+}
+StickyNote {
+ inputs 0
+ name StickyNote2
+ label "Ignore this node"
+ xpos 37461
+ ypos 1911
+}
+Read {
+ inputs 0
+ file "R:\\Projects\\3013_ESPN_CFB_2015\\04_Prod\\ASSETS_ESPN\\000_Animation\\work/render_3d/LOGOS/AUB/nuke/"
+ origset true
+ name READ_TEAM_BTY
+ xpos 37580
+ ypos 1911
+ disable true
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "\[knob MASTER_WRITE.FacemaskLogoCurrent]"
+ box {424.5 613.5 2559.5 714.5}
+ hidden_bbox {424.5 613.5 2559.5 714.5}
+ xjustify center
+ transforms {{0 2}
+   }
+ cursor_position 4
+ center {960 540}
+ cursor_initialised true
+ initial_cursor_position {{1492 714.5}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text10
+ xpos 38020
+ ypos 2343
+}
+Shuffle {
+ alpha white
+ name Shuffle15
+ xpos 38020
+ ypos 2367
+}
+Write {
+ file name.%04d.png
+ file_type png
+ checkHashOnRead false
+ version 288
+ name SAMPLE_WRITE1
+ xpos 38020
+ ypos 2458
+ addUserKnob {20 User}
+ addUserKnob {22 WedgeSetup T "wedge.initialSetup()\nwedgeSetup = nuke.thisNode().knob('WedgeSetup')\nnuke.thisNode().removeKnob(wedgeSetup)" +STARTLINE}
+}
+Crop {
+ box {1098 590 1880 744}
+ name Crop3
+ xpos 38020
+ ypos 2391
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message "\[knob MASTER_WRITE.TimeCurrent]"
+ box {799.5 491.5 1188.5 592.5}
+ hidden_bbox {799.5 491.5 1188.5 592.5}
+ transforms {{0 2}
+   }
+ cursor_position 5
+ center {960 540}
+ cursor_initialised true
+ initial_cursor_position {{799.5 592.5}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text4
+ xpos 37250
+ ypos 2271
+}
+Invert {
+ channels rgb
+ name Invert3
+ xpos 37250
+ ypos 2295
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {1 0.29463 0 1}
+ color_panelDropped true
+ name Constant8
+ xpos 37470
+ ypos 2103
+}
+Crop {
+ box {630 422 1286 658}
+ name Crop5
+ xpos 37470
+ ypos 2175
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.048267 0 1 1}
+ color_panelDropped true
+ name Constant6
+ xpos 37360
+ ypos 2103
+}
+Crop {
+ box {630 422 1286 658}
+ name Crop9
+ xpos 37360
+ ypos 2175
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {1 0.960724 0.560214 0}
+ color_panelDropped true
+ name Constant7
+ xpos 37250
+ ypos 2103
+}
+Crop {
+ box {630 422 1286 658}
+ name Crop10
+ xpos 37250
+ ypos 2175
+}
+Switch {
+ inputs 3
+ which {{"\[knob MASTER_WRITE.TimeIndex]"}}
+ name Switch1
+ xpos 37360
+ ypos 2271
+}
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge24
+ xpos 37360
+ ypos 2343
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message "\[knob MASTER_WRITE.TeamCurrent]\n\n"
+ box {849.5 731.5 1053.5 832.5}
+ hidden_bbox {849.5 731.5 1053.5 832.5}
+ transforms {{0 2}
+   }
+ cursor_position 4
+ center {960 540}
+ cursor_initialised true
+ initial_cursor_position {{849.5 832.5}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text5
+ xpos 37910
+ ypos 2151
+}
+Invert {
+ channels rgb
+ name Invert4
+ xpos 37910
+ ypos 2175
+}
+Constant {
+ inputs 0
+ color {{MASTER_CTRL.secondaryColor} {MASTER_CTRL.secondaryColor} {MASTER_CTRL.secondaryColor} 1}
+ name SECONDARY
+ label "secondary color"
+ xpos 37800
+ ypos 1761
+ postage_stamp false
+}
+Gamma {
+ value 0.4545
+ name Gamma2
+ xpos 37800
+ ypos 1809
+ postage_stamp true
+}
+set N32b65380 [stack 0]
+Constant {
+ inputs 0
+ color {{MASTER_CTRL.primaryColor} {MASTER_CTRL.primaryColor} {MASTER_CTRL.primaryColor} 1}
+ name PRIMARY
+ label "primary color"
+ xpos 37690
+ ypos 1761
+ postage_stamp false
+}
+Gamma {
+ value 0.4545
+ name Gamma1
+ xpos 37690
+ ypos 1809
+ postage_stamp true
+}
+set N32b65a60 [stack 0]
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.accentColor}}
+ name Switch4
+ xpos 37690
+ ypos 1983
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message HomePrimary
+ box {0 1080 960 1080}
+ hidden_bbox {0 979 365 1080}
+ transforms {{0 2}
+   }
+ cursor_position 4
+ center {960 540}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text1
+ xpos 37690
+ ypos 2031
+}
+Crop {
+ box {0 540 960 1080}
+ name Crop11
+ xpos 37690
+ ypos 2055
+}
+push $N32b65380
+push $N32b65a60
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.neonColor}}
+ name Switch3
+ xpos 37800
+ ypos 1983
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message HomeSecondary
+ box {960 1080 1920 1080}
+ hidden_bbox {0 979 365 1080}
+ transforms {{0 2}
+   }
+ cursor_position 4
+ center {960 540}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text2
+ xpos 37800
+ ypos 2031
+}
+Crop {
+ box {960 540 1920 1080}
+ name Crop12
+ xpos 37800
+ ypos 2055
+}
+Merge2 {
+ inputs 2
+ name Merge28
+ xpos 37800
+ ypos 2127
+}
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge90
+ xpos 37800
+ ypos 2175
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message "\[knob MASTER_WRITE.AwayTeamCurrent]\n\n"
+ box {868.5 193.5 2819.5 294.5}
+ hidden_bbox {868.5 193.5 2819.5 294.5}
+ transforms {{0 2}
+   }
+ cursor_position 3
+ center {960 540}
+ cursor_initialised true
+ initial_cursor_position {{868.5 294.5}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text8
+ xpos 38130
+ ypos 2127
+}
+Invert {
+ channels rgb
+ name Invert1
+ xpos 38130
+ ypos 2199
+}
+Constant {
+ inputs 0
+ color {{MASTER_CTRL.awaySecondaryColor} {MASTER_CTRL.awaySecondaryColor} {MASTER_CTRL.awaySecondaryColor} {MASTER_CTRL.awaySecondaryColor}}
+ name AWAYSECONDARY
+ label "secondary color"
+ xpos 38130
+ ypos 1737
+ postage_stamp false
+}
+Gamma {
+ value 0.4545
+ name Gamma3
+ xpos 38130
+ ypos 1785
+ postage_stamp true
+}
+set N3582aa30 [stack 0]
+Constant {
+ inputs 0
+ color {{MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor}}
+ name AWAYPRIMARY
+ label "primary color"
+ xpos 38020
+ ypos 1761
+ postage_stamp false
+}
+Gamma {
+ value 0.4545
+ name Gamma4
+ xpos 38020
+ ypos 1785
+ postage_stamp true
+}
+set N3582b110 [stack 0]
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.awayNeonColor}}
+ name Switch5
+ xpos 38130
+ ypos 1983
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message AwaySecondary
+ box {960 540 1920 540}
+ hidden_bbox {0 979 365 1080}
+ transforms {{0 2}
+   }
+ cursor_position 4
+ center {960 540}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text7
+ xpos 38130
+ ypos 2055
+}
+Crop {
+ box {960 0 1920 540}
+ name Crop13
+ xpos 38130
+ ypos 2079
+}
+push $N3582aa30
+push $N3582b110
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.awayAccentColor}}
+ name Switch6
+ xpos 38020
+ ypos 1983
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ opacity {{MASTER_WRITE.WedgeLabels}}
+ message AwayPrimary
+ box {0 540 960 540}
+ hidden_bbox {0 979 365 1080}
+ transforms {{0 2}
+   }
+ cursor_position 4
+ center {960 540}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text6
+ xpos 38020
+ ypos 2055
+}
+Crop {
+ box {0 0 960 540}
+ name Crop14
+ xpos 38020
+ ypos 2079
+}
+Merge2 {
+ inputs 2
+ name Merge35
+ xpos 38020
+ ypos 2127
+}
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge36
+ xpos 38020
+ ypos 2199
+}
+Merge2 {
+ inputs 2
+ name Merge43
+ xpos 37910
+ ypos 2271
+}
+Merge2 {
+ inputs 2
+ name Merge51
+ xpos 37910
+ ypos 2343
+}
+Merge2 {
+ inputs 2
+ name Merge52
+ xpos 37910
+ ypos 2391
+}
+set N3582d000 [stack 0]
+Viewer {
+ input_process false
+ name Viewer2
+ xpos 37580
+ ypos 2535
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.TimeIndex]"}}
+ name TimeSwitcher
+ xpos 38350
+ ypos 2511
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.AwayRegionIndex]"}}
+ name AwayRegionSwitcher
+ xpos 37690
+ ypos 2679
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.AwaySignIndex]"}}
+ name AwaySignSwitcher
+ xpos 37690
+ ypos 2631
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.AwayTeamIndex]"}}
+ name AwayTeamSwitcher
+ xpos 37690
+ ypos 2583
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.AwaySkyIndex]"}}
+ name AwaySkySwitcher
+ xpos 37690
+ ypos 2535
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.SignIndex]"}}
+ name SignSwitcher
+ xpos 38350
+ ypos 2607
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.RegionIndex]"}}
+ name RegionSwitcher
+ xpos 38350
+ ypos 2679
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.TeamIndex]"}}
+ name TeamSwitcher
+ xpos 38351
+ ypos 2558
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.DTypeIndex]"}}
+ name DTypeSwitcher
+ xpos 37691
+ ypos 2728
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.SkyIndex]"}}
+ name SkySwitcher1
+ xpos 38350
+ ypos 2486
+}
+Switch {
+ inputs 0
+ which {{"\[value MASTER_WRITE.FlagIndex]"}}
+ name FlagSwitcher
+ xpos 38353
+ ypos 2733
+}
+push $N3582d000
+push 0
+push 0
+push 0
+Write {
+ inputs 0
+ file F:/04_CG_Projects/Test/images/test.#.png
+ colorspace sRGB
+ file_type png
+ last {{"\[regexp \"ENDSTAMP\" \[value MASTER_WRITE.FlagCurrent]] * 300 + \[regexp \"FE\" \[value MASTER_WRITE.FlagCurrent]] * 75"}}
+ use_limit true
+ checkHashOnRead false
+ version 427
+ beforeRender wedge.preRender()
+ beforeFrameRender wedge.preFrame()
+ afterFrameRender wedge.postFrame()
+ afterRender wedge.postRender()
+ name MASTER_WRITE
+ xpos 38657
+ ypos 1846
+ addUserKnob {20 User}
+ addUserKnob {22 NewPermutor -STARTLINE T wedge.knobSetup()}
+ addUserKnob {22 PermutorSwitch -STARTLINE T wedge.permutorSwitch()}
+ addUserKnob {22 FarmWrites -STARTLINE T wedge.setupDeadlineRenderNodes()}
+ addUserKnob {6 DisablePermuting l "Disable Permuting" +STARTLINE}
+ addUserKnob {6 WedgeLabels -STARTLINE}
+ WedgeLabels true
+ addUserKnob {1 DeliverableCurrent l Deliverable}
+ DeliverableCurrent CFB_E_TEAM_ENDSTAMP_01_ST
+ addUserKnob {3 DeliverableIndex +INVISIBLE}
+ addUserKnob {2 TemplateFileName}
+ TemplateFileName R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_ESPN/000_ANIMATION/CFB_E_TEAM_<flag>_01_ST/render_2d/CFB_E_TEAM_<flag>_01_ST/<team>/<time>/CFB_E_TEAM_<flag>_01_ST_<team>.%04d.png
+ addUserKnob {1 TemplateWriteName}
+ TemplateWriteName CFB_E_TEAM_<flag>_01_ST_<team>_<time>
+ addUserKnob {1 TeamList}
+ TeamList AUB
+ addUserKnob {1 TeamCurrent}
+ TeamCurrent AUB
+ addUserKnob {3 TeamIndex}
+ addUserKnob {1 TimeList}
+ TimeList SUNSET,NIGHT
+ addUserKnob {1 TimeCurrent}
+ TimeCurrent SUNSET
+ addUserKnob {3 TimeIndex}
+ addUserKnob {1 RegionCurrent}
+ RegionCurrent "\[knob MASTER_CTRL.Region]"
+ addUserKnob {3 RegionIndex}
+ RegionIndex {{"\[knob MASTER_CTRL.RegionNum]"}}
+ addUserKnob {1 SkyCurrent}
+ SkyCurrent "\[knob MASTER_CTRL.Sky]"
+ addUserKnob {3 SkyIndex}
+ SkyIndex {{"\[knob MASTER_CTRL.SkyNum]"}}
+ addUserKnob {1 SignCurrent}
+ SignCurrent "\[knob MASTER_CTRL.Sign]"
+ addUserKnob {3 SignIndex}
+ SignIndex {{"\[knob MASTER_CTRL.SignNum]"}}
+ addUserKnob {1 AwayRegionCurrent}
+ AwayRegionCurrent "\[knob MASTER_CTRL.AwayRegion]"
+ addUserKnob {3 AwayRegionIndex}
+ AwayRegionIndex {{"\[knob MASTER_CTRL.AwayRegionNum]"}}
+ addUserKnob {1 AwaySkyCurrent}
+ AwaySkyCurrent "\[knob MASTER_CTRL.AwaySky]"
+ addUserKnob {3 AwaySkyIndex}
+ AwaySkyIndex {{"\[knob MASTER_CTRL.AwaySkyNum]"}}
+ addUserKnob {1 AwaySignCurrent}
+ AwaySignCurrent "\[knob MASTER_CTRL.AwaySign]"
+ addUserKnob {3 AwaySignIndex}
+ AwaySignIndex {{"\[knob MASTER_CTRL.AwaySignNum]"}}
+ addUserKnob {1 DTypeCurrent}
+ DTypeCurrent "\[string map \{\"NOON\" \"S\" \"SUNSET\" \"E\" \"NIGHT\" \"E\"\} \[knob MASTER_WRITE.TimeCurrent] ]"
+ addUserKnob {3 DTypeIndex}
+ DTypeIndex {{"\[knob MASTER_WRITE.TimeIndex]"}}
+ addUserKnob {1 DType2Current}
+ DType2Current "\[string map \{1 \"_ST\" 0 \"\"\} \[regexp \"_ST_\" \[basename \[value root.name]] || regexp \"_ST\\.\" \[basename \[value root.name]] ] ]"
+ addUserKnob {3 DType2Index}
+ DType2Index {{"\[regexp \"_ST_\" \[basename \[value root.name]] || regexp \"_ST\\.\" \[basename \[value root.name]] ]"}}
+ addUserKnob {1 DType3Current}
+ DType3Current "\[string map \{1 \"_C\" 0 \"\"\} \[regexp \"_C_\" \[basename \[value root.name]] || regexp \"_C\\.\" \[basename \[value root.name]] ] ]"
+ addUserKnob {3 DType3Index}
+ DType3Index {{"\[regexp \"_C_\" \[basename \[value root.name]] || regexp \"_C\\.\" \[basename \[value root.name]] ]"}}
+ addUserKnob {1 FlagList}
+ FlagList ENDSTAMP,FE
+ addUserKnob {1 FlagCurrent}
+ FlagCurrent ENDSTAMP
+ addUserKnob {3 FlagIndex}
+}
+Viewer {
+ inputs 5
+ frame_range 1-300
+ frame_range_lock true
+ input_number 4
+ full_frame_processing true
+ roi {-0.5839999914 -0.008999999613 0.3019999862 0.5310000181}
+ input_process false
+ translate {-0.1669999957 -0.3490000069}
+ name Viewer1
+ xpos 39196
+ ypos 1858
+}
+NoOp {
+ inputs 0
+ name MASTER_CTRL
+ knobChanged "n=nuke.thisNode() \nk=nuke.thisKnob() \nif k.name() == \"knob\": \n print k.value()"
+ note_font "Verdana Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold"
+ note_font_size 25
+ xpos 37911
+ ypos 1667
+ addUserKnob {20 User}
+ addUserKnob {1 teamTricode l "Team Tricode"}
+ teamTricode FLA
+ addUserKnob {22 switchTeamBtn l "Switch Home Team" T "from pipeline.nuke import switchTeam\nswitchTeam.loadTeam()" +STARTLINE}
+ addUserKnob {1 awayTeamTricode l "Away Team Tricode"}
+ awayTeamTricode "\[knob MASTER_WRITE.AwayTeamCurrent]"
+ addUserKnob {22 switchAwayTeamBtn l "Switch Away Team" T "from pipeline.nuke import switchTeam\nswitchTeam.loadTeam(matchup=True)" +STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {4 accentColor l "Billboard Color" M {Primary Secondary ""}}
+ addUserKnob {4 neonColor l "Neon Color" M {Primary Secondary}}
+ neonColor Secondary
+ addUserKnob {18 primaryColor l "" +STARTLINE}
+ primaryColor {0.05098039216 0.1607843137 0.4470588235}
+ addUserKnob {6 primaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {18 secondaryColor l "" +STARTLINE}
+ secondaryColor {0.9607843137 0.2823529412 0}
+ addUserKnob {6 secondaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {4 awayAccentColor l "Away Billboard Color" M {Primary Secondary}}
+ addUserKnob {4 awayNeonColor l "Away Neon Color" M {Primary Secondary}}
+ awayNeonColor Secondary
+ addUserKnob {18 awayPrimaryColor l "" +STARTLINE}
+ awayPrimaryColor {0 0.2941176471 0.5764705882}
+ addUserKnob {6 awayPrimaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {18 awaySecondaryColor l "" +STARTLINE}
+ awaySecondaryColor {0.8823529412 0.4352941176 0.2196078431}
+ addUserKnob {6 awaySecondaryColor_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+}
+Constant {
+ inputs 0
+ channels rgb
+ name Constant1
+ xpos 38602
+ ypos 1543
+}
+Write {
+ file f:/04_CG_Projects/Test/images/test.#.png
+ file_type png
+ checkHashOnRead false
+ version 131
+ beforeRender switchTeam.preRender()
+ afterRender switchTeam.postRender()
+ name MAIN_WRITE
+ selected true
+ xpos 38602
+ ypos 1704
+ addUserKnob {20 Wedge}
+ addUserKnob {1 deliverable l Deliverable}
+ deliverable CFB_E_TEAM_ENDSTAMP_01_ST_<TOD>_<HOME>
+ addUserKnob {6 is_matchup l Matchup +STARTLINE}
+ addUserKnob {26 home_team_div l HOME}
+ addUserKnob {1 home_team l Team}
+ home_team TEX
+ addUserKnob {1 home_sign l Sign}
+ home_sign A
+ addUserKnob {3 home_region l Region}
+ home_region 6
+ addUserKnob {3 sky l Sky}
+ sky 2
+ addUserKnob {26 away_team_div l AWAY}
+ addUserKnob {1 away_team l Team}
+ addUserKnob {1 away_sign l Sign}
+ addUserKnob {3 away_region l Region}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {1 team_list l "Team List"}
+ addUserKnob {3 ctr l Ctr}
+ ctr 1
+}
