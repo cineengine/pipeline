@@ -2,15 +2,15 @@
 version 8.0 v3
 define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 <layout version="1.0">
-    <window x="0" y="0" w="1506" h="1440" screen="0">
+    <window x="0" y="0" w="1627" h="1440" screen="0">
         <splitter orientation="1">
-            <split size="941"/>
+            <split size="710"/>
             <splitter orientation="1">
                 <split size="40"/>
                 <dock id="" hideTitles="1" activePageId="Toolbar.1">
                     <page id="Toolbar.1"/>
                 </dock>
-                <split size="897"/>
+                <split size="666"/>
                 <splitter orientation="2">
                     <split size="807"/>
                     <dock id="" activePageId="Viewer.1">
@@ -24,9 +24,10 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
                     </dock>
                 </splitter>
             </splitter>
-            <split size="545"/>
+            <split size="897"/>
             <dock id="" activePageId="Properties.1">
                 <page id="Properties.1"/>
+                <page id="Script Editor.1"/>
             </dock>
         </splitter>
     </window>
@@ -34,8 +35,8 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 }
 Root {
  inputs 0
- name F:/10_GITHUB/pipeline/nuke/wedgeTest.nk
- frame 300
+ name F:/dev/pipeline/nuke/wedgeTest.nk
+ frame 299
  last_frame 300
  lock_range true
  fps 30
@@ -135,25 +136,10 @@ BackdropNode {
  note_font ImpactaLK
  note_font_size 100
  note_font_color 0xdbff00ff
- xpos 37341
- ypos 1551
- bdwidth 779
- bdheight 450
-}
-Text2 {
- inputs 0
- font_size_toolbar 100
- font_width_toolbar 100
- font_height_toolbar 100
- transforms {{0 2}
-   }
- center {960 540}
- group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
- animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
-   }
- name Text3
- xpos 37250
- ypos 2367
+ xpos 37009
+ ypos 1519
+ bdwidth 1980
+ bdheight 964
 }
 Write {
  inputs 0
@@ -161,25 +147,32 @@ Write {
  file_type png
  checkHashOnRead false
  name WriteScenes
- xpos 37470
- ypos 1929
+ xpos 37307
+ ypos 1900
  disable true
 }
 StickyNote {
  inputs 0
  name StickyNote2
  label "Ignore this node"
- xpos 37461
- ypos 1911
+ xpos 37298
+ ypos 1882
 }
 Read {
  inputs 0
  file "R:\\Projects\\3013_ESPN_CFB_2015\\04_Prod\\ASSETS_ESPN\\000_Animation\\work/render_3d/LOGOS/AUB/nuke/"
  origset true
  name READ_TEAM_BTY
- xpos 37580
- ypos 1911
+ xpos 37417
+ ypos 1884
  disable true
+}
+Constant {
+ inputs 0
+ channels rgb
+ name Constant1
+ xpos 38602
+ ypos 1543
 }
 Text2 {
  inputs 0
@@ -201,14 +194,14 @@ Text2 {
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text10
- xpos 38020
- ypos 2343
+ xpos 38228
+ ypos 2517
 }
 Shuffle {
  alpha white
  name Shuffle15
- xpos 38020
- ypos 2367
+ xpos 38228
+ ypos 2541
 }
 Write {
  file name.%04d.png
@@ -216,186 +209,246 @@ Write {
  checkHashOnRead false
  version 288
  name SAMPLE_WRITE1
- xpos 38020
- ypos 2458
+ xpos 38228
+ ypos 2757
  addUserKnob {20 User}
  addUserKnob {22 WedgeSetup T "wedge.initialSetup()\nwedgeSetup = nuke.thisNode().knob('WedgeSetup')\nnuke.thisNode().removeKnob(wedgeSetup)" +STARTLINE}
 }
 Crop {
  box {1098 590 1880 744}
  name Crop3
- xpos 38020
- ypos 2391
+ xpos 38228
+ ypos 2565
 }
 Text2 {
  inputs 0
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
- message "\[knob MASTER_WRITE.TimeCurrent]"
- box {799.5 491.5 1188.5 592.5}
- hidden_bbox {799.5 491.5 1188.5 592.5}
+ message "\[knob MASTER_CTRL.home_team]\n\n"
+ box {849.5 731.5 1101.5 832.5}
+ hidden_bbox {849.5 731.5 1101.5 832.5}
  transforms {{0 2}
    }
- cursor_position 5
- center {960 540}
- cursor_initialised true
- initial_cursor_position {{799.5 592.5}
-   }
- group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
- animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
-   }
- name Text4
- xpos 37250
- ypos 2271
-}
-Invert {
- channels rgb
- name Invert3
- xpos 37250
- ypos 2295
-}
-Constant {
- inputs 0
- channels rgb
- color {1 0.29463 0 1}
- color_panelDropped true
- name Constant8
- xpos 37470
- ypos 2103
-}
-Crop {
- box {630 422 1286 658}
- name Crop5
- xpos 37470
- ypos 2175
-}
-Constant {
- inputs 0
- channels rgb
- color {0.048267 0 1 1}
- color_panelDropped true
- name Constant6
- xpos 37360
- ypos 2103
-}
-Crop {
- box {630 422 1286 658}
- name Crop9
- xpos 37360
- ypos 2175
-}
-Constant {
- inputs 0
- channels rgb
- color {1 0.960724 0.560214 0}
- color_panelDropped true
- name Constant7
- xpos 37250
- ypos 2103
-}
-Crop {
- box {630 422 1286 658}
- name Crop10
- xpos 37250
- ypos 2175
-}
-Switch {
- inputs 3
- which {{"\[knob MASTER_WRITE.TimeIndex]"}}
- name Switch1
- xpos 37360
- ypos 2271
-}
-Merge2 {
- inputs 2
- operation multiply
- name Merge24
- xpos 37360
- ypos 2343
-}
-Text2 {
- inputs 0
- font_size_toolbar 100
- font_width_toolbar 100
- font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
- message "\[knob MASTER_WRITE.TeamCurrent]\n\n"
- box {849.5 731.5 1053.5 832.5}
- hidden_bbox {849.5 731.5 1053.5 832.5}
- transforms {{0 2}
-   }
- cursor_position 4
- center {960 540}
+ cursor_position 3
+ scale {1 1}
  cursor_initialised true
  initial_cursor_position {{849.5 832.5}
    }
- group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text5
  xpos 37910
- ypos 2151
+ ypos 2324
 }
 Invert {
  channels rgb
  name Invert4
  xpos 37910
- ypos 2175
+ ypos 2348
+ disable true
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 55
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "Sign: \[knob MASTER_CTRL.home_sign] \nRegion: \[knob MASTER_CTRL.home_region]\nSky: \[knob MASTER_CTRL.sky]\n"
+ box {1532.399994 595.6000061 1907.600006 780.3999939}
+ transforms {{0 2}
+   }
+ font_size_values {{8 55 10 55 11 55 0 55 1 55 2 55 3 55 7 55 4 55 5 55 6 55 7 55 8 55 7 55 8 55 10 55 11 55 12 55 19 55 25 55 25 55 27 55 28 55 29 55 30 55 31 55 32 55 7 55 8 55 10 55 11 55 12 55 19 55 19 55 19 55 19 55 7 55 8 55 9 55 10 55 11 55 22 55 23 55 24 55 13 55 14 55 15 55 16 55 19 55 20 55 21 55 22 55 23 55 24 55 25 55 25 55 27 55 28 55 29 55 30 55 31 55 32 55 33 55 9 55 10 55 11 55 12 55 13 55 14 55 15 55 16 55 34 55 35 55 36 55 37 55 38 55 39 55 40 55 41 55 25 55 17 55 18 55 19 55 20 55 21 55 22 55 23 55 24 55 25 55 25 55 27 55 28 55 29 55 30 55 31 55 32 55 33 55 34 55 35 55 36 55 37 55 38 55 39 55 40 55 41 55 25 55 25 55 25 55 25 55 12 55 13 55 14 55 15 55 16 55 17 55 18 55 19 55 20 55 21 55 42 55 25 55 25 55 25 55 43 55 44 55 45 55 25 55 25 55 25 55 25 55}
+   }
+ cursor_position 26
+ font_size 55
+ scale {1 1}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{1281.599854 856.7999878}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text4
+ xpos 37565
+ ypos 2310
 }
 Constant {
  inputs 0
- color {{MASTER_CTRL.secondaryColor} {MASTER_CTRL.secondaryColor} {MASTER_CTRL.secondaryColor} 1}
+ channels rgb
+ color 1
+ name Constant3
+ xpos 37911
+ ypos 2145
+}
+Crop {
+ box {199.9749938 552.5999726 348.0249915 695.2500062}
+ name Crop4
+ xpos 37911
+ ypos 2217
+}
+Constant {
+ inputs 0
+ color {{MASTER_CTRL.home_secondary} {MASTER_CTRL.home_secondary} {MASTER_CTRL.home_secondary} 1}
  name SECONDARY
  label "secondary color"
- xpos 37800
- ypos 1761
+ xpos 37726
+ ypos 1740
  postage_stamp false
 }
 Gamma {
  value 0.4545
  name Gamma2
- xpos 37800
- ypos 1809
+ xpos 37726
+ ypos 1789
  postage_stamp true
 }
-set N147b2c80 [stack 0]
+set N11289f70 [stack 0]
 Constant {
  inputs 0
- color {{MASTER_CTRL.primaryColor} {MASTER_CTRL.primaryColor} {MASTER_CTRL.primaryColor} 1}
+ color {{MASTER_CTRL.home_primary} {MASTER_CTRL.home_primary} {MASTER_CTRL.home_primary} 1}
  name PRIMARY
  label "primary color"
- xpos 37690
- ypos 1761
+ xpos 37616
+ ypos 1741
  postage_stamp false
 }
 Gamma {
  value 0.4545
  name Gamma1
- xpos 37690
- ypos 1809
+ xpos 37616
+ ypos 1789
  postage_stamp true
 }
-set N147b3360 [stack 0]
+set N1128a650 [stack 0]
 Switch {
  inputs 2
- which {{MASTER_CTRL.accentColor}}
- name Switch4
- xpos 37690
- ypos 1983
+ which {{MASTER_CTRL.home_neon_color}}
+ name Switch3
+ xpos 37813
+ ypos 1905
+}
+Dot {
+ name Dot6
+ xpos 37847
+ ypos 2111
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
+ message bb
+ box {0 979 121 1080}
+ hidden_bbox {0 979 121 1080}
+ transforms {{0 2}
+   }
+ cursor_position 2
+ center {960 540}
+ cursor_initialised true
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text11
+ xpos 37813
+ ypos 2169
+ disable true
+}
+Crop {
+ box {203.75 556 344.25 691.5999756}
+ name Crop6
+ xpos 37813
+ ypos 2193
+}
+Merge2 {
+ inputs 2
+ operation under
+ name Merge2
+ xpos 37813
+ ypos 2217
+}
+Constant {
+ inputs 0
+ channels rgb
+ color 1
+ name Constant2
+ xpos 37431
+ ypos 2147
+}
+Crop {
+ box {10.45000076 552.5999756 158.5 695.25}
+ name Crop2
+ xpos 37431
+ ypos 2219
+}
+push $N11289f70
+push $N1128a650
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.home_bboard_color}}
+ name Switch4
+ xpos 37521
+ ypos 1909
+}
+Dot {
+ name Dot5
+ xpos 37555
+ ypos 2108
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message bb
+ box {0 979 121 1080}
+ hidden_bbox {0 979 121 1080}
+ transforms {{0 2}
+   }
+ cursor_position 2
+ center {960 540}
+ cursor_initialised true
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text9
+ xpos 37521
+ ypos 2171
+ disable true
+}
+Crop {
+ box {14 556 154.5 691.5999756}
+ name Crop1
+ xpos 37521
+ ypos 2195
+}
+Merge2 {
+ inputs 2
+ operation under
+ name Merge1
+ xpos 37521
+ ypos 2219
+}
+push 0
+push $N1128a650
+Dot {
+ name Dot1
+ xpos 37650
+ ypos 2109
+ hide_input true
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
  message HomePrimary
  box {0 1080 960 1080}
  hidden_bbox {0 979 365 1080}
  transforms {{0 2}
    }
- cursor_position 4
  center {960 540}
  cursor_initialised true
  autofit_bbox false
@@ -405,29 +458,27 @@ Text2 {
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text1
- xpos 37690
- ypos 2031
+ xpos 37616
+ ypos 2173
+ disable true
 }
 Crop {
  box {0 540 960 1080}
  name Crop11
- xpos 37690
- ypos 2055
+ xpos 37616
+ ypos 2197
 }
-push $N147b2c80
-push $N147b3360
-Switch {
- inputs 2
- which {{MASTER_CTRL.neonColor}}
- name Switch3
- xpos 37800
- ypos 1983
+push $N11289f70
+Dot {
+ name Dot2
+ xpos 37747
+ ypos 2109
+ hide_input true
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
  message HomeSecondary
  box {960 1080 1920 1080}
  hidden_bbox {0 979 365 1080}
@@ -443,103 +494,255 @@ Text2 {
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text2
- xpos 37800
- ypos 2031
+ xpos 37713
+ ypos 2170
+ disable true
 }
 Crop {
  box {960 540 1920 1080}
  name Crop12
- xpos 37800
- ypos 2055
+ xpos 37713
+ ypos 2194
 }
 Merge2 {
- inputs 2
+ inputs 4+1
  name Merge28
- xpos 37800
- ypos 2127
+ xpos 37713
+ ypos 2275
 }
 Merge2 {
  inputs 2
- operation multiply
+ name Merge6
+ xpos 37713
+ ypos 2310
+}
+Merge2 {
+ inputs 2
  name Merge90
- xpos 37800
- ypos 2175
+ xpos 37713
+ ypos 2348
 }
 Text2 {
  inputs 0
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
- message "\[knob MASTER_WRITE.AwayTeamCurrent]\n\n"
- box {868.5 193.5 2819.5 294.5}
- hidden_bbox {868.5 193.5 2819.5 294.5}
+ message "\[knob MASTER_CTRL.away_team]\n\n"
+ box {868.5 193.5 1120.5 294.5}
+ hidden_bbox {868.5 193.5 1120.5 294.5}
  transforms {{0 2}
    }
- cursor_position 3
- center {960 540}
+ scale {1 1}
  cursor_initialised true
  initial_cursor_position {{868.5 294.5}
    }
- group_animations {{0} imported: 0 selected: 0 items: "root transform/"}
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text8
- xpos 38130
- ypos 2127
+ xpos 38183
+ ypos 2299
 }
 Invert {
  channels rgb
  name Invert1
- xpos 38130
- ypos 2199
+ xpos 38183
+ ypos 2333
+ disable true
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 55
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "Sign: \[knob MASTER_CTRL.away_sign]\nRegion: \[knob MASTER_CTRL.away_region]\n"
+ box {1510.399994 157.6000061 1885.600006 342.3999939}
+ transforms {{0 2}
+   }
+ font_size_values {{7 55 9 55 10 55 0 55 1 55 2 55 3 55 4 55 5 55 7 55 7 55 9 55 10 55 11 55 17 55 17 55 17 55 17 55 7 55 7 55 9 55 10 55 11 55 7 55 8 55 9 55 10 55 17 55 17 55 17 55 12 55 13 55 14 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 7 55 8 55 8 55 9 55 10 55 11 55 12 55 13 55 14 55 9 55 10 55 11 55 12 55 13 55 14 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 7 55 8 55 9 55 10 55 11 55 12 55 13 55 14 55 11 55 12 55 13 55 14 55 17 55 17 55 7 55 8 55 9 55 10 55 11 55 12 55 13 55 14 55 17 55 17 55 17 55 17 55 17 55 17 55 15 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 7 55 8 55 9 55 10 55 11 55 12 55 13 55 14 55 15 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 17 55 6 55 7 55 8 55 9 55 10 55 11 55 12 55 13 55 14 55 15 55 17 55 17 55 17 55 19 55 20 55 21 55 22 55 23 55 24 55 25 55 26 55 27 55 28 55 29 55 30 55 31 55 32 55 17 55 17 55 17 55 17 55 16 55}
+   }
+ cursor_position 7
+ font_size 55
+ scale {1 1}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{1281.599854 856.7999878}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text14
+ xpos 38520
+ ypos 2296
 }
 Constant {
  inputs 0
- color {{MASTER_CTRL.awaySecondaryColor} {MASTER_CTRL.awaySecondaryColor} {MASTER_CTRL.awaySecondaryColor} {MASTER_CTRL.awaySecondaryColor}}
+ color {{MASTER_CTRL.away_secondary} {MASTER_CTRL.away_secondary} {MASTER_CTRL.away_secondary} 1}
  name AWAYSECONDARY
  label "secondary color"
- xpos 38130
- ypos 1737
+ xpos 38458
+ ypos 1748
  postage_stamp false
 }
 Gamma {
  value 0.4545
  name Gamma3
- xpos 38130
- ypos 1785
+ xpos 38458
+ ypos 1784
  postage_stamp true
 }
-set N149102e0 [stack 0]
+set N13efda80 [stack 0]
 Constant {
  inputs 0
- color {{MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor} {MASTER_CTRL.awayPrimaryColor}}
+ color {{MASTER_CTRL.away_primary} {MASTER_CTRL.away_primary} {MASTER_CTRL.away_primary} 1}
  name AWAYPRIMARY
  label "primary color"
- xpos 38020
- ypos 1761
+ xpos 38348
+ ypos 1748
  postage_stamp false
 }
 Gamma {
  value 0.4545
  name Gamma4
- xpos 38020
- ypos 1785
+ xpos 38348
+ ypos 1784
  postage_stamp true
 }
-set N149109c0 [stack 0]
+set N13efe160 [stack 0]
 Switch {
  inputs 2
- which {{MASTER_CTRL.awayNeonColor}}
+ which {{MASTER_CTRL.away_neon_color}}
  name Switch5
- xpos 38130
- ypos 1983
+ xpos 38566
+ ypos 1925
+}
+Dot {
+ name Dot8
+ xpos 38600
+ ypos 2099
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
+ message bb
+ box {0 979 121 1080}
+ hidden_bbox {0 979 121 1080}
+ transforms {{0 2}
+   }
+ cursor_position 2
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text13
+ xpos 38566
+ ypos 2162
+ disable true
+}
+Crop {
+ box {187.7499998 16.07501049 328.2499998 151.6749879}
+ name Crop15
+ xpos 38566
+ ypos 2186
+}
+Constant {
+ inputs 0
+ channels rgb
+ color 1
+ name Constant5
+ xpos 38657
+ ypos 2138
+}
+Crop {
+ box {184.1999979 12.67498493 332.2499992 155.3250167}
+ name Crop16
+ xpos 38657
+ ypos 2210
+}
+Merge2 {
+ inputs 2
+ name Merge4
+ xpos 38566
+ ypos 2210
+}
+push $N13efda80
+push $N13efe160
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.away_bboard_color}}
+ name Switch6
+ xpos 38229
+ ypos 1918
+}
+Dot {
+ name Dot7
+ xpos 38263
+ ypos 2101
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message bb
+ box {0 979 121 1080}
+ hidden_bbox {0 979 121 1080}
+ transforms {{0 2}
+   }
+ cursor_position 2
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{0 1080}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text12
+ xpos 38229
+ ypos 2164
+ disable true
+}
+Crop {
+ box {14.00000184 16.07501037 154.4999982 151.6749896}
+ name Crop8
+ xpos 38229
+ ypos 2188
+}
+Constant {
+ inputs 0
+ channels rgb
+ color 1
+ name Constant4
+ xpos 38139
+ ypos 2140
+}
+Crop {
+ box {10.45000277 12.67498578 158.4999978 155.3250134}
+ name Crop7
+ xpos 38139
+ ypos 2212
+}
+Merge2 {
+ inputs 2
+ name Merge3
+ xpos 38229
+ ypos 2212
+}
+push 0
+push $N13efda80
+Dot {
+ name Dot4
+ xpos 38492
+ ypos 2101
+ hide_input true
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
  message AwaySecondary
  box {960 540 1920 540}
  hidden_bbox {0 979 365 1080}
@@ -555,29 +758,27 @@ Text2 {
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text7
- xpos 38130
- ypos 2055
+ xpos 38458
+ ypos 2163
+ disable true
 }
 Crop {
  box {960 0 1920 540}
  name Crop13
- xpos 38130
- ypos 2079
+ xpos 38458
+ ypos 2187
 }
-push $N149102e0
-push $N149109c0
-Switch {
- inputs 2
- which {{MASTER_CTRL.awayAccentColor}}
- name Switch6
- xpos 38020
- ypos 1983
+push $N13efe160
+Dot {
+ name Dot3
+ xpos 38382
+ ypos 2103
+ hide_input true
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- opacity {{MASTER_WRITE.WedgeLabels}}
  message AwayPrimary
  box {0 540 960 540}
  hidden_bbox {0 979 365 1080}
@@ -593,221 +794,123 @@ Text2 {
  animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
    }
  name Text6
- xpos 38020
- ypos 2055
+ xpos 38348
+ ypos 2163
+ disable true
 }
 Crop {
  box {0 0 960 540}
  name Crop14
- xpos 38020
- ypos 2079
+ xpos 38348
+ ypos 2187
 }
 Merge2 {
- inputs 2
+ inputs 4+1
  name Merge35
- xpos 38020
- ypos 2127
+ xpos 38348
+ ypos 2261
 }
 Merge2 {
  inputs 2
- operation multiply
+ name Merge7
+ xpos 38348
+ ypos 2296
+}
+Merge2 {
+ inputs 2
  name Merge36
- xpos 38020
- ypos 2199
+ xpos 38348
+ ypos 2333
+}
+push 0
+Switch {
+ inputs 2
+ which {{MASTER_CTRL.is_matchup}}
+ name Switch1
+ xpos 38038
+ ypos 2420
 }
 Merge2 {
  inputs 2
  name Merge43
- xpos 37910
- ypos 2271
+ xpos 38038
+ ypos 2453
 }
 Merge2 {
- inputs 2
  name Merge51
- xpos 37910
- ypos 2343
+ xpos 38038
+ ypos 2517
 }
 Merge2 {
  inputs 2
  name Merge52
- xpos 37910
- ypos 2391
+ xpos 38038
+ ypos 2565
+ disable true
 }
-set N149128b0 [stack 0]
+set N304aded0 [stack 0]
 Viewer {
  input_process false
  name Viewer2
- xpos 37580
- ypos 2535
+ xpos 37644
+ ypos 2709
 }
-Switch {
+Text2 {
  inputs 0
- which {{"\[value MASTER_WRITE.TimeIndex]"}}
- name TimeSwitcher
- xpos 38350
- ypos 2511
+ font_size_toolbar 50
+ font_width_toolbar 100
+ font_height_toolbar 100
+ kerning_toolbar -0.07599999756
+ message "\[knob MASTER_WRITE.file] \n\n"
+ box {17.5 42.875 1902.5 833.125}
+ hidden_bbox {-2115.5 374.5 4265.5 475.5}
+ yjustify center
+ transforms {{0 2}
+   }
+ font_size_values {{0 50 1 50 2 50 3 50 4 50 5 50 6 50 7 50 8 50 9 50 10 50 11 50 12 50 13 50 14 50 15 50 16 50 17 50 18 50 19 50 20 50 21 50 22 50 22 50 23 50 24 50 25 50 26 50 27 50 28 50 29 50 30 50 31 50 32 50 33 50 34 50 35 50 36 50 37 50 38 50 39 50 40 50 41 50 42 50 43 50 44 50 45 50 46 50 47 50 64 50 65 50 66 50 67 50 68 50 69 50 70 50 71 50 72 50 73 50 74 50 75 50 76 50 77 50 78 50 79 50 80 50 81 50 82 50 83 50 84 50 85 50 86 50 87 50 88 50 89 50 90 50 91 50 92 50 93 50 94 50 95 50 96 50 97 50 98 50 99 50 100 50 101 50 102 50 103 50 120 50 121 50 122 50 123 50 124 50 125 50 126 50 127 50 116 50 117 50 116 50 117 50 118 50 119 50 116 50 117 50 121 50 122 50 123 50 124 50 125 50 126 50 127 50 116 50 117 50 118 50 119 50 120 50 48 50 49 50 50 50 51 50 52 50 53 50 54 50 55 50 56 50 57 50 58 50 59 50 60 50 61 50 62 50 63 50 116 50 117 50 118 50 119 50 104 50 105 50 106 50 107 50 116 50 117 50 118 50 119 50 116 50 117 50 118 50 119 50 120 50 121 50 122 50 123 50 108 50 109 50 110 50 111 50 112 50 113 50 114 50 115 50}
+   }
+ kern_values {{118 -0.076 74 -0.07599999756 75 -0.07599999756 76 -0.07599999756 77 -0.07599999756 78 -0.07599999756 79 -0.07599999756 80 -0.07599999756 81 -0.07599999756 82 -0.07599999756 83 -0.07599999756 84 -0.07599999756 85 -0.07599999756 86 -0.07599999756 87 -0.07599999756 88 -0.07599999756 89 -0.07599999756 90 -0.07599999756 91 -0.07599999756 92 -0.07599999756 93 -0.07599999756 94 -0.07599999756 95 -0.07599999756 96 -0.07599999756 97 -0.07599999756 98 -0.07599999756 99 -0.07599999756 100 -0.07599999756 101 -0.07599999756 102 -0.07599999756 103 -0.07599999756 120 -0.07599999756 121 -0.07599999756 122 -0.07599999756 123 -0.07599999756 124 -0.07599999756 125 -0.07599999756 126 -0.07599999756 127 -0.07599999756 116 -0.07599999756 117 -0.07599999756 116 -0.07599999756 117 -0.07599999756 118 -0.07599999756 119 -0.07599999756 116 -0.07599999756 117 -0.07599999756 0 -0.07599999756 1 -0.07599999756 2 -0.07599999756 3 -0.07599999756 4 -0.07599999756 5 -0.07599999756 6 -0.07599999756 7 -0.07599999756 8 -0.07599999756 9 -0.07599999756 10 -0.07599999756 11 -0.07599999756 12 -0.07599999756 13 -0.07599999756 14 -0.07599999756 15 -0.07599999756 16 -0.07599999756 17 -0.07599999756 18 -0.07599999756 19 -0.07599999756 20 -0.07599999756 21 -0.07599999756 22 -0.07599999756 22 -0.07599999756 23 -0.07599999756 24 -0.07599999756 25 -0.07599999756 26 -0.07599999756 27 -0.07599999756 28 -0.07599999756 29 -0.07599999756 30 -0.07599999756 31 -0.07599999756 32 -0.07599999756 33 -0.07599999756 34 -0.07599999756 35 -0.07599999756 36 -0.07599999756 37 -0.07599999756 38 -0.07599999756 39 -0.07599999756 40 -0.07599999756 41 -0.07599999756 42 -0.07599999756 43 -0.07599999756 44 -0.07599999756 45 -0.07599999756 46 -0.07599999756 47 -0.07599999756 64 -0.07599999756 65 -0.07599999756 66 -0.07599999756 67 -0.07599999756 68 -0.07599999756 69 -0.07599999756 70 -0.07599999756 71 -0.07599999756 72 -0.07599999756 73 -0.07599999756 121 -0.07599999756 122 -0.07599999756 123 -0.07599999756 124 -0.07599999756 125 -0.07599999756 126 -0.07599999756 127 -0.07599999756 116 -0.07599999756 117 -0.07599999756 118 -0.07599999756 119 -0.07599999756 120 -0.07599999756 48 -0.07599999756 49 -0.07599999756 50 -0.07599999756 51 -0.07599999756 52 -0.07599999756 53 -0.07599999756 54 -0.07599999756 55 -0.07599999756 56 -0.07599999756 57 -0.07599999756 58 -0.07599999756 59 -0.07599999756 60 -0.07599999756 61 -0.07599999756 62 -0.07599999756 63 -0.07599999756 116 -0.07599999756 117 -0.07599999756 118 -0.07599999756 119 -0.07599999756 104 -0.07599999756 105 -0.07599999756 106 -0.07599999756 107 -0.07599999756 116 -0.07599999756 117 -0.07599999756 118 -0.07599999756 119 -0.07599999756 116 -0.07599999756 117 -0.07599999756 118 -0.07599999756 119 -0.07599999756 120 -0.07599999756 121 -0.07599999756 122 -0.07599999756 123 -0.07599999756 108 -0.07599999756 109 -0.07599999756 110 -0.07599999756 111 -0.07599999756 112 -0.07599999756 113 -0.07599999756 114 -0.07599999756 115 -0.07599999756}
+   }
+ font {{ Consolas : Regular : consola.ttf : 0 }}
+ font_size 50
+ kerning -0.07599999756
+ scale {1 1}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{-2115.5 475.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 960 540 0 0 1 1 0 0 0 0}
+   }
+ name Text3
+ xpos 37835
+ ypos 2540
 }
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.AwayRegionIndex]"}}
- name AwayRegionSwitcher
- xpos 37690
- ypos 2679
+Transform {
+ scale 0.47
+ center {960 540}
+ name Transform1
+ xpos 37835
+ ypos 2579
+ disable true
 }
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.AwaySignIndex]"}}
- name AwaySignSwitcher
- xpos 37690
- ypos 2631
+push $N304aded0
+Merge2 {
+ inputs 2
+ name Merge5
+ xpos 38038
+ ypos 2608
 }
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.AwayTeamIndex]"}}
- name AwayTeamSwitcher
- xpos 37690
- ypos 2583
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.AwaySkyIndex]"}}
- name AwaySkySwitcher
- xpos 37690
- ypos 2535
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.SignIndex]"}}
- name SignSwitcher
- xpos 38350
- ypos 2607
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.RegionIndex]"}}
- name RegionSwitcher
- xpos 38350
- ypos 2679
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.TeamIndex]"}}
- name TeamSwitcher
- xpos 38351
- ypos 2558
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.DTypeIndex]"}}
- name DTypeSwitcher
- xpos 37691
- ypos 2728
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.SkyIndex]"}}
- name SkySwitcher1
- xpos 38350
- ypos 2486
-}
-Switch {
- inputs 0
- which {{"\[value MASTER_WRITE.FlagIndex]"}}
- name FlagSwitcher
- xpos 38353
- ypos 2733
-}
-push $N149128b0
+set N304ae920 [stack 0]
 push 0
 push 0
 push 0
-Write {
- inputs 0
- file F:/04_CG_Projects/Test/images/test.#.png
- colorspace sRGB
- file_type png
- last {{"\[regexp \"ENDSTAMP\" \[value MASTER_WRITE.FlagCurrent]] * 300 + \[regexp \"FE\" \[value MASTER_WRITE.FlagCurrent]] * 75"}}
- use_limit true
- checkHashOnRead false
- version 427
- beforeRender wedge.preRender()
- beforeFrameRender wedge.preFrame()
- afterFrameRender wedge.postFrame()
- afterRender wedge.postRender()
- name MASTER_WRITE
- xpos 38657
- ypos 1846
- addUserKnob {20 User}
- addUserKnob {22 NewPermutor -STARTLINE T wedge.knobSetup()}
- addUserKnob {22 PermutorSwitch -STARTLINE T wedge.permutorSwitch()}
- addUserKnob {22 FarmWrites -STARTLINE T wedge.setupDeadlineRenderNodes()}
- addUserKnob {6 DisablePermuting l "Disable Permuting" +STARTLINE}
- addUserKnob {6 WedgeLabels -STARTLINE}
- WedgeLabels true
- addUserKnob {1 DeliverableCurrent l Deliverable}
- DeliverableCurrent CFB_E_TEAM_ENDSTAMP_01_ST
- addUserKnob {3 DeliverableIndex +INVISIBLE}
- addUserKnob {2 TemplateFileName}
- TemplateFileName R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_ESPN/000_ANIMATION/CFB_E_TEAM_<flag>_01_ST/render_2d/CFB_E_TEAM_<flag>_01_ST/<team>/<time>/CFB_E_TEAM_<flag>_01_ST_<team>.%04d.png
- addUserKnob {1 TemplateWriteName}
- TemplateWriteName CFB_E_TEAM_<flag>_01_ST_<team>_<time>
- addUserKnob {1 TeamList}
- TeamList AUB
- addUserKnob {1 TeamCurrent}
- TeamCurrent AUB
- addUserKnob {3 TeamIndex}
- addUserKnob {1 TimeList}
- TimeList SUNSET,NIGHT
- addUserKnob {1 TimeCurrent}
- TimeCurrent SUNSET
- addUserKnob {3 TimeIndex}
- addUserKnob {1 RegionCurrent}
- RegionCurrent "\[knob MASTER_CTRL.Region]"
- addUserKnob {3 RegionIndex}
- RegionIndex {{"\[knob MASTER_CTRL.RegionNum]"}}
- addUserKnob {1 SkyCurrent}
- SkyCurrent "\[knob MASTER_CTRL.Sky]"
- addUserKnob {3 SkyIndex}
- SkyIndex {{"\[knob MASTER_CTRL.SkyNum]"}}
- addUserKnob {1 SignCurrent}
- SignCurrent "\[knob MASTER_CTRL.Sign]"
- addUserKnob {3 SignIndex}
- SignIndex {{"\[knob MASTER_CTRL.SignNum]"}}
- addUserKnob {1 AwayRegionCurrent}
- AwayRegionCurrent "\[knob MASTER_CTRL.AwayRegion]"
- addUserKnob {3 AwayRegionIndex}
- AwayRegionIndex {{"\[knob MASTER_CTRL.AwayRegionNum]"}}
- addUserKnob {1 AwaySkyCurrent}
- AwaySkyCurrent "\[knob MASTER_CTRL.AwaySky]"
- addUserKnob {3 AwaySkyIndex}
- AwaySkyIndex {{"\[knob MASTER_CTRL.AwaySkyNum]"}}
- addUserKnob {1 AwaySignCurrent}
- AwaySignCurrent "\[knob MASTER_CTRL.AwaySign]"
- addUserKnob {3 AwaySignIndex}
- AwaySignIndex {{"\[knob MASTER_CTRL.AwaySignNum]"}}
- addUserKnob {1 DTypeCurrent}
- DTypeCurrent "\[string map \{\"NOON\" \"S\" \"SUNSET\" \"E\" \"NIGHT\" \"E\"\} \[knob MASTER_WRITE.TimeCurrent] ]"
- addUserKnob {3 DTypeIndex}
- DTypeIndex {{"\[knob MASTER_WRITE.TimeIndex]"}}
- addUserKnob {1 DType2Current}
- DType2Current "\[string map \{1 \"_ST\" 0 \"\"\} \[regexp \"_ST_\" \[basename \[value root.name]] || regexp \"_ST\\.\" \[basename \[value root.name]] ] ]"
- addUserKnob {3 DType2Index}
- DType2Index {{"\[regexp \"_ST_\" \[basename \[value root.name]] || regexp \"_ST\\.\" \[basename \[value root.name]] ]"}}
- addUserKnob {1 DType3Current}
- DType3Current "\[string map \{1 \"_C\" 0 \"\"\} \[regexp \"_C_\" \[basename \[value root.name]] || regexp \"_C\\.\" \[basename \[value root.name]] ] ]"
- addUserKnob {3 DType3Index}
- DType3Index {{"\[regexp \"_C_\" \[basename \[value root.name]] || regexp \"_C\\.\" \[basename \[value root.name]] ]"}}
- addUserKnob {1 FlagList}
- FlagList ENDSTAMP,FE
- addUserKnob {1 FlagCurrent}
- FlagCurrent ENDSTAMP
- addUserKnob {3 FlagIndex}
-}
+push 0
 Viewer {
  inputs 5
  frame_range 1-300
  frame_range_lock true
- full_frame_processing true
+ input_number 4
  roi {-0.5839999914 -0.008999999613 0.3019999862 0.5310000181}
  input_process false
  translate {-0.1669999957 -0.3490000069}
@@ -815,65 +918,75 @@ Viewer {
  xpos 39196
  ypos 1858
 }
-Constant {
- inputs 0
- channels rgb
- name Constant1
- xpos 38602
- ypos 1543
-}
+push $N304ae920
 Write {
- file f:/04_CG_Projects/Test/images/test.#.png
+ file F:/04_CG_Projects/Test/CFB_E_TEAM_ENDSTAMP_01_C/render_2d/TEAMS/CFB_MIZZ_MIZZ/CFB_E_TEAM_ENDSTAMP_01_C_CFB_MIZZ_MIZZ.%04d.png
  file_type png
  checkHashOnRead false
- version 131
- beforeRender switchTeam.preRender()
- afterRender switchTeam.postRender()
- name MAIN_WRITE
- xpos 38602
- ypos 1677
+ version 151
+ beforeRender build.preRender()
+ afterRender build.postRender()
+ name MASTER_WRITE
+ xpos 38038
+ ypos 2686
 }
 NoOp {
  inputs 0
  name MASTER_CTRL
  knobChanged "n=nuke.thisNode() \nk=nuke.thisKnob() \nif k.name() == \"knob\": \n print k.value()"
- note_font "Verdana Bold Bold"
+ note_font "Verdana Bold Bold Bold Bold Bold Bold"
  note_font_size 25
- xpos 37930
- ypos 1652
+ selected true
+ xpos 38033
+ ypos 1626
  addUserKnob {20 User}
  addUserKnob {20 Home}
  addUserKnob {26 home_team_div l HOME}
  addUserKnob {1 home_team l Team}
- addUserKnob {22 home_switch_btn l "Switch Home Team" +STARTLINE}
- addUserKnob {1 home_sign l Sign}
+ home_team MIZZ
+ addUserKnob {22 home_switch_btn l "Switch Home Team" T build.loadTeam('home') +STARTLINE}
+ addUserKnob {3 home_sign l Sign}
+ home_sign 2
  addUserKnob {3 home_region l Region}
+ home_region 9
  addUserKnob {3 sky l Sky}
+ sky 3
  addUserKnob {4 home_bboard_color l "Billboard Color" M {Primary Secondary ""}}
  addUserKnob {4 home_neon_color l "Neon Color" M {Primary Secondary}}
+ home_neon_color Secondary
  addUserKnob {18 home_primary l "" +STARTLINE}
- home_primary {0 0 0}
+ home_primary {0.05098039216 0.05098039216 0.05098039216}
  addUserKnob {6 home_primary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  addUserKnob {18 home_secondary l "" +STARTLINE}
- home_secondary {0 0 0}
+ home_secondary {0.8039215686 0.6117647059 0}
  addUserKnob {6 home_secondary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  addUserKnob {20 Away}
  addUserKnob {26 away_team_div l AWAY}
  addUserKnob {1 away_team l Team}
- addUserKnob {22 away_switch_btn l "Switch Away Team" +STARTLINE}
- addUserKnob {1 away_sign l Sign}
+ away_team MIZZ
+ addUserKnob {22 away_switch_btn l "Switch Away Team" T build.loadTeam('away') +STARTLINE}
+ addUserKnob {3 away_sign l Sign}
+ away_sign 2
  addUserKnob {3 away_region l Region}
+ away_region 9
  addUserKnob {4 away_bboard_color l "Billboard Color" M {Primary Secondary}}
  addUserKnob {4 away_neon_color l "Neon Color" M {Primary Secondary}}
+ away_neon_color Secondary
  addUserKnob {18 away_primary l "" +STARTLINE}
- away_primary {0 0 0}
+ away_primary {0.05098039216 0.05098039216 0.05098039216}
  addUserKnob {6 away_primary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  addUserKnob {18 away_secondary l "" +STARTLINE}
- away_secondary {0 0 0}
+ away_secondary {0.8039215686 0.6117647059 0}
  addUserKnob {6 away_secondary_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  addUserKnob {20 Wedge}
  addUserKnob {6 is_matchup l Matchup +STARTLINE}
+ is_matchup true
+ addUserKnob {4 tod l Package M {Studio CFB "CFB - Primetime" SNF "SNF - Primetime" ""}}
+ tod CFB
  addUserKnob {1 deliverable l Deliverable}
- deliverable CFB_E_TEAM_ENDSTAMP_01_ST_<TOD>_<HOME>
+ deliverable CFB_E_TEAM_ENDSTAMP_01_C
+ addUserKnob {1 version_string l "Version Name"}
  addUserKnob {1 team_list l "Team List"}
+ addUserKnob {22 set_render_btn l "Setup Write Node" T build.setOutputPath() +STARTLINE}
+ addUserKnob {22 make_folders_btn l "Make Output Folders" T build.setOutputPath(create_dirs=True) +STARTLINE}
 }
