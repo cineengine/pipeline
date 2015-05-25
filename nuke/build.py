@@ -1,13 +1,17 @@
-from pipeline import cfb
-import pipeline.database.team as t
-
-import nuke
-import threading, thread
-
+# Built-in packages
 import time
 from os import makedirs
 from os.path import exists
 from os.path import split
+
+# Nuke packages
+import nuke
+import threading, thread
+
+# External packages
+from pipeline import cfb
+import pipeline.database.team as t
+
 
 # Modify gvars for nuke-friendliness
 TEAMS_ASSET_DIR = cfb.TEAMS_ASSET_DIR.replace('\\','/')
@@ -18,15 +22,26 @@ BASE_OUTPUT_DIR = 'F:/04_CG_Projects/Test'
 MASTER_CTRL = "MASTER_CTRL"
 MASTER_WRITE = "MASTER_WRITE"
 
-logo_read_nodes = ['READ_HOME_SUNSET',
-                   'READ_HOME_NIGHT',
-                   'READ_HOME_MATTE',
-                   'READ_HOME_UTIL',
-                   'READ_AWAY_SUNSET',
-                   'READ_AWAY_NIGHT',
-                   'READ_AWAY_MATTE',
-                   'READ_AWAY_UTIL'
-                   ]
+PRIMARY_LOGO_READ = 'READ_{}_LOGO'
+SECONDARY_LOGO_READ = 'READ_{}_POD_TWO'
+TERTIARY_LOGO_READ = 'READ_{}_POD_THREE'
+BANNER_LOGO_READ = 'READ_{}_BANNER'
+
+EVENT_LOGO_READS = [
+    'READ_{}_SUNSET',
+    'READ_{}_NIGHT',
+    'READ_{}_UTIL'
+    ]
+
+STUDIO_LOGO_READS = [
+    'READ_{}_NOON',
+    'READ_{}_UTIL'
+    ]
+
+CITY_LOGO_READS = [
+    'READ_{}_NIGHT',
+    'READ_{}_UTIL'
+    ]
 
 #############################################################################
 ## To-Do List  ##############################################################
@@ -101,53 +116,73 @@ def selectSigns(location, team):
 
 def selectTeamLogo(location, team):
     try:
-        logoReadNode = nuke.toNode('READ_{}_LOGO'.format(location.upper()))
+        logoReadNode = nuke.toNode(PRIMARY_LOGO_READ.format(location.upper()))
         logoReadNode.knob('file').setValue(team2DAssetString(team.tricode, 1))
     except: pass
 
 
 def selectTeamPodTwo(location, team):
     try:
-        podTwoReadNode = nuke.toNode('READ_{}_POD_TWO'.format(location.upper()))
+        podTwoReadNode = nuke.toNode(SECONDARY_LOGO_READ.format(location.upper()))
         podTwoReadNode.knob('file').setValue(team2DAssetString(team.tricode, 2))
     except: pass
 
 
 def selectTeamPodThree(location, team):
     try:
-        podThreeReadNode = nuke.toNode('READ_{}_POD_THREE'.format(location.upper()))
+        podThreeReadNode = nuke.toNode(TERTIARY_LOGO_READ.format(location.upper()))
         podThreeReadNode.knob('file').setValue(team2DAssetString(team.tricode, 3))
     except: pass
 
 
 def selectTeamBanner(location, team):
     try:
-        bannerReadNode = nuke.toNode('READ_{}_BANNER'.format(location.upper()))
+        bannerReadNode = nuke.toNode(BANNER_LOGO_READ.format(location.upper()))
         bannerReadNode.knob('file').setValue(team2DAssetString(team.tricode, 4))
     except: pass
 
 
-def selectLogoRender(location, team):
-    # figure out which project this scene is in
-    proj_name = getProject()
+def selectLogoRender(home, away=None):
+    package     = m_ctrl.knob('tod').getValue()
+    matchup     = m_ctrl.knob('is_matchup').getValue()
+    deliverable = m_ctrl.knob('deliverable').getValue()
+
+    # Get a list of read nodes for this deliverable type
+    logo_render_reads = {
+        0.0: STUDIO_LOGO_READS,
+        1.0: EVENT_LOGO_READS,
+        2.0: EVENT_LOGO_READS,
+        3.0: CITY_LOGO_READS,
+        4.0: CITY_LOGO_READS 
+        }[package]
+
+    # Get base 3d render folder
+    base_render_path = '{}/{}/render_3d'.format(BASE_OUTPUT_DIR, deliverable)
+    # Base strings for sequence / folder names
+    bty_render = 'bty{}Logo'
+    util_render = 'util{}Logo'
+
+    # Home Team render path generation
+    bty_render_path = '{}/{}/{}.#.exr'.format(
+        base_render_path, 
+        home, 
+        bty_render.format('home'),
+        bty_render.format('home')
+        )
+    util_render_path = '{}/{}/{}.#.exr'.format(
+        base_render_path, 
+        home, 
+        util_render.format('home'),
+        util_render.format('home')
+        )
+
+    for home_read in logo_render_reads:
+        home_read = nuke.toNode(home_read.format('home'.upper()))
+        home_read.knob('file').setValue()
+
+    # Get renders for the home team
     logo_path = cfb.ANIMATION_PROJECT_DIR + proj_name + "/render_3d/LOGOS/" + team.tricode + "/"
-    
-    for r in logo_read_nodes:
-        pass_path = ""
-        try:
-            # get the read node
-            rn = nuke.toNode(r)
-            # figure out the file names on this node
-            pass_path = rn.knob('file').getValue().split('/')
-            if len(pass_path) == 1:
-                pass_path = rn.knob('file').getValue().split('/')
-            # getting layerName/layerName.#.ext
-            pass_path = pass_path[len(pass_path)-2] + "/" + pass_path[len(pass_path)-1]
-            # replace the path prefix with the correct project/team logo version
-            rn.knob('file').setValue(logo_path + pass_path)
-            #print logo_path + pass_path
-        except:
-            nuke.warning('Error finding replacement for: ' + r)
+
 
 
 
@@ -198,7 +233,6 @@ def setOutputPath(create_dirs=False):
     version_tokens = []
 
     base_dir = "{}/{}/render_2d/TEAMS".format(BASE_OUTPUT_DIR, deliverable)
-    # INCLUDE FOLDER SANITY CHECK AND APPEND REST OF DIRECTORY
 
     # Get show ID tag
     show_str = {
