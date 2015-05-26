@@ -57,10 +57,9 @@ class Team(object):
             self.nickname = team['mascot']
             self.safename = team['os_safe']
             self.tricode  = team['tricode']
-            
+
             # Team categories
             self.conf     = self.db['conference']
-            self.tier     = self.db['tier']
             # Team internal information
             self.sign     = team['sign']
             self.signNum  = self.signToInt(self.sign)
@@ -68,7 +67,6 @@ class Team(object):
             self.matteNum = int(team['matte'])
             self.sky      = sky_conv[team['sky']]
             self.skyNum   = int(team['sky'])-1
-            self.acc      = (self.db['five'], self.db['six'])
             self.switch   = False
             
             # Team colors
@@ -80,7 +78,9 @@ class Team(object):
                               self.db['secondary'][1], 
                               self.db['secondary'][2]
                               )
-        
+            self.billboard = team['billboard']
+            self.neon      = team['neon']
+            
         yaml_stream.close()
     
     def __repr__(self):
