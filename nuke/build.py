@@ -11,12 +11,13 @@ import threading, thread
 # External packages
 from pipeline import cfb
 import pipeline.database.team as t
+reload(t)
 
 
 # Modify gvars for nuke-friendliness
 TEAMS_ASSET_DIR = cfb.TEAMS_ASSET_DIR.replace('\\','/')
 
-BASE_OUTPUT_DIR = 'F:/04_CG_Projects/Test'
+BASE_OUTPUT_DIR = cfb.ANIMATION_PROJECT_DIR.replace('\\','/')
 
 # Node names from Nuke
 MASTER_CTRL = "MASTER_CTRL"
@@ -70,6 +71,7 @@ def loadTeam(location, tricode=None, renders=False):
         m_ctrl.knob('sky').setValue(int(team.skyNum))
 
     selectColors(location, team)
+    selectColorVariants(location, team)
     selectRegions(location, team)
     selectSkies(location, team)
     selectSigns(location, team)
@@ -90,6 +92,15 @@ def selectColors(location, team):
     try:
         m_ctrl.knob('{}_primary'.format(location)).setValue(primary)
         m_ctrl.knob('{}_secondary'.format(location)).setValue(secondary)
+    except: pass
+
+
+def selectColorVariants(location, team):
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+
+    try:
+        m_ctrl.knob('{}_bboard_color'.format(location)).setValue(team.billboard)
+        m_ctrl.knob('{}_neon_color'.format(location)).setValue(team.neon)
     except: pass
 
 
@@ -142,7 +153,31 @@ def selectTeamBanner(location, team):
     except: pass
 
 
-def selectLogoRender(home, away=None):
+def selectLogoRender(location, team):
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+
+    matchup     = m_ctrl.knob('is_matchup').getValue()
+    package     = m_ctrl.knob('tod').getValue()
+
+    logo_render_reads = {
+        0.0: STUDIO_LOGO_READS,
+        1.0: EVENT_LOGO_READS,
+        2.0: EVENT_LOGO_READS,
+        3.0: CITY_LOGO_READS,
+        4.0: CITY_LOGO_READS 
+        }[package]
+
+    for rn in logo_render_reads:
+        rn = nuke.toNode(rn.format(location.upper()))
+
+        render_path = rn.knob('file').getValue().split('/')
+        render_path[-3] = team.tricode
+        new_path = '/'.join(render_path)
+
+        rn.knob('file').setValue(new_path)
+
+
+    '''
     package     = m_ctrl.knob('tod').getValue()
     matchup     = m_ctrl.knob('is_matchup').getValue()
     deliverable = m_ctrl.knob('deliverable').getValue()
@@ -182,6 +217,7 @@ def selectLogoRender(home, away=None):
 
     # Get renders for the home team
     logo_path = cfb.ANIMATION_PROJECT_DIR + proj_name + "/render_3d/LOGOS/" + team.tricode + "/"
+    '''
 
 
 
@@ -212,7 +248,9 @@ def writeThread(write_node, start_frame, end_frame):
 
 
 def team2DAssetString(tricode, num):
-    return ('{0}_{1}/includes/{2}_0{3}.png'.format(TEAMS_ASSET_DIR, tricode, tricode, str(num)))
+    asset = '{0}{1}/includes/{2}_0{3}.png'.format(TEAMS_ASSET_DIR, tricode, tricode, str(num))
+    print asset
+    return asset
 
 
 
@@ -253,8 +291,8 @@ def setOutputPath(create_dirs=False):
     version_tokens.append(away_team)
 
     version_str = '_'.join(version_tokens)
-    version_str.rstrip('_')
-    version_str.lstrip('_')
+    version_str = version_str.lstrip('_')
+    version_str = version_str.rstrip('_')
 
     version_dir = base_dir + '/' + version_str
     out_str = '{}/{}_{}.%04d.png'.format(version_dir, deliverable, version_str)  
@@ -273,10 +311,11 @@ def preRender():
     matchup = bool(m_ctrl.knob('is_matchup').getValue())
     
     team_list = m_ctrl.knob('team_list').getValue().split(',')
+    print team_list[0]
 
-    loadTeam('home', team_list[0], renders=False)
+    loadTeam('home', team_list[0], renders=True)
     if matchup: 
-        loadTeam('away', team_list[0], renders=False)
+        loadTeam('away', team_list[0], renders=True)
     
     setOutputPath(create_dirs=True)
 
@@ -295,7 +334,7 @@ def postRender():
 
     else:
         print 'starting!'
-        render_thread = threading.Thread(name='writeThread', target=writeThread, args=(m_write, 1, 1))
+        render_thread = threading.Thread(name='writeThread', target=writeThread, args=(m_write, 135, 135))
         render_thread.setDaemon(False)
         render_thread.start()
 
