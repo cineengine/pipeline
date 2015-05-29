@@ -9,11 +9,6 @@ from pipeline.maya import project
 from pipeline.maya import anim
 from pipeline.database import team
 
-
-# LK-specific modules
-from pipeline.maya import projectLK
-from pipeline.maya import assetLK
-
 import pipeline.vray.utils as vrayutils
 import pipeline.vray.vrayMatteTags as vmt
 
@@ -36,8 +31,7 @@ reload(vrayutils)
 reload(rendering)
 reload(selection)
 reload(cfb)
-reload(projectLK)
-reload(assetLK)
+
 
 blue = [0,0.38,0.52]
 red  = [0.52,0,0]
@@ -337,16 +331,6 @@ pm.setParent(menu=True)
 pm.menuItem(l="Open Scene", c=open_ui)
 pm.menuItem(l="Save Scene", c=save_ui)
 pm.menuItem(l="Rename Scene", c=rename_ui)
-pm.menuItem(subMenu=True, to=True, l='LK Project Tools')
-pm.menuItem(l="LK Open Scene", c=lk_open_ui)
-pm.menuItem(l="LK Save Scene", c=lk_save_ui)
-pm.menuItem(l="LK Rename Scene", c=lk_rename_ui)
-pm.menuItem(l='LK Scene Setup', c=lk_init_scene)
-pm.menuItem(divider=True)
-pm.menuItem(l='LK Reference Asset', c=lambda *args: assetLK.assetSelector(init=True, mode='reference'))
-pm.menuItem(l='LK Import Asset', c=lambda *args: assetLK.assetSelector(init=True, mode='import'))
-pm.menuItem(l="LK Export Asset", c=assetLK.export)
-pm.setParent(mmenu, menu=True)
 
 pm.menuItem(divider=True)
 pm.menuItem(subMenu=True, to=True, l='General Utilities')
