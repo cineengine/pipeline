@@ -378,6 +378,7 @@ def setLayerFramebuffers( layer, framebuffers ):
         pm.editRenderLayerGlobals(crl='defaultRenderLayer')
         for fb in layer_buffers:
             fb = aov.makeLightComponentBuffer(fb)
+            fb.enabled.set(0)
 
         # ACTIVE LAYER LOOP
         pm.editRenderLayerGlobals(crl=layer.name)
@@ -394,6 +395,7 @@ def setLayerFramebuffers( layer, framebuffers ):
         pm.editRenderLayerGlobals(crl='defaultRenderLayer')
         for fb in layer_buffers:
             fb = aov.makeUtilityBuffer(fb)
+            fb.enabled.set(0)
 
         # ACTIVE LAYER LOOP
         pm.editRenderLayerGlobals(crl=layer.name)
