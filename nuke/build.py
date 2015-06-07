@@ -302,6 +302,7 @@ def setOutputPath(create_dirs=False):
             makedirs(version_dir)
     
     m_write.knob('file').setValue(out_str)
+
     return
 
 
@@ -324,17 +325,18 @@ def postRender():
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
 
+    start_frame = m_ctrl.knob('start_frame').getValue()
+    end_frame = m_ctrl.knob('end_frame').getValue()
+
     team_list = m_ctrl.knob('team_list').getValue().split(',')
     del team_list[0]
     m_ctrl.knob('team_list').setValue(','.join(team_list))
     
     if len(team_list) == 0:
-        print 'stopping!'
         return
 
     else:
-        print 'starting!'
-        render_thread = threading.Thread(name='writeThread', target=writeThread, args=(m_write, 135, 135))
+        render_thread = threading.Thread(name='', target=writeThread, args=(m_write, 30, 30))
         render_thread.setDaemon(False)
         render_thread.start()
 
