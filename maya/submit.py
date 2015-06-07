@@ -16,7 +16,7 @@ class RenderSubmitWindow(pm.uitypes.Window):
         
         self.jobtype = jobtype
 
-        self.submit_dict = getSceneData()
+        self.submit_dict = getSceneData(jobtype)
 
         self.default_name = pm.sceneName().basename().rstrip('.mb')
 
