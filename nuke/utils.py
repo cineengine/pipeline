@@ -1,4 +1,5 @@
 import nuke
+from os import makedirs
 
 SWAP_PATHS = {
     'R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_LK/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/001_3D_ASSETS/',
@@ -56,3 +57,12 @@ def remapAlembicNodes():
             if k in rg_path:
                 print rg_path.replace(k,v)
                 rg['file'].setValue(rg_path.replace(k,v))
+
+
+def makeFolders():
+
+    wn = nuke.selectedNodes()[0]
+
+    path = wn.knob('file').getValue()
+
+    makedirs(path)
