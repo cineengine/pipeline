@@ -277,35 +277,13 @@ def open_ui(*a):
 
 def rename_ui(*a):
     if project.isScene():
-        scene = projectLK.Scene()    
+        scene = project.Scene()    
         scene.rename()
     else:
         return
-
-def lk_save_ui(*a):
-    if project.isScene():
-        scene = projectLK.Scene()
-        scene.save()
-    else: 
-        return
-
-def lk_open_ui(*a):
-    projectLK.Scene.open()
-    #scene.open()
-
-def lk_rename_ui(*a):
-    if project.isScene():
-        scene = projectLK.Scene()    
-        scene.rename()
-    else:
-        return
-
 
 def init_scene(*a):
     scene = project.Scene()
-
-def lk_init_scene(*a):
-    scene = projectLK.Scene()
 
 try:
     pm.deleteUI('cfbTools')
