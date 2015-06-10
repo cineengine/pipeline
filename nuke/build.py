@@ -44,12 +44,6 @@ CITY_LOGO_READS = [
     'READ_{}_UTIL'
     ]
 
-#############################################################################
-## To-Do List  ##############################################################
-#############################################################################
-
-# Documentation
-# Re-write selectLogoRender()
 
 #############################################################################
 ## LOAD TEAM FUNCTIONS ######################################################
@@ -253,12 +247,6 @@ def team2DAssetString(tricode, num):
     return asset
 
 
-
-#############################################################################
-## WEDGE RENDER FUNCTIONS ###################################################
-#############################################################################
-
-
 def setOutputPath(create_dirs=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
@@ -305,6 +293,36 @@ def setOutputPath(create_dirs=False):
 
     return
 
+
+#############################################################################
+## GENERAL AUTOMATION #######################################################
+#############################################################################
+
+def createTeamScenes(team_list, submit=True, matchup=False):
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+    deliverable = m_ctrl.knob('deliverable').getValue()
+    out_dir = os.path.join(BASE_OUTPUT_DIR, deliverable, 'nuke', 'TEAMS')
+
+    for team in team_list:
+        scene_name = '{}_{}.nk'.format(deliverable, team)
+        scene_path = out_dir + scene_name
+        loadTeam('home', team)
+        if matchup: loadTeam('away', team)
+        setOutputPath(create_dirs=True)
+        nuke.saveScriptAs(scene_path, 1)
+        time.sleep(1)
+        if submit:
+            submit.singleNode(
+                (deliverable + ' - ' + team),
+                scene_path,
+                '1-300',
+                '5000',
+                '16',
+                'MASTER_WRITE')
+
+#############################################################################
+## WEDGE RENDER FUNCTIONS ###################################################
+#############################################################################
 
 def preRender():
     m_ctrl = nuke.toNode(MASTER_CTRL)
