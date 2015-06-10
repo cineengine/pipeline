@@ -51,6 +51,13 @@ def generatePackagePY(job_name, script, frange, priority, cpus, write_node=''):
 
     return submit_dict
 
+
+def singleNode(job_name, script, frange, priority, cpus, write_node):
+    submit_dict = generatePackagePY(job_name, script, frange, priority, cpus, write_node)
+    subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])
+    time.sleep(3)
+
+
 def folder(frame_range, write_node, nuke_file_path=None, prog_minmax=None, *a):
     if not nuke_file_path:
         nuke_file_path = raw_input('Enter the folder to parse: ')
@@ -71,6 +78,7 @@ def folder(frame_range, write_node, nuke_file_path=None, prog_minmax=None, *a):
         package = generatePackagePY(str(basename(nuke_files[i])), nuke_files[i], frame_range, 9999, cpus, write_node)
         subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(package)])
         time.sleep(3)
+
 
 def allFolders(base_folder=None, *a):
     if not folder:
