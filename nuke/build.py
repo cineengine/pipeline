@@ -1,6 +1,7 @@
 # Built-in packages
 import time
 from os import makedirs
+from os import mkdir
 from os.path import exists
 from os.path import split
 
@@ -302,6 +303,7 @@ def createTeamScenes(team_list, submit=True, matchup=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     deliverable = m_ctrl.knob('deliverable').getValue()
     out_dir = os.path.join(BASE_OUTPUT_DIR, deliverable, 'nuke', 'TEAMS')
+    if not exists(out_dir): mkdir(out_dir)
 
     for team in team_list:
         scene_name = '{}_{}.nk'.format(deliverable, team)
