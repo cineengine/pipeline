@@ -114,4 +114,5 @@ def getTeamsBySign(sign):
     for t in all_teams:
         if t.sign == sign:
             teams.append(t)
-    return t
+    return teams
+    
