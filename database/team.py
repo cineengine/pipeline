@@ -112,7 +112,6 @@ def getTeamsBySign(sign):
     teams = []
     all_teams = getAllTeams(asDict=True)
     for t in all_teams:
-        if t.sign == sign:
+        if t.sign == sign or t.signNum == sign:
             teams.append(t)
     return teams
-    
