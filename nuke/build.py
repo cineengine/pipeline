@@ -257,7 +257,7 @@ def team2DAssetString(tricode, num):
     return asset
 
 
-def setOutputPath(create_dirs=False, matchup=False):
+def setOutputPath(create_dirs=False, matchup=False, jumbo=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
     
@@ -291,8 +291,8 @@ def setOutputPath(create_dirs=False, matchup=False):
     version_str = version_str.lstrip('_')
     version_str = version_str.rstrip('_')
 
-    if not (matchup):
-        version_dir = base_dir + '/' + version_str
+    if not (jumbo):
+        version_dir = base_dir# + '/' + version_str
         out_str = '{}/{}_{}.%04d.png'.format(version_dir, deliverable, version_str)  
 
         if (create_dirs):
@@ -303,7 +303,7 @@ def setOutputPath(create_dirs=False, matchup=False):
 
         return
 
-    elif (matchup):
+    elif (jumbo):
         home_dir = base_dir + '/' + version_str + '_HOME_FILL'
         home_str = '{}/{}_{}_HOME.%04d.png'.format(home_dir, deliverable, version_str)  
         matte_dir = base_dir + '/' + version_str + '_HOME_MATTE'
@@ -387,11 +387,10 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False):
 #############################################################################
 ## WEDGE RENDER FUNCTIONS ###################################################
 #############################################################################
-
-def preRender():
+def preRender(matchup=False, jumbo=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
 
-    matchup = bool(m_ctrl.knob('is_matchup').getValue())
+    #matchup = bool(m_ctrl.knob('is_matchup').getValue())
     
     team_list = m_ctrl.knob('team_list').getValue().split(',')
     print team_list[0]
@@ -400,7 +399,7 @@ def preRender():
     if matchup: 
         loadTeam('away', team_list[0], renders=True)
     
-    setOutputPath(create_dirs=True)
+    setOutputPath(create_dirs=True, matchup=True, jumbo=False)
 
 
 def postRender():
@@ -418,7 +417,7 @@ def postRender():
         return
 
     else:
-        render_thread = threading.Thread(name='', target=writeThread, args=(m_write, 40, 40))
+        render_thread = threading.Thread(name='', target=writeThread, args=(m_write, 60, 60))
         render_thread.setDaemon(False)
         render_thread.start()
 
