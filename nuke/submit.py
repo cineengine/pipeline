@@ -41,6 +41,8 @@ def generatePackagePY(job_name, script, frange, priority, cpus, write_node=''):
         'priority' : str(priority),
         'cpus'     : str(cpus),
         'groups'   : 'Nuke',
+        'cluster'  : '/C',
+        'restrictions': '/C',
         'package'  : {
             'pyExecutable' : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
             'scriptPath'   : script,
