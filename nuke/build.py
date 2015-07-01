@@ -4,6 +4,7 @@ from os import makedirs
 from os import mkdir
 from os.path import exists
 from os.path import split
+from os.path import join
 
 # Nuke packages
 import nuke
@@ -11,8 +12,10 @@ import threading, thread
 
 # External packages
 from pipeline import cfb
+from pipeline.nuke import submit
 import pipeline.database.team as t
 reload(t)
+reload(submit)
 
 
 # Modify gvars for nuke-friendliness
@@ -23,6 +26,13 @@ BASE_OUTPUT_DIR = cfb.ANIMATION_PROJECT_DIR.replace('\\','/')
 # Node names from Nuke
 MASTER_CTRL = "MASTER_CTRL"
 MASTER_WRITE = "MASTER_WRITE"
+
+# Split matchup write nodes
+SPLIT_WRITE_NODES = [
+    "WRITE_HOME_FILL",
+    "WRITE_AWAY_FILL",
+    "WRITE_HOME_MATTE"
+    ]
 
 PRIMARY_LOGO_READ = 'READ_{}_LOGO'
 SECONDARY_LOGO_READ = 'READ_{}_POD_TWO'
@@ -74,7 +84,7 @@ def loadTeam(location, tricode=None, renders=False):
     selectTeamBanner(location, team)
     selectTeamPodTwo(location, team)
     selectTeamPodThree(location, team)
-    if renders: 
+    if renders:
         selectLogoRender(location, team)
 
 
@@ -151,7 +161,6 @@ def selectTeamBanner(location, team):
 def selectLogoRender(location, team):
     m_ctrl = nuke.toNode(MASTER_CTRL)
 
-    matchup     = m_ctrl.knob('is_matchup').getValue()
     package     = m_ctrl.knob('tod').getValue()
 
     logo_render_reads = {
@@ -163,8 +172,8 @@ def selectLogoRender(location, team):
         }[package]
 
     for rn in logo_render_reads:
+        rn = rn.format(location.upper())
         rn = nuke.toNode(rn.format(location.upper()))
-
         render_path = rn.knob('file').getValue().split('/')
         render_path[-3] = team.tricode
         new_path = '/'.join(render_path)
@@ -248,12 +257,11 @@ def team2DAssetString(tricode, num):
     return asset
 
 
-def setOutputPath(create_dirs=False):
+def setOutputPath(create_dirs=False, matchup=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
     
     package     = m_ctrl.knob('tod').getValue()
-    matchup     = m_ctrl.knob('is_matchup').getValue()
     deliverable = m_ctrl.knob('deliverable').getValue()
 
     # Container list for all version tokens
@@ -277,50 +285,104 @@ def setOutputPath(create_dirs=False):
         away_team = m_ctrl.knob('away_team').getValue()
     else: away_team = ''
     version_tokens.append(home_team)
-    version_tokens.append(away_team)
+    #version_tokens.append(away_team)
 
     version_str = '_'.join(version_tokens)
     version_str = version_str.lstrip('_')
     version_str = version_str.rstrip('_')
 
-    version_dir = base_dir + '/' + version_str
-    out_str = '{}/{}_{}.%04d.png'.format(version_dir, deliverable, version_str)  
+    if not (matchup):
+        version_dir = base_dir + '/' + version_str
+        out_str = '{}/{}_{}.%04d.png'.format(version_dir, deliverable, version_str)  
 
-    if (create_dirs):
-        if not exists(version_dir):
-            makedirs(version_dir)
-    
-    m_write.knob('file').setValue(out_str)
+        if (create_dirs):
+            if not exists(version_dir):
+                makedirs(version_dir)
+        
+        m_write.knob('file').setValue(out_str)
 
-    return
+        return
+
+    elif (matchup):
+        home_dir = base_dir + '/' + version_str + '_HOME_FILL'
+        home_str = '{}/{}_{}_HOME.%04d.png'.format(home_dir, deliverable, version_str)  
+        matte_dir = base_dir + '/' + version_str + '_HOME_MATTE'
+        matte_str = '{}/{}_{}_MATTE.%04d.png'.format(matte_dir, deliverable, version_str)  
+        away_dir = base_dir + '/' + version_str + '_AWAY_FILL'
+        away_str = '{}/{}_{}_AWAY.%04d.png'.format(away_dir, deliverable, version_str)  
+
+        if (create_dirs):
+            if not exists(home_dir):
+                makedirs(home_dir)
+            if not exists(matte_dir):
+                makedirs(matte_dir)
+            if not exists(away_dir):
+                makedirs(away_dir)
+
+        nuke.toNode('WRITE_HOME_FILL').knob('file').setValue(home_str)
+        nuke.toNode('WRITE_HOME_MATTE').knob('file').setValue(matte_str)
+        nuke.toNode('WRITE_AWAY_FILL').knob('file').setValue(away_str)
+
+        return
 
 
 #############################################################################
 ## GENERAL AUTOMATION #######################################################
 #############################################################################
 
-def createTeamScenes(team_list, submit=True, matchup=False):
+def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     deliverable = m_ctrl.knob('deliverable').getValue()
-    out_dir = os.path.join(BASE_OUTPUT_DIR, deliverable, 'nuke', 'TEAMS')
+    out_dir = join(BASE_OUTPUT_DIR, deliverable, 'nuke', 'TEAMS')
     if not exists(out_dir): mkdir(out_dir)
 
     for team in team_list:
         scene_name = '{}_{}.nk'.format(deliverable, team)
-        scene_path = out_dir + scene_name
-        loadTeam('home', team)
-        if matchup: loadTeam('away', team)
-        setOutputPath(create_dirs=True)
-        nuke.saveScriptAs(scene_path, 1)
+        scene_path = join(out_dir, scene_name)
+        loadTeam('home', team, renders=True)
+        if matchup: 
+            loadTeam('away', team, renders=True)
+            setOutputPath(create_dirs=True, matchup=True)
+        else:
+            setOutputPath(create_dirs=True)
+
+        nuke.scriptSaveAs(scene_path, 1)
         time.sleep(1)
-        if submit:
-            submit.singleNode(
-                (deliverable + ' - ' + team),
-                scene_path,
-                '1-300',
-                '5000',
-                '16',
-                'MASTER_WRITE')
+
+        if submit_to_farm:
+            
+            if not matchup:
+                submit.singleNode(
+                    (deliverable + ' - ' + team),
+                    scene_path,
+                    range_,
+                    '5000',
+                    '16',
+                    'MASTER_WRITE')
+            
+            elif matchup:
+                submit.singleNode(
+                    (deliverable + ' - ' + team + ' HOME'),
+                    scene_path,
+                    range_,
+                    '5000',
+                    '16',
+                    'WRITE_HOME_FILL')
+                submit.singleNode(
+                    (deliverable + ' - ' + team + ' MATTE'),
+                    scene_path,
+                    range_,
+                    '5000',
+                    '16',
+                    'WRITE_HOME_MATTE')
+                submit.singleNode(
+                    (deliverable + ' - ' + team + ' AWAY'),
+                    scene_path,
+                    range_,
+                    '5000',
+                    '16',
+                    'WRITE_AWAY_FILL')                
+
 
 #############################################################################
 ## WEDGE RENDER FUNCTIONS ###################################################
@@ -345,8 +407,8 @@ def postRender():
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
 
-    start_frame = m_ctrl.knob('start_frame').getValue()
-    end_frame = m_ctrl.knob('end_frame').getValue()
+    #start_frame = m_ctrl.knob('start_frame').getValue()
+    #end_frame = m_ctrl.knob('end_frame').getValue()
 
     team_list = m_ctrl.knob('team_list').getValue().split(',')
     del team_list[0]
@@ -356,7 +418,7 @@ def postRender():
         return
 
     else:
-        render_thread = threading.Thread(name='', target=writeThread, args=(m_write, 30, 30))
+        render_thread = threading.Thread(name='', target=writeThread, args=(m_write, 40, 40))
         render_thread.setDaemon(False)
         render_thread.start()
 
