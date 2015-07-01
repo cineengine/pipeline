@@ -6,7 +6,7 @@ from pymel import versions
 
 default_priority = '5000'
 default_threads  = '16'
-default_allcores = False
+default_allcores = True
 default_chunk    = '1'
 default_maxcpu   = '183'
 
@@ -386,16 +386,18 @@ def getSceneData(jobtype, *a ):
             'layers': layer_name,
             'mayaExecutable': render_exe,
             'renderDirectory': image_path,
-            'renderThreads': default_threads,
-            'renderThreadCount': default_threads,
-            'ignoreRenderTimeErrors': True
+            'renderThreads': 0,
+            'renderThreadCount': 1,
+            'ignoreRenderTimeErrors': True,
+            'useAllCores': 1
             },
      'cluster': '/',
      'restrictions': '',
      'requirements': '',
      'priority': default_priority,
      'cpus': default_maxcpu,
-     'reservations': 'host.processors=' + str(default_threads),
+     'reservations': 'host.processors=1+',
+     'requirements': 'host.processors.used==0',
      'flagsstring': 'auto_wrangling,disable_windows_job_object'
     }
     '''
