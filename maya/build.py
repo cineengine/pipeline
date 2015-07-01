@@ -565,3 +565,19 @@ def singleTeam(tricode, package):
     #rename / save scene
     scene = project.Scene()
     scene.rename(tricode)
+
+
+def splitMatchup(tricode, package):
+    ''' A full scene-building routine for single-team elements.'''
+    #load in the new team
+    loadTeamsStadium(tricode, tricode, diagnostic=False, clean=True)
+    #sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Split_Matchup_{}'.format(package.upper()))
+    sc.run()
+    #change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode)) 
+    #rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)
