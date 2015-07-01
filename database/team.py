@@ -107,3 +107,11 @@ def getAllTeams( asNames=False, asDict=False ):
            return [t['tricode'] for t in stream if t['tricode']]
         elif asDict:
            return [t for t in stream]
+
+def getTeamsBySign( sign, asNames=True, asDict=False ):
+    teams = getAllTeams(asDict=True)
+
+    if asNames:
+        return [t['tricode'] for t in teams if t['sign'] == sign]
+    elif asDict:
+        return [t for t in teams if t['sign'] == sign]
