@@ -404,7 +404,16 @@ def setLayerFramebuffers( layer, framebuffers ):
             enableOverride(fb.enabled)
             fb.enabled.set(1)
 
-        matte_list = vmt.getCurrentLayerVrayMatteTagRE()
+        # Getting a list of matted objects from vmt
+        # We only want objects flagged as bty or aov contributors
+        if layer.bty_obj and layer.aov_obj:
+            meshes = layer.bty_obj + layer.aov_obj
+        elif not layer.bty_obj:
+            meshes = layer.aov_obj
+        elif not layer.aov_obj:
+            meshes = layer.bty_obj
+        matte_list = vmt.parseVrayUserAttributes(meshes)
+
         for m in matte_list:
             fb = pm.PyNode('m_'+m)
             enableOverride(fb.enabled)
