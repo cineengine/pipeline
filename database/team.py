@@ -108,6 +108,7 @@ def getAllTeams( asNames=False, asDict=False ):
         elif asDict:
            return [t for t in stream]
 
+<<<<<<< HEAD
 def getTeamsBySign( sign, asNames=True, asDict=False ):
     teams = getAllTeams(asDict=True)
 
@@ -115,3 +116,12 @@ def getTeamsBySign( sign, asNames=True, asDict=False ):
         return [t['tricode'] for t in teams if t['sign'] == sign]
     elif asDict:
         return [t for t in teams if t['sign'] == sign]
+=======
+def getTeamsBySign(sign):
+    teams = []
+    all_teams = getAllTeams(asDict=True)
+    for t in all_teams:
+        if t.sign == sign or t.signNum == sign:
+            teams.append(t)
+    return teams
+>>>>>>> da02d5e9b274d6e06ae2edb2a96c66204ac460f5
