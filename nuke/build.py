@@ -181,50 +181,6 @@ def selectLogoRender(location, team):
         rn.knob('file').setValue(new_path)
 
 
-    '''
-    package     = m_ctrl.knob('tod').getValue()
-    matchup     = m_ctrl.knob('is_matchup').getValue()
-    deliverable = m_ctrl.knob('deliverable').getValue()
-
-    # Get a list of read nodes for this deliverable type
-    logo_render_reads = {
-        0.0: STUDIO_LOGO_READS,
-        1.0: EVENT_LOGO_READS,
-        2.0: EVENT_LOGO_READS,
-        3.0: CITY_LOGO_READS,
-        4.0: CITY_LOGO_READS 
-        }[package]
-
-    # Get base 3d render folder
-    base_render_path = '{}/{}/render_3d'.format(BASE_OUTPUT_DIR, deliverable)
-    # Base strings for sequence / folder names
-    bty_render = 'bty{}Logo'
-    util_render = 'util{}Logo'
-
-    # Home Team render path generation
-    bty_render_path = '{}/{}/{}.#.exr'.format(
-        base_render_path, 
-        home, 
-        bty_render.format('home'),
-        bty_render.format('home')
-        )
-    util_render_path = '{}/{}/{}.#.exr'.format(
-        base_render_path, 
-        home, 
-        util_render.format('home'),
-        util_render.format('home')
-        )
-
-    for home_read in logo_render_reads:
-        home_read = nuke.toNode(home_read.format('home'.upper()))
-        home_read.knob('file').setValue()
-
-    # Get renders for the home team
-    logo_path = cfb.ANIMATION_PROJECT_DIR + proj_name + "/render_3d/LOGOS/" + team.tricode + "/"
-    '''
-
-
-
 
 #############################################################################
 ## HELPER FUNCTIONS #########################################################
@@ -271,7 +227,7 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False):
 
     # Get show ID tag
     show_str = {
-        0.0: '',
+        0.0: 'STUDIO',
         1.0: 'CFB',
         2.0: 'PRIMETIME',
         3.0: 'SNF',
