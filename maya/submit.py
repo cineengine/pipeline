@@ -1,310 +1,302 @@
 import os
 import subprocess
 import pymel.core as pm
+from pymel import versions
+
+
+default_priority = '5000'
+default_threads  = '16'
+default_allcores = True
+default_chunk    = '1'
+default_maxcpu   = '183'
 
 class RenderSubmitWindow(pm.uitypes.Window):
 
-    def __init__(self):
-        try:
-            pm.deleteUI('qubeSubmitWindow')
-        except: pass
+    def __init__(self, wn, jobtype, *a):
+        
+        self.jobtype = jobtype
 
-        self.mw = 780
+        self.submit_dict = getSceneData(jobtype)
+
+        self.default_name = pm.sceneName().basename().rstrip('.mb')
+
+        #################################################################################
+        ## UI LAYOUT
+        #################################################################################
+        
         self.setTitle('Submit Scene to Qube')
         self.setToolbox()
-        self.setResizeToFitChildren(1)
+        #self.setResizeToFitChildren(1)
         self.setSizeable(0)
-        self.setWidth(self.mw)
         self.setHeight(250)
 
-        self.submit_dict = self.gatherSceneData()
-
-        self.base_job_name = self.submit_dict['name']
-
-        #self.run()
-
-
-    def __editDict(self, text_field, key_one, key_two=None):
-        new_value = pm.textFieldGrp(text_field, q=True, text=True)
-
-        if key_two:
-            self.submit_dict[key_one][key_two] = new_value
-        else:
-            self.submit_dict[key_one] = new_value
-        return True
-
-
-    def __setThreads(self, text_field, chkbox_field):
-        # query the checkbox
-        box_checked = pm.checkBox(chkbox_field, q=True, value=True)
-
-        # if checked, ignore the text box, set threads to all
-        if box_checked:
-            pm.textFieldGrp(text_field, e=True, enable=False) 
-            self.submit_dict['reservations'] = ('host.processors=1+')
-            self.submit_dict['package']['renderThreads'] = 0
-            self.submit_dict['package']['renderThreadCount'] = 1
-            self.submit_dict['requirements'] = 'host.processors.used==0'
-
-        # if unchecked, query the text field
-        if not box_checked:
-            pm.textFieldGrp(text_field, e=True, enable=True)
-            threads = pm.textFieldGrp(text_field, q=True, text=True)
-            self.submit_dict['reservations'] = ('host.processors=' + str(threads))
-            self.submit_dict['package']['renderThreads'] = threads
-            self.submit_dict['package']['renderThreadCount'] = threads
-            self.submit_dict['requirements'] = ''
-
-        return True
-
-
-    def __setClusters(self, cluster_field, restrict_field, chkbox_field):
-        # query the checkbox
-        box_checked  = pm.checkBox(chkbox_field, q=True, value=True)
-        cluster      = pm.textFieldGrp(cluster_field, q=True, text=True)
-        restrictions = pm.textFieldGrp(restrict_field, q=True, text=True)
-        
-        self.submit_dict['cluster'] = cluster
-
-        if box_checked:
-            pm.textFieldGrp(restrict_field, e=True, enable=True)
-            self.submit_dict['restrictions'] = restrictions
-
-        elif not box_checked:
-            pm.textFieldGrp(restrict_field, e=True, enable=False)
-            self.submit_dict['restrictions'] = ''
-
-        return True
-
-    def __browse(self, text_field, folder=False):
-        pass
-
-
-    @classmethod
-    def gatherSceneData( self, *a ):
-        """Gathers scene information and executes the shell command to open a Qube submission window"""
-
-        rg = pm.PyNode('defaultRenderGlobals')
-
-        scene_file_path = pm.system.sceneName()
-        project_path    = pm.workspace(q=True, rd=True).replace('/','\\')
-        image_path      = os.path.join(project_path, pm.workspace('images', q=True, fre=True)).replace('/','\\')
-        frame_range     = str(int(rg.startFrame.get())) + "-" + str(int(rg.endFrame.get()))
-        scene_cameras   = getSceneUserCameras()
-        renderer        = rg.ren.get()
-        render_layers   = [layer for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)]
-        layer_name      = pm.editRenderLayerGlobals(q=True, crl=True)
-
-        # SANITY CHECKS
-        # 1- scene never saved
-        if scene_file_path == '':
-            pm.confirmDialog( title='Scene not saved.',
-                              button='Whoops',
-                              message='Please save scene on cagenas before submitting.',
-                              defaultButton='Whoops'
-                              )
-            return 'sanity check fail'
-
-        # 2- no user cameras in scene
-        if scene_cameras == None:
-            pm.confirmDialog( title='No renderable camera.',
-                              button='Whoops',
-                              message='No renderable cameras found in your scene.',
-                              defaultButton='Whoops'
-                              )
-            return 'sanity check fail'
-
-        elif len(scene_cameras) > 1:
-            confirm = pm.confirmDialog( title='Multiple renderable cameras.',
-                              button=('Whoops', 'That\'s fine'),
-                              cancelButton='That\'s fine',
-                              message='You have multiple renderable cameras in your scene.  All of them will be rendered.  Proceed?',
-                              defaultButton='Whoops',
-                              dismissString='That\'s fine'
-                              )
-            if confirm == 'That\'s fine':
-                pass
-            elif confirm == 'Whoops':
-                return 'sanity check fail'
-
-        # 3- animation rendering not enabled
-        if rg.animation.get() == False:
-            check = pm.confirmDialog( title='Animation not enabled.',
-                                      button=('Whoops', 'That\'s fine'),
-                                      cancelButton='That\'s fine',
-                                      message='Animation is not enabled in your render globals.',
-                                      defaultButton='Whoops',
-                                      dismissString='That\'s fine'
-                                      )
-            print check
-            if check == 'Whoops':
-                return 'sanity check fail'
-            else: pass
-
-        # 4- framerate weirdness
-        if (rg.endFrame.get() % int(rg.endFrame.get())):
-            pm.confirmDialog( title='Framge range is strange!',
-                              button='Whoops',
-                              message='Animation frame range is wonky.  Did you change framerate?',
-                              defaultButton='Whoops'
-                              )
-            return 'sanity check fail'        
-
-
-
-        ## output scene dictionary for Qube
-        submit_dict = {'name': str( scene_file_path.basename().rstrip('.mb') ),
-                       'prototype':'maya',
-                       'package':{'scenefile':     str( toUNC(scene_file_path.replace('/','\\')) ),
-                                  'project':       str( toUNC(project_path) ), 
-                                  'range':         str( frame_range ), 
-                                  'cameras_all':   listToStr( scene_cameras ), 
-                                  'renderers_all': str( renderer ),
-                                  'renderer':      str( renderer ),
-                                  'layers_all':    str( render_layers ),
-                                  'layers':        str( layer_name ),
-                                  'mayaExecutable':'R:\\Program Files\\Autodesk\\Maya2013\\bin\\mayabatch.exe',
-                                  'renderDirectory': toUNC(image_path),
-                                  'renderThreads': -1 
-                                  },
-                        'cluster': '/',
-                        'restrictions': '',
-                        'requirements': '',
-                        'kind': '',
-                        'priority': str(5000),
-                        'cpus': str(183),
-                        'reservations': 'host.processors=16',
-                        'flagsstring': 'auto_wrangling,disable_windows_job_object'
-                      }
-
-        return submit_dict
-
-
-    def run(self):
         main_layout = pm.formLayout(p=self)
 
         # input / output paths
-        column = pm.columnLayout(p=main_layout, width=720)
-        job_text = pm.textFieldGrp(
+        column = pm.formLayout(p=main_layout)
+
+
+        self.job_text = pm.textFieldGrp(
+            'job_text',
             label='Job Name', 
             text=self.submit_dict['name'], 
-            cc=lambda *args: self.__editDict(job_text, 'name'), 
-            tcc=lambda *args: self.__editDict(job_text, 'name'), 
+            cc=self.setName, 
+            tcc=self.setName,
             p=column,
             cw2=(110,655)
             )
-        scene_text = pm.textFieldGrp(
+        self.scene_text = pm.textFieldGrp(
+            'scene_text',
             label='Scene File', 
             text=self.submit_dict['package']['scenefile'], 
-            cc=lambda *args: self.__editDict(scene_text, 'package', 'scenefile'), 
-            tcc=lambda *args: self.__editDict(scene_text, 'package', 'scenefile'),
+            cc=self.setScenePath, 
+            tcc=self.setScenePath,
             p=column,
             cw2=(110,655)
             )
-        project_text = pm.textFieldGrp(
+        self.project_text = pm.textFieldGrp(
+            'project_text',
             label='Project Path', 
-            text=self.submit_dict['package']['project'],
+            text=pathFormat(pm.workspace(q=True, rd=True).replace('/','\\')),
             ed=False,
             p=column,
             cw2=(110,655)
             )
-        outdir_text = pm.textFieldGrp(
+        self.outdir_text = pm.textFieldGrp(
+            'outdir_text',
             label='Render Path (optional)', 
             text='',
+            cc=self.setRenderPath,
             p=column,
             cw2=(110,655)
             )
-
-
+        column.redistribute()
 
         # 2 columns
-        column = pm.rowLayout(p=main_layout, nc=2)
-        rows = pm.columnLayout(width=200, p=column)
+        column = pm.formLayout(p=main_layout)
+        column.flip()
+        rows = pm.formLayout(p=column)
+       
         # frame range
-        frange_text = pm.textFieldGrp(
+        self.frange_text = pm.textFieldGrp(
+            'frange_text',
             l='Frame Range', 
             text=self.submit_dict['package']['range'], 
-            cc=lambda *args: self.__editDict(frange_text, 'package', 'range'),
-            tcc=lambda *args: self.__editDict(frange_text, 'package', 'range'),
+            cc=self.setRange,
+            tcc=self.setRange,
             cw2=(110, 80), 
             p=rows
             )
+        if self.jobtype == 'mayacmd':
+            self.chunk_text = pm.textFieldGrp(
+                'chunk_text',
+                l='Chunk Size',
+                text=default_chunk,
+                cc=self.setChunk,
+                tcc=self.setChunk,
+                cw2=(110, 80),
+                p=rows
+                )
+        else: pass
 
         # num. threads
         threads_col = pm.rowLayout(p=rows, nc=2)
-        threads_text = pm.textFieldGrp(
+        self.threads_text = pm.textFieldGrp(
+            'threads_text',
             l='Num. Threads',
-            text='16',
-            tcc=lambda *args: self.__setThreads(threads_text, threads_chkbox),
+            text=default_threads,
+            tcc=self.setThreads,
             cw2=(110, 40),
             p=threads_col
             )
-        threads_chkbox = pm.checkBox(
+        self.threads_text.setEnable(0)
+
+        self.threads_chkbox = pm.checkBox(
+            'threads_chkbox',
             l='All',
-            value=False,
-            cc=lambda *args: self.__setThreads(threads_text, threads_chkbox),
+            value=default_allcores,
+            cc=self.setThreads,
             p=threads_col
             )
 
         # priority
-        priority_text = pm.textFieldGrp(
+        self.priority_text = pm.textFieldGrp(
+            'priority_text',
             l='Priority', 
-            text=self.submit_dict['priority'], 
-            cc=lambda *args: self.__editDict(priority_text, 'priority'),
-            tcc=lambda *args: self.__editDict(priority_text, 'priority'),
+            text=default_priority, 
+            cc=self.setPriority,
+            tcc=self.setPriority,
             cw2=(110, 80),
             p=rows)
 
         # cluster
         cluster_col = pm.rowLayout(p=rows, nc=2)
-        cluster_text = pm.textFieldGrp(
+        self.cluster_text = pm.textFieldGrp(
+            'cluster_text',
             l='Cluster', 
-            text=self.submit_dict['cluster'],
-            cc=lambda *args: self.__setClusters(cluster_text, restrict_text, restrict_chkbox),
-            tcc=lambda *args: self.__setClusters(cluster_text, restrict_text, restrict_chkbox),
+            text='/',
+            cc=self.setCluster,
+            tcc=self.setCluster,
             cw2=(110, 40), 
             p=cluster_col
             )
-        restrict_chkbox = pm.checkBox(
-            l='Res.',
+        self.restrict_chkbox = pm.checkBox(
+            'restrict_chkbox',
+            l='Restrict?',
             value=False,
-            cc=lambda *args: self.__setClusters(cluster_text, restrict_text, restrict_chkbox),
+            cc=self.setCluster,
             p=cluster_col
             )
-        # num threads
-        restrict_text = pm.textFieldGrp(
+        self.restrict_text = pm.textFieldGrp(
+            'restrict_text',
             l='Restrict to Clusters',
-            text=self.submit_dict['restrictions'],
-            cc=lambda *args: self.__setClusters(cluster_text, restrict_text, restrict_chkbox),
-            tcc=lambda *args: self.__setClusters(cluster_text, restrict_text, restrict_chkbox),
+            text='',
+            cc=self.setCluster,
+            tcc=self.setCluster,
             cw2=(110, 80),
             enable=False,
             p=rows
             )
+        rows.redistribute()
 
-        #submit_btn = pm.button(label='test', width=565, height=80, c=self.__test, p=column)
-        buttons = pm.columnLayout(p=column)
-        submit_single_btn = pm.button(label='Submit Current Layer', width=565, height=60, c=self.submit, p=buttons)
-        submit_all_btn    = pm.button(label='Submit All Renderable Layers', width=565, height=60, c=self.submitAll, p=buttons)
+        rows = pm.formLayout(p=column)
+        self.submit_btn = pm.button(label='Submit Current Layer', height=10, c=self.submit, p=rows)
+        self.submit_all_btn = pm.button(label='Submit All Renderable Layers', height=10, c=self.submit_all, p=rows)
+        rows.redistribute()       
+ 
+        column.redistribute(1,2)
 
-        main_layout.redistribute()
+        main_layout.redistribute(1,1.5)
+
+        self.setThreads()
+
+    ### UI FUNCTIONS
+    def refresh(self, *a):
+        ''' Resets the submit_dict based on jobtype, and populates it with current UI values. '''
+        self.submit_dict = getSceneData()
+        self.setChunk()
+        self.setName()
+        self.setPriority()
+        self.setScenePath()
+        self.setRenderPath()
+        self.setRange()
+        self.setCluster()
+        self.setThreads()
+        self.setVersion()
+
+    def setChunk(self, *a):
+        if self.jobtype == 'mayacmd':
+            self.chunk_text.setEnable(True)
+            new = self.chunk_text.getText()
+            self.submit_dict['package']['rangeExecution'] = 'chunks:' + str(new)
+        elif self.jobtype == 'mayapy':
+            self.chunk_text.setEnable(False)
+            self.submit_dict['package'].pop('rangeExecution', None)
+        return
+
+    def setName(self, *a):
+        new = self.job_text.getText()
+        self.submit_dict['name'] = str(new)
+        return
+
+    def setPriority(self, *a):
+        new = self.priority_text.getText()
+        self.submit_dict['priority'] = str(new)
+        return
+
+    def setScenePath(self, *a):
+        new = self.scene_text.getText()
+        self.submit_dict['package']['scenefile'] = str(new)
+        return
+
+    def setRenderPath(self, *a):
+        new = self.outdir_text.getText()
+        if self.jobtype == 'mayacmd':
+            self.submit_dict['package']['-rd'] = str(new)
+        elif self.jobtype == 'mayapy':
+            self.submit_dict['package']['renderDirectory'] = str(new)
+        pass
+
+    def setRange(self, *a):
+        new = self.frange_text.getText()
+        self.submit_dict['package']['range'] = str(new)
+        return
+
+    def setCluster(self, *a):
+        # query the checkbox
+        box_checked  = self.restrict_chkbox.getValue()
+        cluster      = self.cluster_text.getText()
+        restrictions = self.restrict_text.getText()
+
+        self.submit_dict['cluster'] = str(cluster)
+
+        if box_checked:
+            self.restrict_text.setEnable(1)
+            self.submit_dict['restrictions'] = str(restrictions)
+
+        elif not box_checked:
+            self.restrict_text.setEnable(0)
+            self.submit_dict['restrictions'] = str('')
+        return
+
+    def setThreads(self, *a):
+        # query the checkbox
+        box_checked = self.threads_chkbox.getValue()
+
+        # if checked, ignore the text box, set threads to all
+        if box_checked:
+            self.threads_text.setEnable(0)
+            
+            if (self.jobtype) == 'mayacmd':
+                self.submit_dict['package']['-threads'] = 0
+            
+            elif (self.jobtype) == 'mayapy':
+                self.submit_dict['package']['renderThreads'] = 0
+                self.submit_dict['package']['renderThreadCount'] = 1
+            
+            self.submit_dict['package']['useAllCores'] = 1
+            self.submit_dict['reservations'] = 'host.processors=1+'
+            self.submit_dict['requirements'] = 'host.processors.used==0'
+
+        # if unchecked, query the text field
+        if not box_checked:
+            self.threads_text.setEnable(1)
+            threads = self.threads_text.getText()
+            
+            if (self.jobtype) == 'mayacmd':
+                self.submit_dict['package']['-threads'] = int(threads)
+            elif (self.jobtype) == 'mayapy':
+                self.submit_dict['package']['renderThreads'] = int(threads)
+                self.submit_dict['package']['renderThreadCount'] = int(threads)
+
+            self.submit_dict['package']['useAllCores'] = 0
+            self.submit_dict['reservations'] = 'host.processors=' + str(threads)
+            self.submit_dict['requirements'] = ''
+        return
+
+
+    def run(self):
         self.show()
 
-
-    def submit( self, qube_gui=False, *a ):
+    def submit( self, qube_gui=0, *a ):
         """ Runs the Qube submission console command for the current render layer. """
 
         layer = pm.editRenderLayerGlobals(q=True, crl=True)
-        self.submit_dict['package']['layers'] = str(layer)
-        self.submit_dict['name'] = self.base_job_name + ' : ' + str(layer)
+        if self.jobtype == 'mayacmd':
+            self.submit_dict['package']['-rl'] = str(layer)
+            name_prefix = 'maya(cmd) '
+        elif self.jobtype == 'mayapy':
+            self.submit_dict['package']['layers'] = str(layer)
+            name_prefix = 'maya(py) '
+
+        self.submit_dict['name'] = name_prefix + pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
 
         if qube_gui:
             subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--submitDict', str(self.submit_dict)])
         else:
             subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(self.submit_dict)])
 
-
-    def submitAll(self, *a):
+    def submit_all(self, *a):
         """ Iterates over all active render layers and submits each one individually. """
 
         render_layers = [layer for layer in pm.ls(type='renderLayer') if (not 'defaultRenderLayer' in str(layer)) and layer.renderable.get()]
@@ -315,7 +307,160 @@ class RenderSubmitWindow(pm.uitypes.Window):
 
 
     def __test(self, *a):
-        print self.submit_dict
+        import pprint
+        layer = pm.editRenderLayerGlobals(q=True, crl=True)
+        if self.jobtype == 'mayacmd':
+            self.submit_dict['package']['-rl'] = str(layer)
+            name_prefix = 'maya(cmd) '
+        elif self.jobtype == 'mayapy':
+            self.submit_dict['package']['layer'] = str(layer)
+            name_prefix = 'maya(py) '
+
+        self.submit_dict['name'] = name_prefix + pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
+
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.submit_dict)
+        return
+
+
+def getSceneData(jobtype, *a ):
+    """Gathers scene information and executes the shell command to open a Qube submission window"""
+    rg = pm.PyNode('defaultRenderGlobals')
+
+    # GET MAYA VERSION
+    if jobtype == 'mayacmd':
+        if versions.current()/100 == 2013:
+            render_exe = "R:/Program Files/Autodesk/Maya2013/bin/Render.exe"
+        if versions.current()/100 == 2015:
+            render_exe = "R:/Program Files/Autodesk/Maya2015/bin/Render.exe"
+    
+    elif jobtype == 'mayapy':
+        if versions.current()/100 == 2013:
+            render_exe = "R:/Program Files/Autodesk/Maya2013/bin/mayabatch.exe"
+        if versions.current()/100 == 2015:
+            render_exe = "R:/Program Files/Autodesk/Maya2015/bin/mayabatch.exe"
+
+    # Populate base scene information
+    scene_file_path = pathFormat(pm.system.sceneName())
+    project_path    = pathFormat(pm.workspace(q=True, rd=True).replace('/','\\'))
+    image_path      = pathFormat(os.path.join(project_path, pm.workspace('images', q=True, fre=True)).replace('/','\\'))
+    frame_range     = str(int(rg.startFrame.get())) + "-" + str(int(rg.endFrame.get()))
+    scene_cameras   = ','.join(getSceneUserCameras())
+    renderer        = rg.ren.get()
+    render_layers   = ','.join([str(layer) for layer in pm.ls(type='renderLayer') if not 'defaultRenderLayer' in str(layer)])
+    layer_name      = str(pm.editRenderLayerGlobals(q=True, crl=True))
+
+    submit_dict = {
+        'name': 'maya(cmd) ' + pm.sceneName().basename().rstrip('.mb'),
+        'prototype':'cmdrange',
+        'package':{
+            'simpleCmdType': 'Maya BatchRender (vray)',
+            'scenefile': scene_file_path,
+            '-r': 'vray',
+            '-proj': project_path, 
+            'range': frame_range,
+            '-rl': layer_name,
+            '-rd': '',
+            '-threads': default_threads,
+            'mayaExe': render_exe,
+            'rangeExecution': 'chunks:' + str(default_chunk)
+            },
+        'cluster': '/',
+        'restrictions': '',
+        'requirements': '',
+        'priority': default_priority,
+        'cpus': default_maxcpu,
+        'reservations': 'host.processors=' + str(default_threads),
+        'flagsstring': 'auto_wrangling,disable_windows_job_object'
+        }
+
+    submit_dict_mayapy = {
+        'name': 'maya(py) ' + pm.sceneName().basename().rstrip('.mb'),
+        'prototype':'maya',
+        'package':{
+            'scenefile': scene_file_path.replace('/','\\'),
+            'project': project_path, 
+            'range': frame_range, 
+            'cameras_all': scene_cameras, 
+            'layers_all': render_layers,
+            'layers': layer_name,
+            'mayaExecutable': render_exe,
+            'renderDirectory': image_path,
+            'renderThreads': 0,
+            'renderThreadCount': 1,
+            'ignoreRenderTimeErrors': True,
+            'useAllCores': 1
+            },
+     'cluster': '/',
+     'restrictions': '',
+     'requirements': '',
+     'priority': default_priority,
+     'cpus': default_maxcpu,
+     'reservations': 'host.processors=1+',
+     'requirements': 'host.processors.used==0',
+     'flagsstring': 'auto_wrangling,disable_windows_job_object'
+    }
+    '''
+    # SANITY CHECKS
+    # 1- scene never saved
+    if scene_file_path == '':
+        pm.confirmDialog( title='Scene not saved.',
+                          button='Whoops',
+                          message='Please save scene on cagenas before submitting.',
+                          defaultButton='Whoops'
+                          )
+        return 'sanity check fail'
+
+    # 2- no user cameras in scene
+    if scene_cameras == None:
+        pm.confirmDialog( title='No renderable camera.',
+                          button='Whoops',
+                          message='No renderable cameras found in your scene.',
+                          defaultButton='Whoops'
+                          )
+        return 'sanity check fail'
+
+    elif len(scene_cameras) > 1:
+        confirm = pm.confirmDialog( title='Multiple renderable cameras.',
+                          button=('Whoops', 'That\'s fine'),
+                          cancelButton='That\'s fine',
+                          message='You have multiple renderable cameras in your scene.  All of them will be rendered.  Proceed?',
+                          defaultButton='Whoops',
+                          dismissString='That\'s fine'
+                          )
+        if confirm == 'That\'s fine':
+            pass
+        elif confirm == 'Whoops':
+            return 'sanity check fail'
+
+    # 3- animation rendering not enabled
+    if rg.animation.get() == False:
+        check = pm.confirmDialog( title='Animation not enabled.',
+                                  button=('Whoops', 'That\'s fine'),
+                                  cancelButton='That\'s fine',
+                                  message='Animation is not enabled in your render globals.',
+                                  defaultButton='Whoops',
+                                  dismissString='That\'s fine'
+                                  )
+        print check
+        if check == 'Whoops':
+            return 'sanity check fail'
+        else: pass
+
+    # 4- framerate weirdness
+    if (rg.endFrame.get() % int(rg.endFrame.get())):
+        pm.confirmDialog( title='Framge range is strange!',
+                          button='Whoops',
+                          message='Animation frame range is wonky.  Did you change framerate?',
+                          defaultButton='Whoops'
+                          )
+        return 'sanity check fail'        
+    '''
+    if jobtype == 'mayacmd':
+        return submit_dict
+    elif jobtype == 'mayapy':
+        return submit_dict_mayapy
+
 
 
 def getSceneUserCameras( *a ):
@@ -324,52 +469,70 @@ def getSceneUserCameras( *a ):
     cams = [str(cam) for cam in pm.ls(typ='camera') if cam not in default_cameras and cam.renderable.get()]
     if len(cams) > 0:
         return cams
-    else: return None
+    else: return []
 
 
-def toUNC( path ):
+def pathFormat( path ):
     """ Force updates drive mapping to unc paths """
-    return path.replace('Y:\\','\\\\cagenas\\')
+    path = path.replace('\\','/')
+    return str(path.replace('Y:/','//cagenas/'))
 
-def listToStr( list_obj ):
-    """ Converts a list of objects to a space-separated string of object names """
 
-    if 'str' in str(list_obj.__class__):
-        return list_obj
-    elif not 'list' in str(list_obj.__class__):
-        pm.error('Unexpected object type ' + str(list_obj.__class__) + ' in _listToStr.')
-        return None
-
-    out_str = ""
-
-    for i in range(len(list_obj)):
-        # if it is the only or last element in the list
-        if (i+1) == len(list_obj):
-            out_str += str(list_obj[i])
-        # if it is the 1 to (n-1) element of the list
-        elif (i+1) < len(list_obj):
-            out_str = out_str + str(list_obj[i]) + " "        
-        else: return '#EMPTY_LIST'
-    return out_str
-
-def submitJob( gui=True, *a ):
-    """ Standalone function whihc runs the Qube submission console command for each renderable layer in the scene. """
-    render_layers = [layer for layer in pm.ls(type='renderLayer') if (not 'defaultRenderLayer' in str(layer)) and layer.renderable.get()]
-
-    for layer in render_layers:
-        
-        pm.editRenderLayerGlobals(crl=layer)
-        submit_dict = RenderSubmitWindow.gatherSceneData()
-        
-        if submit_dict == 'sanity check fail':
-            pm.warning("Failed sanity check :: there was a problem with your scene.")
-            return None
-        if gui:
-            subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--submitDict', str(submit_dict)])
-        else:
-            subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])
-
-def run(*a):
-    submission = RenderSubmitWindow()
+def cmdrange(*a):
+    wn = 'null'
+    try: 
+        pm.deleteUI(wn)
+    except: pass
+    submission = RenderSubmitWindow(wn,'mayacmd')
     submission.run()
     return
+
+
+def mayajob(*a):
+    wn = 'null'
+    try: 
+        pm.deleteUI(wn)
+    except: pass
+    submission = RenderSubmitWindow(wn,'mayapy')
+    submission.run()
+    return
+
+def autoSubmitExplicit(frame_range, cluster, restrictions, priority):
+
+    render_layers = [pm.PyNode('btyHomeLogoNight'), pm.PyNode('btyAwayLogoNight')]
+
+    submit_dict = getSceneData('mayapy')
+
+    for layer in render_layers:
+        pm.editRenderLayerGlobals(crl=layer)
+    
+        submit_dict['package']['layers'] = str(layer)
+        submit_dict['name'] = pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
+
+        submit_dict['package']['range'] = frame_range
+        submit_dict['cluster'] = cluster
+        submit_dict['restrictions'] = restrictions
+        submit_dict['priority'] = priority
+        
+        subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])    
+
+
+def autoSubmitAll(frame_range, cluster, restrictions, priority):
+
+    render_layers = [layer for layer in pm.ls(type='renderLayer') if (not 'defaultRenderLayer' in str(layer)) and layer.renderable.get()]
+
+    submit_dict = getSceneData('mayapy')
+
+    for layer in render_layers:
+        pm.editRenderLayerGlobals(crl=layer)
+    
+        submit_dict['package']['layers'] = str(layer)
+        submit_dict['name'] = pm.sceneName().basename().rstrip('.mb') + ' : ' + str(layer)
+
+        submit_dict['package']['range'] = frame_range
+        submit_dict['cluster'] = cluster
+        submit_dict['restrictions'] = restrictions
+        submit_dict['priority'] = priority
+        
+        subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])      
+

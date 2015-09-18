@@ -28,41 +28,334 @@ STUDIO :
 ---
 ELEMENT : CFB_Logo
 btyLogo :
-    type: cfb_logo
+    type: beauty
     rgba :
         - sg_cfb_logo
     lights : 
         - lg_cfb_logo
+    gi: 0
 utilLogo :
     type: utility
     aov :
         - sg_cfb_logo
 ...
 ---
-ELEMENT: Home_Sign
-btyHomeSign:
-    type: sign
-    rgba:
-        - "HOMESIGN:sg_sign"
-    lights:
-        - "HOMESIGN:lg_sign"
-utilHomeSign:
+ELEMENT : SNF_Logo
+btyLogo :
+    type: beauty
+    rgba :
+        - sg_cfb_logo
+        - sg_cfb_logo_nogi
+    lights : 
+        - lg_cfb_logo
+utilLogo :
     type: utility
-    aov:
-        - "HOMESIGN:sg_sign"
+    aov :
+        - sg_cfb_logo
+        - sg_cfb_logo_nogi
 ...
 ---
-ELEMENT: Home_Logo
-btyHomeLogo:
-    type: team_logo
+ELEMENT : Conference_Logo
+btyLogo :
+    type: beauty
+    rgba :
+        - sg_conf_logo
+    lights : 
+        - lg_conf_logo
+utilLogo :
+    type: utility
+    aov :
+        - sg_conf_logo
+...
+---
+ELEMENT : Quad
+btyHomeLogoSunset:
+    type: beauty
+    rgba :
+        - sg_sign
+    lights : 
+        - lg_sunset
+...
+---
+ELEMENT: SNF_City_Basic
+btyCity:
+    type: beauty
     rgba:
-        - "HOMELOGO:sg_logo"
+        - sg_buildings
+        - sg_street
+    lights:
+        - lg_all
+utilCity:
+    type: utility
     aov:
+        - sg_buildings
+        - sg_street
+btyNeon:
+    type: beauty
+    rgba:
+        - sg_neon
+    occ:
+        - sg_buildings
+...
+---
+ELEMENT: Single_Team_STUDIO
+btyHomeLogoNoon:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
         - "HOMESIGN:sg_sign"
     lights:
-        - "HOMELOGO:lg_logo"
+        - "HOMELOGO:lg_noon"
+        - "HOME_ENV_LGT:lg_noon"
 utilHomeLogo:
     type: utility
     aov:
-        - "HOMELOGO:sg_logo"
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+...
+---
+ELEMENT: Single_Team_STADIUM
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyHomeLogoNight:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+...
+---
+ELEMENT: Single_Team_CITY
+btyHomeLogo:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - sg_logo_blocker
+        - sg_scaffold
+    lights:
+        - "HOMELOGO:lg_night"
+        - lg_scene_lighting
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+...
+---
+ELEMENT: Matchup_CITY
+btyHomeLogo:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+        - sg_extra
+    occ:
+        - sg_logo_blocker
+        - sg_scaffold
+        - sg_buildings
+    lights:
+        - "HOMELOGO:lg_night"
+        - lg_scene_lighting
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+btyAwayLogo:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+        - sg_extra
+    occ:
+        - sg_logo_blocker
+        - sg_scaffold
+        - sg_buildings
+    lights:
+        - "AWAYLOGO:lg_night"
+        - lg_scene_lighting
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+...
+---
+ELEMENT: Split_Matchup_JUMBO
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyAwayLogoSunset:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_sunset"
+        - "AWAY_ENV_LGT:lg_sunset"
+btyHomeLogoNight:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+btyAwayLogoNight:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_night"
+        - "AWAY_ENV_LGT:lg_night"
+btyHomeLogoNoon:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_noon"
+        - "HOME_ENV_LGT:lg_noon"
+btyAwayLogoNoon:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_noon"
+        - "AWAY_ENV_LGT:lg_noon"
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+        - "AWAYSIGN:sg_sign"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+...
+---
+ELEMENT: Split_Matchup_STADIUM
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyAwayLogoSunset:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_sunset"
+        - "AWAY_ENV_LGT:lg_sunset"
+btyHomeLogoNight:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMELOGO:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+btyAwayLogoNight:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYLOGO:lg_night"
+        - "AWAY_ENV_LGT:lg_night"
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+        - "AWAYSIGN:sg_sign"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+...
+---
+ELEMENT: City_Matchup
+btyCity:
+    type: beauty
+    rgba:
+        - sg_buildings
+        - sg_streets
+        - sg_scaffold
+    lights:
+        - lg_building
+utilCity:
+    type: utility
+    aov:
+        - sg_buildings
+        - sg_streets
+        - sg_scaffold
+btyHomeLogo:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+        - sg_buildings
+        - sg_scaffold
+    lights:
+        - "HOMELOGO:lg_night"
+        - "HOME_ENV_LGT:lg_night"
+        - lg_teamlogos
+btyAwayLogo:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+        - sg_buildings
+        - sg_scaffold
+    lights:
+        - "AWAYLOGO:lg_night"
+        - "AWAY_ENV_LGT:lg_night"
+        - lg_teamlogos
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+        - "AWAYSIGN:sg_sign"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
 ...

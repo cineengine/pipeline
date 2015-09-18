@@ -1,6 +1,7 @@
 # Built-in modules
 import re
-from os.path import exists
+import os.path
+import shutil
 
 # Maya-specific modules
 import pymel.core as pm
@@ -71,10 +72,10 @@ def importAtom(*a):
     # select the whole hierarchy
     pm.select(hierarchy=True)
 
-    atom_file = pm.fileDialog2(fm=3, dir=getAnimPath('atom', '', 1, export=False))[0]
+    atom_file = pm.fileDialog2(fm=1, dir=getAnimPath('atom', '', 1, folder_only=True))[0]
     
     if atom_file:
-        pm.importFile(atomFile, defaultNamespace=True)
+        pm.importFile(atom_file, defaultNamespace=True)
         return
     else:
         return
@@ -94,7 +95,7 @@ def exportAbc(*a):
     export_path = getAnimPath('abc', msg, 0)
 
     pm.Mel.eval(
-        "AbcExport -j \"-frameRange {0} {1} -dataFormat ogawa -root {2} -file {3}\";".format(
+        "AbcExport -j \"-frameRange {0} {1} -worldSpace -uvWrite -dataFormat ogawa -root {2} -file {3}\";".format(
             start, end, sel, export_path.replace('\\','/')))
     pm.warning('Export Alembic  SUCCESS Wrote to {0}'.format(export_path))
     return
@@ -103,7 +104,7 @@ def exportAbc(*a):
 ##############################################################################
 # camera & playblasting
 ##############################################################################
-def bakeCamera( exp=False, *args, **kwargs ):
+def bakeCamera( cam, exp=False, *args, **kwargs ):
     """Duplicates a baked version of a camera.  Expects a valid camera transform node."""
     # Frame range
     frame_range = ( 
@@ -150,59 +151,94 @@ def exportCamera(*a):
 
     # select and export camera
     pm.select(camera)
-    pm.exportSelected(export_path, type='fbx')
+    pm.exportSelected(export_path, type='Fbx')
     pm.warning('Successfully exported camera  {0}  to  {1}.'.format(camera, export_path))
     return True
 
 
+def importCamera(*a):
+    cam_path = getAnimPath('Fbx', '', 0, 1, override_name='cam')
+
+    fbx_file = pm.fileDialog2(fm=1, dir=cam_path)[0]
+    
+    if fbx_file:
+        pm.importFile(fbx_file, defaultNamespace=True)
+        return
+    else:
+        return
+
+
 def playblast(*a):
+
+    def __incrVersion(backup_path, version, name):
+        backup_name = name + '_' + str(int(version)).zfill(4) + '.mov'
+        if os.path.exists(os.path.join(backup_path, backup_name)):
+            version += 1
+            backup_name = __incrVersion(backup_path, version, name)
+        return backup_name
+    
     # Frame range
     frame_range = ( 
         pm.playbackOptions( q=True, min=True ), 
         pm.playbackOptions( q=True, max=True )
         )
 
-    out_path = "c:\\temp\\temp.mov"
+    file_name, project_path = project.getProject()
+    
+    # v:\DELIVERABLE\qt\DELIVERABLE_ANIM.mov
+    qt_folder = os.path.join(project_path, 'qt')
+    backup_folder = os.path.join(qt_folder, 'backup')
 
-    if exists(out_path):
-        versionup_out_path.split('.')[0]
+    output_path = os.path.join(qt_folder, file_name+'.mov')
+    
+    if os.path.exists(output_path):
+        backup_path = __incrVersion(backup_folder, 1, file_name) 
+        #print os.path.join(backup_folder, backup_path)
+        os.rename(output_path, os.path.join(backup_folder, backup_path))
+
 
     pm.Mel.eval('setCurrentFrameVisibility(1);')
     pm.playblast(
-        startTime   = frame_range[0],
-        endTime     = frame_range[1],
-        filename    = out_path,
-        format      = 'qt',
-        compression = 'H.264',
-        orn         = False,
-        width       = 960,
-        height      = 540,
-        percent     = 100,
-        quality     = 70,
-        clearCache  = True
+        startTime      = frame_range[0],
+        endTime        = frame_range[1],
+        filename       = output_path,
+        forceOverwrite = True,
+        format         = 'qt',
+        compression    = 'H.264',
+        orn            = False,
+        width          = 960,
+        height         = 540,
+        percent        = 100,
+        quality        = 70,
+        clearCache     = True
         )
 
 
 ##############################################################################
 # helper functions
 ##############################################################################
-def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_name=False):
+def getAnimPath(filetype, message, use_maya_subfolder, folder_only=False, override_name=False):
 
     # check that the scene is controlled by the pipeline
     try: scene_controller = pm.PyNode('sceneControlObject')
     except: pass
 
+    if override_name:
+        folder_name = override_name
+    else:
+        folder_name = filetype
+
     # set up export paths
     scene       = project.Scene()
     # The use_maya_subfolder flag determines whether this export goes into a folder
     # below the main project folder or below the maya folder instead.
-    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(filetype)
+    anim_folder = {0: scene.project_folder, 1: scene.maya_project_folder}[use_maya_subfolder] + '\\{0}\\'.format(folder_name)
     anim_file   = scene.scene_name
 
     # If exporting (i.e. determining a full destination file name)
-    if export:
+    if not folder_only:
         if override_name:
-            export_file += '.{0}'.format(filetype)
+            anim_file += '.{0}'.format(override_name)
 
         else:
             custom_string = pm.promptDialog(
@@ -223,7 +259,7 @@ def getAnimPath(filetype, message, use_maya_subfolder, export=True, override_nam
         return anim_folder + anim_file
 
     # i.e., if import (just returning a path)
-    elif not export:
+    elif folder_only:
         return anim_folder
 
 

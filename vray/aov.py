@@ -46,13 +46,13 @@ def makeExTex( name=None, inTex=None ):
     return _fb
 
 
-def make1DTex( name, inTex_X=None, inTex_Y=None, inTex_Z=None ):
+def make1DTex( name, inTex_X=None, inTex_Y=None, inTex_Z=None, aa=False ):
     ''' Make an extraTex framebuffer.  Optional flags for naming (node and 
         channel) and for individually specified scalar map channels. '''
     
     pm.mel.eval('vrayAddRenderElement ExtraTexElement;')
     _fb = __getLast()
-    _fb.vray_considerforaa_extratex.set(0)
+    _fb.vray_considerforaa_extratex.set(1)
     if inTex_X: inTex_X >> _fb.vray_texture_extratex.vray_texture_extratexR
     if inTex_Y: inTex_Y >> _fb.vray_texture_extratex.vray_texture_extratexG
     if inTex_Z: inTex_Z >> _fb.vray_texture_extratex.vray_texture_extratexB
@@ -72,6 +72,7 @@ def makeUV( name=None ):
     fb = make1DTex( name, si.uvCoord.uCoord, si.uvCoord.vCoord )
     # Disable AA
     fb.vray_considerforaa_extratex.set(0)
+    fb.vray_filtering_extratex.set(0)
     
     return fb
 
@@ -94,12 +95,27 @@ def makePPW( name=None ):
     fb = makeExTex( name, si.pointWorld )
     # Disable AA
     fb.vray_considerforaa_extratex.set(0)
+    fb.vray_filtering_extratex.set(0)
     
     return fb
 
 
 def makeNormal( name=None ):
     '''Make a normals framebuffer. '''
+
+    pm.Mel.eval('vrayAddRenderElement normalsChannel;')
+    _fb = __getLast()
+    #_fb.vray_filtering_bumpnormals.set(aa)
+    
+    if name:
+        _fb.vray_name_normals.set(name)
+        pm.rename(_fb, name)
+
+    return _fb
+
+
+def makeBumpNormal( name=None ):
+    '''Make a bumped-normals framebuffer. '''
 
     pm.Mel.eval('vrayAddRenderElement bumpNormalsChannel;')
     _fb = __getLast()
@@ -112,7 +128,7 @@ def makeNormal( name=None ):
     return _fb
 
 
-def makeZDepth( name=None, aa=True, minMax=(0,100) ):
+def makeZDepth( name=None, aa=False, minMax=(0,20) ):
     '''Make a depth framebuffer.  Optional flag controls anti-aliasing.'''
 
     pm.Mel.eval('vrayAddRenderElement zdepthChannel;')
@@ -124,6 +140,7 @@ def makeZDepth( name=None, aa=True, minMax=(0,100) ):
     
     _fb.vray_filtering_zdepth.set(aa)
 
+    _fb.vray_depthClamp.set(0)
     _fb.vray_depthBlack.set(minMax[0])
     _fb.vray_depthWhite.set(minMax[1])
 
@@ -173,6 +190,22 @@ def makeMultiMatte( name=None, r=None, g=None, b=None, mat=False ):
     return _fb
 
 
+def makeFresnel( name=None ):
+    ''' Make a fresnel framebuffer. '''
+    #si = samplerInfo()
+    #fb = make1DTex('Fresnel', si.facingRatio, si.facingRatio, si.facingRatio)
+    fresnel = pm.mel.eval('shadingNode -asTexture VRayFresnel;')
+    fb = makeExTex('Fresnel', pm.PyNode(fresnel).outColor)
+    return fb
+
+
+def makeFacingRatio( name=None ):
+    ''' Make a facing ratio framebuffer. '''
+    si = samplerInfo()
+    fb = make1DTex('facingRatio', si.facingRatio, si.facingRatio, si.facingRatio)
+    return fb
+
+
 def makeUserColor( name=None ):
     ''' Make a VRay User Color node. '''
 
@@ -207,8 +240,9 @@ def makeLightComponentBuffer( name ):
         'GI'        : 'vrayAddRenderElement giChannel;',
         'selfIllum' : 'vrayAddRenderElement selfIllumChannel;',
         'shadow'    : 'vrayAddRenderElement shadowChannel;',
-        'totalLight': 'vrayAddRenderElement totalLightChannel;'
+        'totalLight': 'vrayAddRenderElement totalLightChannel;',
     }
+    
 
     try:
         exists = pm.PyNode(name)
@@ -230,6 +264,8 @@ def makeUtilityBuffer( name ):
                         AO
                         PPW
                         MV
+                        fresnel
+                        facingRatio
                         matte(A-Z) '''
 
     # Check that the node doesn't already exist.  This will also check that the node is actually
@@ -258,6 +294,10 @@ def makeUtilityBuffer( name ):
         fb = makeNormal(name)
         return fb
 
+    elif name == 'bumpNormals':
+        fb = makeBumpNormal(name)
+        return fb
+
     elif name == 'UV':
         fb = makeUV( name )
         return fb
@@ -272,6 +312,14 @@ def makeUtilityBuffer( name ):
 
     elif name == 'MV':
         fb = makeMVector( name )
+        return fb
+
+    elif name == 'fresnel':
+        fb = makeFresnel( name )
+        return fb
+
+    elif name == 'facingRatio':
+        fb = makeFacingRatio( name )
         return fb
 
     elif 'matte' in name:

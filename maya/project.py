@@ -9,6 +9,25 @@ import pymel.core.system as pmsys
 # Internal modules
 from pipeline import cfb
 
+
+def isScene(*a):
+    try:
+        test = pm.PyNode('sceneControlObject')
+        return True
+    except pm.MayaNodeError:
+        pm.warning('Scene Setup  ERROR This is not a pipeline-managed scene.  Please run Scene Setup.')
+        return False
+
+
+def getProject(*a):
+    if not isScene():
+        return
+
+    scene = Scene()
+
+    return (scene.scene_name, scene.project_folder)
+
+
 class Scene(object):
     def __init__(self, delay=False):
         # The base path for all projects
@@ -66,16 +85,13 @@ class Scene(object):
         ''' Checks the status of the scene.  If the scene has a maya sceneControlObject, it pulls
             in scene data and returns true.  Otherwise, returns False.  Typically, an init would
             be run subsequent to this function, although it is safe to run at any time.  '''
-        try:
-            # If there's a scene controller,
-            self.scene_controller = pm.PyNode('sceneControlObject')
-            # ..import metadata from the node
-            self._updateIn()
-            # Print a report
-            return True
-
-        except pm.MayaNodeError:
+        
+        if not isScene():
             return False
+
+        else:
+            self._updateIn()
+            return True
 
 
     def _isProject(self):
@@ -245,7 +261,7 @@ class Scene(object):
             #print 'Loaded workspace.mel from ' + self.base_path + '\\maya\\'
             return True
         # open the default workspace template
-        with open('\\\\cagenas\\workspace\\scripts\\maya\\workspace.mel', 'r') as workspace:
+        with open(cfb.DEFAULT_WORKSPACE_MEL, 'r') as workspace:
             workspace_lines = workspace.readlines()
         # modify the line for render output
         workspace_lines[56] = "workspace -fr \"images\" \"" + self.project_folder.replace('\\','/') + "/render_3d\";\n"
@@ -289,25 +305,41 @@ class Scene(object):
             pm.warning('Failed to set the specified project. It probably doesn\'t exist')
             return False
 
+    def rename(self, name=None):
+        x = isScene()
+        if not (x):
+            return
 
-    def rename(self):
-        prompt = pm.promptDialog(
-                    title='Rename Scene',
-                    message='Enter new descriptor tag (i.e. PRIMETIME)',
-                    text='',
-                    button=['OK','Cancel'],
-                    db='OK',
-                    cb='Cancel',
-                    ds='Cancel'
-                    )
+        if not (name):
+            prompt = pm.promptDialog(
+                        title='Rename Scene',
+                        message='Enter new descriptor tag (i.e. PRIMETIME)',
+                        text='',
+                        button=['OK','Cancel'],
+                        db='OK',
+                        cb='Cancel',
+                        ds='Cancel'
+                        )
 
-        if prompt == 'OK':
-            self.custom_string = pm.promptDialog(q=True, text=True)
-            self._nameScene()
-            self._pushPull()
+            if prompt == 'OK':
+                self.custom_string = pm.promptDialog(q=True, text=True)
+            else: return
+
+        elif (name):
+            self.custom_string = name
+
+        else: return
+
+        self._nameScene()
+        self.version = 1.0
+        self._pushPull()
+        
+        if os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
             self.save()
+            return
         else:
-            return False
+            pm.warning('SAVE SCENE  ERROR One or more destination folders does not exist.')
+            return
 
 
     ##########################################################################
@@ -320,6 +352,10 @@ class Scene(object):
 
         # Save the backup
         self.backup_path = self._incrVersion()
+        #if not os.path.exists(self.backup_path) or not\
+        #        os.path.exists(self.maya_project_folder):     
+        #    pm.warning('Save Scene  ERROR Could not find one or more destination folders.  Aborting save.')
+        #    return   
         try:
             cmds.file(rename=self.backup_path)
             cmds.file(save=True, type='mayaBinary')
@@ -335,15 +371,17 @@ class Scene(object):
         except:
             pm.warning('Save Scene  ERROR while saving new master. Save manually and check the script editor.')
 
-
-    def open(self, *a):
-        ''' Opens a scene browsing UI and sets the associated project. '''
-        new_file = pm.fileDialog2(fm=1, ds=1, dir=self.base_path)
-        try: new_file = new_file[0]
-        except: return
+    @classmethod
+    def open(self, file_=None, force=False, *a):
+        ''' Opens a scene browsing UI and sets the associated project.'''
+        if not (file_):
+            new_file = pm.fileDialog2(fm=1, ds=1, dir=cfb.ANIMATION_PROJECT_DIR)
+            try: new_file = new_file[0]
+            except: return
+        else: new_file = file_
 
         try:
-            pm.openFile(new_file)
+            pm.openFile(new_file, force=force)
         except RuntimeError:
             query = pm.confirmDialog(
                 title='Save changes?',
@@ -355,12 +393,13 @@ class Scene(object):
                 )
             if query == 'Yes':
                 self.save()
-                pm.openFile(new_file)
+                pm.openFile(new_file, force=force)
             elif query == 'No':
                 pm.openFile(new_file, force=True)
             else: return False
 
-        pm.evalDeferred("scene = project.Scene()")
+        pm.evalDeferred("from pipeline.maya import project\nscene=project.Scene()")
+        #pm.evalDeferred("scene = project.Scene()")
 
 
     ##########################################################################
@@ -406,6 +445,7 @@ class Scene(object):
     def _updateIn(self):
         ''' Updates the python SceneControl object with any changes made to the sceneControlObject (such as 
             when a new scene is opened.) '''
+        self.scene_controller = pm.PyNode('sceneControlObject')
         # Getting attrs from sceneControlObject
         self.scene_name    = self.scene_controller.attr('SceneName').get()
         self.project_name  = self.scene_controller.attr('ProjectName').get()
@@ -427,3 +467,5 @@ class Scene(object):
     def _pushPull(self):
         self._updateOut()
         self._updateIn()
+
+
