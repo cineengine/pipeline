@@ -220,11 +220,11 @@ class SortControlLayout(pm.uitypes.Window):
             pm.warning('Build Scene  ERROR Please enter a team name / tricode before proceeding.')
 
         if (pm.radioButtonGrp('matchup_toggle', q=True, sl=True)) == 1:
-            build.loadTeams(home_team, diagnostic=diag)
+            build.loadTeamsStadium(home_team, diagnostic=diag)
 
         elif (pm.radioButtonGrp('matchup_toggle', q=True, sl=True)) == 2:
             away_team = pm.textFieldGrp('away_team_txt', q=True, text=True)
-            build.loadTeams(home_team, away_team, diagnostic=diag)
+            build.loadTeamsStadium(home_team, away_team, diagnostic=diag)
 
 
     def teardownBtn(self, *a):
