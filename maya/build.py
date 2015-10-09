@@ -79,6 +79,21 @@ def singleTeamCity(tricode):
     scene.rename(tricode)
 
 
+def singleTeamNYS(tricode):
+    ''' A full scene-building routine for single-team NYS elements.'''
+    loadTeamsNYS(tricode)
+    # sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Single_Team_PLAYOFF_NYS')
+    sc.run()
+    # change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
+    # rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)
+
+
 def splitMatchupCity(tricode):
     ''' A full scene-building routine for single-team CITY elements.'''
     loadTeamsLite(tricode, tricode)
@@ -517,6 +532,95 @@ def loadAssetsStadium(tricode, location, diagnostic=False, clean=True):
         pass
 
 
+def loadAssetsNYS(tricode, location, diagnostic=False, clean=True):
+    # Get team info from database
+    """ Given a specific location (home/away), this function attempts to reference
+        in a selected team's assets and attach them to respected 01, 05 and 06
+        attachment points."""
+    try:
+        team = Team(tricode)
+    except: 
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
+
+    
+    ''' LK SPECIFIC SECTION '''
+    # The full path of this scene
+    this_scene = pm.sceneName()
+    # Split into tokens
+    scene_token = this_scene.split('/')
+    # 4th from the right is the project name
+    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
+    ''' END LK '''
+
+
+    # Create paths for signs / team logo / region / layout scenes
+    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    
+
+    if (diagnostic):
+        print '\n'
+        print '{} Team:   {}'.format(location, team.tricode)
+        print 'Project:     {}'.format(this_project)
+        print '{} Sign:   {}'.format(location, sign_path)
+        print '{} Logo:   {}'.format(location, logo_path)
+        print 'Light Rig:   {}'.format(lgtrig_path)
+
+
+    # Check for missing files and print warnings
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        logo_path = None
+
+    if (diagnostic):
+        return
+
+    # Generate namespaces
+    sign_nspc = '{0}SIGN'.format(location)
+    logo_nspc = '{0}LOGO'.format(location)
+
+    # Check for existing references
+    sign_ref = None
+    logo_ref = None
+
+    # Get those reference nodess
+    for ref in pm.listReferences():
+        if ref.namespace == logo_nspc:
+            logo_ref = ref
+
+    # If there are references missing, force a clean run for simplicity's sake (i implore you)
+    if (logo_ref) == None and clean == False:
+        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
+        clean = True
+
+    # If the user has asked to do a clean reference of the asset, including attachment
+    if (clean):
+        # If there's already references in those namespaces, just delete them
+        if (logo_ref): logo_ref.remove()
+        # Reference in the asset to the namespace
+        if logo_path: asset.reference(logo_path, logo_nspc)
+
+        # Attach them to their parent locators
+        attachTeamToSign(location)
+
+    # (If) there are already references in the namespaces, and the user is requesting
+    # to replace the reference and maintain reference edits (dirty mode)
+    elif not (clean):
+        # Same thing with school logos this time
+        if (team.tricode+'.mb') in logo_ref.path:
+            pass
+        else:
+            logo_ref.replaceWith(logo_path)
+
+    # Cleanup foster parents
+    try:
+        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
+
+        pm.delete(pm.ls(regex=logo_re))
+    except:
+        pass
+
+
 def loadAssetsLite(tricode, location, diagnostic=True):
     ''' Load the selected team logo (only) into the specificed 'location' (home/away)
         as a namespace.
@@ -563,6 +667,13 @@ def loadTeamsStadium(home_team, away_team=None, diagnostic=False, clean=True, *a
     loadAssetsStadium(home_team, 'HOME', diagnostic, clean)
     if away_team:
         loadAssetsStadium(away_team, 'AWAY', diagnostic, clean)
+    return
+
+
+def loadTeamsNYS(home_team, away_team=None, diagnostic=False, clean=True, *a):
+    loadAssetsNYS(home_team, 'HOME', diagnostic, clean)
+    if away_team:
+        loadAssetsNYS(away_team, 'AWAY', diagnostic, clean)
     return
 
 

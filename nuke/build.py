@@ -17,6 +17,7 @@ import pipeline.database.team as t
 reload(t)
 reload(submit)
 
+DEFAULT_CPUS = 95
 
 # Modify gvars for nuke-friendliness
 TEAMS_ASSET_DIR = cfb.TEAMS_ASSET_DIR.replace('\\','/')
@@ -209,7 +210,6 @@ def writeThread(write_node, start_frame, end_frame):
 
 def team2DAssetString(tricode, num):
     asset = '{0}{1}/includes/{2}_0{3}.png'.format(TEAMS_ASSET_DIR, tricode, tricode, str(num))
-    print asset
     return asset
 
 
@@ -295,67 +295,6 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
 ## GENERAL AUTOMATION #######################################################
 #############################################################################
 
-def createTeamScenesTEMP(team_list, range_, submit_to_farm=True, matchup=False, jumbo=False):
-    m_ctrl = nuke.toNode(MASTER_CTRL)
-    deliverable = m_ctrl.knob('deliverable').getValue()
-    package     = m_ctrl.knob('tod').getValue()
-    out_dir = join(BASE_OUTPUT_DIR, deliverable, 'nuke', 'TEAMS')
-    if not exists(out_dir): mkdir(out_dir)
-
-    for team in team_list:
-        if package == 2:
-            scene_name = '{}_{}_{}.nk'.format(deliverable, 'PRIMETIME', team)
-        else:
-            scene_name = '{}_{}.nk'.format(deliverable, team)
-
-        scene_path = join(out_dir, scene_name)
-
-        loadTeam('home', team, renders=True) 
-        try: loadTeam('away', team, renders=True)
-        except: pass
-        setOutputPath(create_dirs=True, matchup=matchup, jumbo=jumbo)
-
-        nuke.scriptSaveAs(scene_path, 1)
-        time.sleep(1)
-
-        if submit_to_farm:
-            
-            if not matchup:
-                submit.singleNode(
-                    (deliverable + ' - ' + team),
-                    scene_path,
-                    range_,
-                    '5000',
-                    '16',
-                    'MASTER_WRITE')
-            
-            elif matchup:
-                #submit.singleNode(
-                #    (deliverable + ' - ' + team + ' HOME'),
-                #    scene_path,
-                #    range_,
-                #    '5000',
-                #    '16',
-                #    'WRITE_HOME_FILL')
-                submit.singleNode(
-                    (deliverable + ' - ' + team + ' AWAY'),
-                    scene_path,
-                    range_,
-                    '5000',
-                    '16',
-                    'WRITE_AWAY_FILL') 
-                
-                #test = nuke.toNode('WRITE_HOME_MATTE')
-                #if test:               
-                #    submit.singleNode(
-                #        (deliverable + ' - ' + team + ' MATTE'),
-                #        scene_path,
-                #        range_,
-                #        '5000',
-                #        '16',
-                #        'WRITE_HOME_MATTE')
-
-
 def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumbo=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     deliverable = m_ctrl.knob('deliverable').getValue()
@@ -387,7 +326,7 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                     scene_path,
                     range_,
                     '5000',
-                    '16',
+                    str(DEFAULT_CPUS),
                     'MASTER_WRITE')
             
             elif matchup:
@@ -396,14 +335,14 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                     scene_path,
                     range_,
                     '5000',
-                    '16',
+                    str(DEFAULT_CPUS),
                     'WRITE_HOME_FILL')
                 submit.singleNode(
                     (deliverable + ' - ' + team + ' AWAY'),
                     scene_path,
                     range_,
                     '5000',
-                    '16',
+                    str(DEFAULT_CPUS),
                     'WRITE_AWAY_FILL') 
                 
                 test = nuke.toNode('WRITE_HOME_MATTE')
@@ -413,7 +352,7 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                         scene_path,
                         range_,
                         '5000',
-                        '16',
+                        str(DEFAULT_CPUS),
                         'WRITE_HOME_MATTE')
 
 
@@ -422,13 +361,12 @@ def teamLogoUpdate(team_list):
 
     # Deliverable name, frame range, matchup?, primetime?
     scenes = [
-        ('CFB_E_MATCHUP_FE_01_ST', '1-75', True, False),
+        ('CFB_E_MATCHUP_FE_01_ST', '1-75', True, True),
         ('CFB_E_MATCHUP_ENDSTAMP_01_ST', '1-300', True, True),
         ('CFB_S_MATCHUP_FE_01_ST', '1-83', True, False),
         ('CFB_E_TEAM_FE_01_ST', '1-75', False, True),
         ('CFB_E_TEAM_ENDSTAMP_01_ST', '1-300', False, True),
-        ('CFB_S_TEAM_FE_01_ST', '1-90', False, False),
-        ('TEAM_LOGO_QUADS', '1', False, False)
+        ('CFB_S_TEAM_FE_01', '1-90', False, False)
         ]
 
     for scene in scenes:
