@@ -6,7 +6,7 @@ import sys
 
 #WRITE_NODE_NAME = "WriteScenes"
 #frame_range = "1-300"
-cpus = 95
+cpus = 4
 
 #cmdline version
 def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
@@ -14,18 +14,18 @@ def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
         'prototype'    : 'cmdrange',
         'name'         : job_name,
         'priority'     : str(priority),
-        'cpus'         : str(cpus),
+        'cpus'         : '95',
         'groups'       : 'Nuke',
-        'reservations' : 'host.processors=16',
+        'reservations' : 'host.processors={}'.format(cpus),
         'package'      : {
             'simpleCmdType'    : 'Nuke (cmdline)',
             'executable'       : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
             'script'           : str(script),
             'executeNodes'     : write_node,
             'range'            : frange,
-            '-m'               : '16',
-            'minOpenSlots'     : 16,
-            'renderThreadCount': 16
+            '-m'               : '4',
+            'minOpenSlots'     : 4,
+            'renderThreadCount': 4
             }
            
         }
@@ -39,7 +39,8 @@ def generatePackagePY(job_name, script, frange, priority, cpus, write_node=''):
         'prototype': 'pyNuke',
         'name'     : job_name,
         'priority' : str(priority),
-        'cpus'     : str(cpus),
+        'cpus'     : '95',
+        'specificThreadCount': str(cpus),
         'groups'   : 'Nuke',
         'cluster'  : '/C',
         'restrictions': '/C',
