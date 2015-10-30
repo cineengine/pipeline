@@ -306,7 +306,7 @@ class Scene(object):
             pm.warning('Failed to set the specified project. It probably doesn\'t exist')
             return False
 
-    def rename(self, name=None):
+    def rename(self, name=None, save=True):
         x = isScene()
         if not (x):
             return
@@ -335,12 +335,15 @@ class Scene(object):
         self.version = 1.0
         self._pushPull()
         
-        if os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
+        if save and os.path.exists(self.project_folder) and os.path.exists(self.maya_project_folder):
             self.save()
             return
         else:
-            pm.warning('SAVE SCENE  ERROR One or more destination folders does not exist.')
-            return
+            if save:
+                pm.warning('SAVE SCENE  ERROR One or more destination folders does not exist.')
+                return
+            else:
+                return
 
 
     ##########################################################################
