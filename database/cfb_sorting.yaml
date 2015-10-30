@@ -435,3 +435,14 @@ btyHomeLogoSunset:
     lights : 
         - lg_sunset
 ...
+---
+ELEMENT : Multi-Team (NYS / CHAMP)
+btyTeamLogosSunset:
+    type: beauty
+    rgba : 
+        - !!str \ATEAM_\d{2,3}_LOGO:sg_sign\Z
+    occ : 
+        - !!str \ATEAM_\d{2,3}_SIGN:sg_sign\Z
+    lights : 
+        - !!str \ATEAM_\d{2,3}_LOGO:lg_sunset\Z
+        - "HOME_ENV_LGT:lg_sunset"
