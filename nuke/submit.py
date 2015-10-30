@@ -6,7 +6,7 @@ import sys
 
 #WRITE_NODE_NAME = "WriteScenes"
 #frame_range = "1-300"
-cpus = 4
+cpus = 8
 
 #cmdline version
 def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
@@ -23,9 +23,9 @@ def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
             'script'           : str(script),
             'executeNodes'     : write_node,
             'range'            : frange,
-            '-m'               : '4',
-            'minOpenSlots'     : 4,
-            'renderThreadCount': 4
+            '-m'               : str(cpus),
+            'minOpenSlots'     : cpus,
+            'renderThreadCount': cpus
             }
            
         }

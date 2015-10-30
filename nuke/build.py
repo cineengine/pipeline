@@ -169,7 +169,9 @@ def selectLogoRender(location, team):
         1.0: EVENT_LOGO_READS,
         2.0: EVENT_LOGO_READS,
         3.0: CITY_LOGO_READS,
-        4.0: CITY_LOGO_READS 
+        4.0: CITY_LOGO_READS,
+        5.0: EVENT_LOGO_READS,
+        6.0: EVENT_LOGO_READS
         }[package]
 
     for rn in logo_render_reads:
@@ -231,18 +233,20 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
         1.0: 'CFB',
         2.0: 'PRIMETIME',
         3.0: 'SNF',
-        4.0: 'PRIMETIME'
+        4.0: 'PRIMETIME',
+        5.0: 'NYS',
+        6.0: 'CHAMP'
         }[package]
-    if not package == 0.0: version_tokens.append(show_str)
+    if not package == (0.0 or 5.0): version_tokens.append(show_str)
 
     # Get teams
     home_team   = m_ctrl.knob('home_team').getValue()
     if (matchup): 
         away_team = m_ctrl.knob('away_team').getValue()
     else: away_team = ''
+    if (matchup):
+        version_tokens.append(away_team)
     version_tokens.append(home_team)
-    #version_tokens.append(away_team)
-
     version_str = '_'.join(version_tokens)
     version_str = version_str.lstrip('_')
     version_str = version_str.rstrip('_')

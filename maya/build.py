@@ -21,6 +21,7 @@ reload(sort)
 reload(project)
 reload(submit)
 
+cluster = "/C"
 
 ##############################################################################
 ### CALLED FUNCTIONS #########################################################
@@ -94,6 +95,21 @@ def singleTeamNYS(tricode):
     scene.rename(tricode)
 
 
+def singleTeamPlayoff(tricode):
+    ''' A full scene-building routine for single-team NYS elements.'''
+    loadTeamsLite(tricode, playoff=True)
+    # sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Single_Team_PLAYOFF_NYS')
+    sc.run()
+    # change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
+    # rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)    
+
+
 def splitMatchupCity(tricode):
     ''' A full scene-building routine for single-team CITY elements.'''
     loadTeamsLite(tricode, tricode)
@@ -121,6 +137,37 @@ def splitMatchup(tricode, package):
     vrs = pm.PyNode('vraySettings')
     vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode)) 
     #rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)
+
+
+def splitMatchupNYS(tricode):
+    ''' A full scene-building routine for single-team elements.'''
+    #load in the new team
+    loadTeamsNYS(tricode, tricode, diagnostic=False, clean=True)
+    #sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Split_Matchup_NYS')
+    sc.run()
+    #change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode)) 
+    #rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)
+
+
+def splitMatchupPlayoff(tricode):
+    ''' A full scene-building routine for single-team CITY elements.'''
+    loadTeamsLite(tricode, tricode, playoff=True)
+    #sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Split_Matchup_NYS')
+    sc.run()
+    # change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
+    # rename / save scene
     scene = project.Scene()
     scene.rename(tricode)
 
@@ -178,7 +225,6 @@ def updateTeamLogo(tricode):
         pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
 
 
-
 def cityWeeklyBuild(tricode_list):
     report = ''
     flag = 0
@@ -214,7 +260,7 @@ def cityWeeklyBuild(tricode_list):
                     singleTeamCity(tricode)
                 elif type_ == 'split':
                     splitMatchupCity(tricode)
-                submit.autoSubmitAll(frange, '/C', '', '5000')
+                submit.autoSubmitAll(frange, cluster, '', '5000')
                 report += '\nSuccessfully modified & submitted {} update for {}'.format(deliverable, tricode)
             except:
                 flag = 1
@@ -227,6 +273,53 @@ def cityWeeklyBuild(tricode_list):
     elif flag:
         pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
 
+
+def nysBuild(tricode_list):
+    report = ''
+    flag = 0
+    # 
+    skeletons = [('CFP_E_NYS_TEAM_TRANS_01', 'single', '1-60'),
+                 ('CFP_E_NYS_TEAM_ENDSTAMP_01', 'single', '1-130'),
+                 ('CFP_E_NYS_TEAM_ROLLOUT_FE_01', 'single', '1-60'),
+                 ('CFP_E_NYS_MATCHUP_REJOIN_01', 'split', '1-150'),
+                 ('CFP_E_NYS_MATCHUP_TRANS_01', 'split', '1-60'),
+                 #('CFP_E_NYS_MATCHUP_TRANS_02', 'split', '1-150'),
+                 ('CFP_E_NYS_MATCHUP_ENDSTAMP_01', 'split', '1-150'),
+                 #('CFP_E_NYS_MATCHUP_ROLLOUT_FE_01', 'split', '1-150'),
+                 ('CFP_E_NYS_MATCHUP_B2B_01', 'split', '1-90')
+                 ]
+
+    for tricode in tricode_list:
+        for skeleton in skeletons:
+
+            deliverable, type_, frange = skeleton
+
+            file_name = deliverable + '_SKELETON.mb'
+            file_path = os.path.join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'maya', 'scenes', file_name)
+
+            if not os.path.exists(file_path):
+                flag = 1
+                report += '\nWARNING could not find {}.'.format(deliverable)
+                continue
+
+            try:
+                project.Scene.open(file_=file_path, force=True)
+                if type_ == 'single':
+                    singleTeamNYS(tricode)
+                elif type_ == 'split':
+                    splitMatchupNYS(tricode)
+                submit.autoSubmitAll(frange, cluster, '', '5000')
+                report += '\nSuccessfully modified & submitted {} update for {}'.format(deliverable, tricode)
+            except:
+                flag = 1
+                report += '\nWARNING failed to update {} for {}'.format(deliverable, tricode)
+
+    print report
+
+    if not flag:
+        pm.warning('Build Scene  Update team logo operation completed with no errors.  Check the farm for your submissions.')
+    elif flag:
+        pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
 
 
 def factory( *a ):
@@ -621,7 +714,7 @@ def loadAssetsNYS(tricode, location, diagnostic=False, clean=True):
         pass
 
 
-def loadAssetsLite(tricode, location, diagnostic=True):
+def loadAssetsLite(tricode, location, playoff=False, diagnostic=True):
     ''' Load the selected team logo (only) into the specificed 'location' (home/away)
         as a namespace.
         LITE version attaches only the logo to a locator called HOME_LOCATOR.'''
@@ -633,7 +726,10 @@ def loadAssetsLite(tricode, location, diagnostic=True):
         return
 
     # Generate target logo path and namespace
-    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    if not playoff:
+        logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    elif playoff:
+        logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, (team.tricode + '_CHAMP'), (team.tricode+'_CHAMP.mb'))
     if not os.path.exists(logo_path):
         pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
         return
@@ -677,11 +773,11 @@ def loadTeamsNYS(home_team, away_team=None, diagnostic=False, clean=True, *a):
     return
 
 
-def loadTeamsLite(home_team, away_team=None, *a):
+def loadTeamsLite(home_team, away_team=None, playoff=False, *a):
     ''' A lite version of loadTeams that skips signs and major authoring steps,
         only loading a team primary logo and attaching it to a scene locator.'''
-    loadAssetsLite(home_team, 'HOME')
+    loadAssetsLite(home_team, 'HOME', playoff)
     if away_team:
-        loadAssetsLite(away_team, 'AWAY')
+        loadAssetsLite(away_team, 'AWAY', playoff)
     return
 

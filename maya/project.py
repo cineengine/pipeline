@@ -204,6 +204,7 @@ class Scene(object):
         # Or: The project exists but this variant hasn't been saved yet, so just save, and we're done.
         elif project_exists and not scene_exists:
             try:
+                self.makeFolders()
                 self.setProject()
                 self.save()
                 return True

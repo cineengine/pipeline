@@ -68,13 +68,29 @@ utilLogo :
         - sg_conf_logo
 ...
 ---
-ELEMENT : Quad
-btyHomeLogoSunset:
+ELEMENT : Signs
+btyHomeSign:
     type: beauty
-    rgba :
-        - sg_sign
-    lights : 
-        - lg_sunset
+    rgba:
+        - "HOMESIGN:sg_sign"
+    lights:
+        - "HOMESIGN:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+utilHomeSign:
+    type: utility
+    aov:
+        - "HOMESIGN:sg_sign"
+btyAwaySign:
+    type: beauty
+    rgba:
+        - "AWAYSIGN:sg_sign"
+    lights:
+        - "AWAYSIGN:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+utilAwaySign:
+    type: utility
+    aov:
+        - "AWAYSIGN:sg_sign"
 ...
 ---
 ELEMENT: SNF_City_Basic
@@ -156,6 +172,24 @@ utilHomeLogo:
     type: utility
     aov:
         - "HOMELOGO:sg_sign"
+...
+---
+ELEMENT: Single_Team_PLAYOFF_NYS
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+        - sg_layout
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
 ...
 ---
 ELEMENT: Matchup_CITY
@@ -309,6 +343,39 @@ utilHomeLogo:
         - "HOMESIGN:sg_sign"
 ...
 ---
+ELEMENT: Split_Matchup_NYS
+btyHomeLogoSunset:
+    type: beauty
+    rgba:
+        - "HOMELOGO:sg_sign"
+    occ:
+        - "HOMESIGN:sg_sign"
+        - sg_layout
+    lights:
+        - "HOMELOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+btyAwayLogoSunset:
+    type: beauty
+    rgba:
+        - "AWAYLOGO:sg_sign"
+    occ:
+        - "AWAYSIGN:sg_sign"
+        - sg_layout
+    lights:
+        - "AWAYLOGO:lg_sunset"
+        - "HOME_ENV_LGT:lg_sunset"
+utilAwayLogo:
+    type: utility
+    aov:
+        - "AWAYLOGO:sg_sign"
+        - "AWAYSIGN:sg_sign"
+utilHomeLogo:
+    type: utility
+    aov:
+        - "HOMELOGO:sg_sign"
+        - "HOMESIGN:sg_sign"
+...
+---
 ELEMENT: City_Matchup
 btyCity:
     type: beauty
@@ -358,4 +425,13 @@ utilHomeLogo:
     aov:
         - "HOMELOGO:sg_sign"
         - "HOMESIGN:sg_sign"
+...
+---
+ELEMENT : Quad
+btyHomeLogoSunset:
+    type: beauty
+    rgba :
+        - sg_sign
+    lights : 
+        - lg_sunset
 ...
