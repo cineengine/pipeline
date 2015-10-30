@@ -187,17 +187,36 @@ def multiTeam(tricode_list):
 
     if len(namespaces) > len(tricode_list):
         pm.warning('ERROR  Not enough teams specified ({} minimum).  Aborting...'.format(len(namespaces)))
-        return 0
+        return
 
     if len(namespaces) < len(tricode_list):
         pm.warning('ERROR  Too many teams specified ({} maximum).  Aborting...'.format(len(namespaces)))
-        return 0
+        return
 
     for idx, namespace in enumerate(namespaces):
         namespaces[idx] = namespace[:-4].strip()
 
     for idx, tricode in enumerate(tricode_list):
         loadAssetsNYS(tricode, namespaces[idx])
+
+    sort.sceneTeardown()
+    sc = sort.SortControl('Multi-Team (NYS / CHAMP)')
+    sc.run()
+
+    if project.isScene():
+        scene = project.Scene()    
+        scene.rename(save=False)
+
+        prefix = scene.custom_string
+        vrs = pm.PyNode('vraySettings')
+        vrs.fileNamePrefix.set('{}/%l/%l.#'.format(prefix))
+        
+        scene.save()
+        return
+    else:
+        return
+
+
 
 
 ### AUTOMATION ###############################################################
