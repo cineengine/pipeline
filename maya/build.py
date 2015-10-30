@@ -26,7 +26,13 @@ cluster = "/C"
 ##############################################################################
 ### CALLED FUNCTIONS #########################################################
 ##############################################################################
+def factory( *a ):
+    asset.reference(cfb.FACTORY_LIGHT_RIG, 'FACTORY')
+    sc = sort.SortControl('Factory')
+    sc.run()
 
+
+### STADIUM PACKAGE ##########################################################
 def quad(team, *a):
     ''' A full scene-building routine for 'quad' logo slicks '''
     loadTeamsLite(team, team)
@@ -65,6 +71,23 @@ def singleTeam(tricode, package):
     scene.rename(tricode)
 
 
+def splitMatchup(tricode, package):
+    ''' A full scene-building routine for single-team elements.'''
+    #load in the new team
+    loadTeamsStadium(tricode, tricode, diagnostic=False, clean=True)
+    #sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Split_Matchup_{}'.format(package.upper()))
+    sc.run()
+    #change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode)) 
+    #rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)
+
+
+### BLUE CITY PACKAGE ########################################################
 def singleTeamCity(tricode):
     ''' A full scene-building routine for single-team CITY elements.'''
     loadTeamsLite(tricode)
@@ -78,36 +101,6 @@ def singleTeamCity(tricode):
     # rename / save scene
     scene = project.Scene()
     scene.rename(tricode)
-
-
-def singleTeamNYS(tricode):
-    ''' A full scene-building routine for single-team NYS elements.'''
-    loadTeamsNYS(tricode)
-    # sort
-    sort.sceneTeardown()
-    sc = sort.SortControl('Single_Team_PLAYOFF_NYS')
-    sc.run()
-    # change output path
-    vrs = pm.PyNode('vraySettings')
-    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
-    # rename / save scene
-    scene = project.Scene()
-    scene.rename(tricode)
-
-
-def singleTeamPlayoff(tricode):
-    ''' A full scene-building routine for single-team NYS elements.'''
-    loadTeamsLite(tricode, playoff=True)
-    # sort
-    sort.sceneTeardown()
-    sc = sort.SortControl('Single_Team_PLAYOFF_NYS')
-    sc.run()
-    # change output path
-    vrs = pm.PyNode('vraySettings')
-    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
-    # rename / save scene
-    scene = project.Scene()
-    scene.rename(tricode)    
 
 
 def splitMatchupCity(tricode):
@@ -125,18 +118,18 @@ def splitMatchupCity(tricode):
     scene.rename(tricode)
 
 
-def splitMatchup(tricode, package):
-    ''' A full scene-building routine for single-team elements.'''
-    #load in the new team
-    loadTeamsStadium(tricode, tricode, diagnostic=False, clean=True)
-    #sort
+### NEW YEAR'S SIX PACKAGE ###################################################
+def singleTeamNYS(tricode):
+    ''' A full scene-building routine for single-team NYS elements.'''
+    loadTeamsNYS(tricode)
+    # sort
     sort.sceneTeardown()
-    sc = sort.SortControl('Split_Matchup_{}'.format(package.upper()))
+    sc = sort.SortControl('Single_Team_PLAYOFF_NYS')
     sc.run()
-    #change output path
+    # change output path
     vrs = pm.PyNode('vraySettings')
-    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode)) 
-    #rename / save scene
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
+    # rename / save scene
     scene = project.Scene()
     scene.rename(tricode)
 
@@ -157,6 +150,22 @@ def splitMatchupNYS(tricode):
     scene.rename(tricode)
 
 
+### PLAYOFF PACKAGE ##########################################################
+def singleTeamPlayoff(tricode):
+    ''' A full scene-building routine for single-team NYS elements.'''
+    loadTeamsLite(tricode, playoff=True)
+    # sort
+    sort.sceneTeardown()
+    sc = sort.SortControl('Single_Team_PLAYOFF_NYS')
+    sc.run()
+    # change output path
+    vrs = pm.PyNode('vraySettings')
+    vrs.fileNamePrefix.set('TEAMS/{}/%l/%l.#'.format(tricode))
+    # rename / save scene
+    scene = project.Scene()
+    scene.rename(tricode)    
+
+
 def splitMatchupPlayoff(tricode):
     ''' A full scene-building routine for single-team CITY elements.'''
     loadTeamsLite(tricode, tricode, playoff=True)
@@ -172,6 +181,26 @@ def splitMatchupPlayoff(tricode):
     scene.rename(tricode)
 
 
+### MULTI-TEAM SCENE #########################################################
+def multiTeam(tricode_list):
+    namespaces = getMultiTeamNamespaces()
+
+    if len(namespaces) > len(tricode_list):
+        pm.warning('ERROR  Not enough teams specified ({} minimum).  Aborting...'.format(len(namespaces)))
+        return 0
+
+    if len(namespaces) < len(tricode_list):
+        pm.warning('ERROR  Too many teams specified ({} maximum).  Aborting...'.format(len(namespaces)))
+        return 0
+
+    for idx, namespace in enumerate(namespaces):
+        namespaces[idx] = namespace[:-4].strip()
+
+    for idx, tricode in enumerate(tricode_list):
+        loadAssetsNYS(tricode, namespaces[idx])
+
+
+### AUTOMATION ###############################################################
 def updateTeamLogo(tricode):
     # Get list of skeleton scenes and iterate over them
     skeletons = [#('CFB_E_TEAM_FE_01_ST', 'single', '1-75'),
@@ -274,6 +303,9 @@ def cityWeeklyBuild(tricode_list):
         pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
 
 
+#def playoffBuild(tricode_list):
+
+
 def nysBuild(tricode_list):
     report = ''
     flag = 0
@@ -322,15 +354,302 @@ def nysBuild(tricode_list):
         pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
 
 
-def factory( *a ):
-    asset.reference(cfb.FACTORY_LIGHT_RIG, 'FACTORY')
-    sc = sort.SortControl('Factory')
-    sc.run()
+##############################################################################
+### CORE PROCEDURES ##########################################################
+##############################################################################
+
+### SINGLE-TEAM OPS ##########################################################
+def loadAssetsStadium(tricode, location, diagnostic=False, clean=True):
+    # Get team info from database
+    """ Given a specific location (home/away), this function attempts to reference
+        in a selected team's assets and attach them to respected 01, 05 and 06
+        attachment points."""
+    try:
+        team = Team(tricode)
+    except: 
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
+
+    # Generate string for the name of the school's sign
+    sign = 'SIGN_{0}'.format(team.sign.upper())
+    # Generate string for the school's matte painting ID
+    mp_id = str(team.matteNum).zfill(2)
+
+    
+    ''' LK SPECIFIC SECTION '''
+    # The full path of this scene
+    this_scene = pm.sceneName()
+    # Split into tokens
+    scene_token = this_scene.split('/')
+    # 4th from the right is the project name
+    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
+    ''' END LK '''
+
+
+    # Create paths for signs / team logo / region / layout scenes
+    sign_path = os.path.join(cfb.MAIN_ASSET_DIR, sign, (sign+'.mb'))
+    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    lgtrig_path = os.path.join(cfb.MAIN_ASSET_DIR, 'LIGHTING_BASE', 'LIGHTING_BASE.mb')
+    
+    if (diagnostic):
+        print '\n'
+        print '{} Team:   {}'.format(location, team.tricode)
+        print 'Project:     {}'.format(this_project)
+        print '{} Sign:   {}'.format(location, sign_path)
+        print '{} Logo:   {}'.format(location, logo_path)
+        print 'Light Rig:   {}'.format(lgtrig_path)
+
+
+    # Check for missing files and print warnings
+    if not os.path.exists(sign_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(sign_path))
+        sign_path = None
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        logo_path = None
+    if not os.path.exists(lgtrig_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(lgtrig_path))
+        lgtrig_path = None
+
+    if (diagnostic):
+        return
+
+    # Generate namespaces
+    sign_nspc = '{0}SIGN'.format(location)
+    logo_nspc = '{0}LOGO'.format(location)
+
+    # Check for existing references
+    sign_ref = None
+    logo_ref = None
+
+    # Get those reference nodess
+    for ref in pm.listReferences():
+        if ref.namespace == sign_nspc:
+            sign_ref = ref
+
+        elif ref.namespace == logo_nspc:
+            logo_ref = ref
+
+    # If there are references missing, force a clean run for simplicity's sake (i implore you)
+    if (sign_ref) or (logo_ref) == None and clean == False:
+        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
+        clean = True
+
+    # If the user has asked to do a clean reference of the asset, including attachment
+    if (clean):
+        # If there's already references in those namespaces, just delete them
+        if (logo_ref): logo_ref.remove()
+        if (sign_ref): sign_ref.remove()
+        # Reference in the asset to the namespace
+        if sign_path: asset.reference(sign_path, sign_nspc)
+        if logo_path: asset.reference(logo_path, logo_nspc)
+
+        # Attach them to their parent locators
+        attachTeamToSign(location)
+        attachSignToScene(location)
+
+    # (If) there are already references in the namespaces, and the user is requesting
+    # to replace the reference and maintain reference edits (dirty mode)
+    elif not (clean):
+        # If the right sign is already loaded, pass
+        if (sign+'.mb') in sign_ref.path:
+            pass
+        # Or else replace the sign reference
+        else:
+            sign_ref.replaceWith(sign_path)
+        # Same thing with school logos this time
+        if (team.tricode+'.mb') in logo_ref.path:
+            pass
+        else:
+            logo_ref.replaceWith(logo_path)
+
+    # Cleanup foster parents
+    try:
+        sign_re = re.compile('{0}RNfosterParent.'.format(sign_nspc))
+        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
+
+        pm.delete(pm.ls(regex=sign_re))
+        pm.delete(pm.ls(regex=logo_re))
+    except:
+        pass
+
+
+def loadAssetsLite(tricode, location, playoff=False, diagnostic=True):
+    ''' Load the selected team logo (only) into the specificed 'location' (home/away)
+        as a namespace.
+        LITE version attaches only the logo to a locator called HOME_LOCATOR.'''
+
+    try:
+        team = Team(tricode)
+    except:
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
+
+    # Generate target logo path and namespace
+    if not playoff:
+        logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    elif playoff:
+        logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, (team.tricode + '_CHAMP'), (team.tricode+'_CHAMP.mb'))
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        return
+    logo_nspc = '{}LOGO'.format(location)
+
+    # Get existing reference nodes and kill them
+    logo_ref = None
+    for ref in pm.listReferences():
+        if ref.namespace == logo_nspc:
+            logo_ref = ref
+
+    if (logo_ref): logo_ref.remove()
+
+    # Reference the logo
+    try:
+        asset.reference(logo_path, logo_nspc)
+    except:
+        pm.warning('Build Scene  ERROR Could not reference {} logo.'.format(tricode))
+
+    # Attach the logo
+    try:
+        attachTeamLite(location)
+    except:
+        pm.warning('Build Scene  ERROR Could not attach {} logo.'.format(tricode))       
+
+    foster_re = re.compile('.RNfosterParent.')
+    pm.delete(pm.ls(regex=foster_re))
+
+
+def loadAssetsNYS(tricode, location, diagnostic=False, clean=True):
+    # Get team info from database
+    """ Given a specific location (home/away), this function attempts to reference
+        in a selected team's assets and attach them to respected 01, 05 and 06
+        attachment points."""
+    try:
+        team = Team(tricode)
+    except: 
+        pm.warning('Build Scene  ERROR Could not find team in database.')
+        return
+
+    
+    ''' LK SPECIFIC SECTION '''
+    # The full path of this scene
+    this_scene = pm.sceneName()
+    # Split into tokens
+    scene_token = this_scene.split('/')
+    # 4th from the right is the project name
+    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
+    ''' END LK '''
+
+
+    # Create paths for signs / team logo / region / layout scenes
+    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
+    
+
+    if (diagnostic):
+        print '\n'
+        print '{} Team:   {}'.format(location, team.tricode)
+        print 'Project:     {}'.format(this_project)
+        print '{} Sign:   {}'.format(location, sign_path)
+        print '{} Logo:   {}'.format(location, logo_path)
+        print 'Light Rig:   {}'.format(lgtrig_path)
+
+
+    # Check for missing files and print warnings
+    if not os.path.exists(logo_path):
+        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
+        logo_path = None
+
+    if (diagnostic):
+        return
+
+    # Generate namespaces
+    sign_nspc = '{0}SIGN'.format(location)
+    logo_nspc = '{0}LOGO'.format(location)
+
+    # Check for existing references
+    sign_ref = None
+    logo_ref = None
+
+    # Get those reference nodess
+    for ref in pm.listReferences():
+        if ref.namespace == logo_nspc:
+            logo_ref = ref
+
+    # If there are references missing, force a clean run for simplicity's sake (i implore you)
+    if (logo_ref) == None and clean == False:
+        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
+        clean = True
+
+    # If the user has asked to do a clean reference of the asset, including attachment
+    if (clean):
+        # If there's already references in those namespaces, just delete them
+        if (logo_ref): logo_ref.remove()
+        # Reference in the asset to the namespace
+        if logo_path: asset.reference(logo_path, logo_nspc)
+
+        # Attach them to their parent locators
+        attachTeamToSign(location)
+
+    # (If) there are already references in the namespaces, and the user is requesting
+    # to replace the reference and maintain reference edits (dirty mode)
+    elif not (clean):
+        # Same thing with school logos this time
+        if (team.tricode+'.mb') in logo_ref.path:
+            pass
+        else:
+            logo_ref.replaceWith(logo_path)
+
+    # Cleanup foster parents
+    try:
+        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
+
+        pm.delete(pm.ls(regex=logo_re))
+    except:
+        pass
+
+
+### MATCHUP HELPERS ##########################################################
+def loadTeamsStadium(home_team, away_team=None, diagnostic=False, clean=True, *a):
+    loadAssetsStadium(home_team, 'HOME', diagnostic, clean)
+    if away_team:
+        loadAssetsStadium(away_team, 'AWAY', diagnostic, clean)
+    return
+
+
+def loadTeamsLite(home_team, away_team=None, playoff=False, *a):
+    ''' A lite version of loadTeams that skips signs and major authoring steps,
+        only loading a team primary logo and attaching it to a scene locator.'''
+    loadAssetsLite(home_team, 'HOME', playoff)
+    if away_team:
+        loadAssetsLite(away_team, 'AWAY', playoff)
+    return
+
+
+def loadTeamsNYS(home_team, away_team=None, diagnostic=False, clean=True, *a):
+    loadAssetsNYS(home_team, 'HOME', diagnostic, clean)
+    if away_team:
+        loadAssetsNYS(away_team, 'AWAY', diagnostic, clean)
+    return
 
 
 ##############################################################################
-### LOW-LEVEL FUNCTIONS  #####################################################
+### HELPER FUNCTIONS  ########################################################
 ##############################################################################
+def getMultiTeamNamespaces():
+    ''' Used in multiTeam scenes -- gets a list of all active team asset namespaces'''
+
+    reg = re.compile(r"\ATEAM_\d{2,3}_SIGN\Z")
+
+    references = pm.listReferences()
+    namespaces = []
+
+    for idx, ref in enumerate(references):
+        if re.match(reg, ref.namespace):
+            namespaces.append(ref.namespace)
+        else: pass
+
+    return namespaces
+
 
 def attachTeamLite(location):
     ''' Attaches a team logo to a locator called {LOCATION}_LOCATOR.'''
@@ -355,7 +674,7 @@ def attachTeamLite(location):
     return
 
 
-def attachTeamToSign(location):
+def attachTeamToSign(location, n_scaleable=False):
     ''' Attaches a team logo to its corresponding sign.  Location refers to home/away. '''
     location = location.upper()
 
@@ -504,280 +823,3 @@ def attach(parent, child):
     pc = pm.parentConstraint(parent, child, mo=False)
     sc = pm.scaleConstraint(parent, child, mo=False)
     return (pc,sc)
-
-
-##############################################################################
-### MAIN PROCEDURES ##########################################################
-##############################################################################
-
-def loadAssetsStadium(tricode, location, diagnostic=False, clean=True):
-    # Get team info from database
-    """ Given a specific location (home/away), this function attempts to reference
-        in a selected team's assets and attach them to respected 01, 05 and 06
-        attachment points."""
-    try:
-        team = Team(tricode)
-    except: 
-        pm.warning('Build Scene  ERROR Could not find team in database.')
-        return
-
-    # Generate string for the name of the school's sign
-    sign = 'SIGN_{0}'.format(team.sign.upper())
-    # Generate string for the school's matte painting ID
-    mp_id = str(team.matteNum).zfill(2)
-
-    
-    ''' LK SPECIFIC SECTION '''
-    # The full path of this scene
-    this_scene = pm.sceneName()
-    # Split into tokens
-    scene_token = this_scene.split('/')
-    # 4th from the right is the project name
-    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
-    ''' END LK '''
-
-
-    # Create paths for signs / team logo / region / layout scenes
-    sign_path = os.path.join(cfb.MAIN_ASSET_DIR, sign, (sign+'.mb'))
-    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
-    lgtrig_path = os.path.join(cfb.MAIN_ASSET_DIR, 'LIGHTING_BASE', 'LIGHTING_BASE.mb')
-    
-    if (diagnostic):
-        print '\n'
-        print '{} Team:   {}'.format(location, team.tricode)
-        print 'Project:     {}'.format(this_project)
-        print '{} Sign:   {}'.format(location, sign_path)
-        print '{} Logo:   {}'.format(location, logo_path)
-        print 'Light Rig:   {}'.format(lgtrig_path)
-
-
-    # Check for missing files and print warnings
-    if not os.path.exists(sign_path):
-        pm.warning('Build Scene  WARNING could not find {0}'.format(sign_path))
-        sign_path = None
-    if not os.path.exists(logo_path):
-        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
-        logo_path = None
-    if not os.path.exists(lgtrig_path):
-        pm.warning('Build Scene  WARNING could not find {0}'.format(lgtrig_path))
-        lgtrig_path = None
-
-    if (diagnostic):
-        return
-
-    # Generate namespaces
-    sign_nspc = '{0}SIGN'.format(location)
-    logo_nspc = '{0}LOGO'.format(location)
-
-    # Check for existing references
-    sign_ref = None
-    logo_ref = None
-
-    # Get those reference nodess
-    for ref in pm.listReferences():
-        if ref.namespace == sign_nspc:
-            sign_ref = ref
-
-        elif ref.namespace == logo_nspc:
-            logo_ref = ref
-
-    # If there are references missing, force a clean run for simplicity's sake (i implore you)
-    if (sign_ref) or (logo_ref) == None and clean == False:
-        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
-        clean = True
-
-    # If the user has asked to do a clean reference of the asset, including attachment
-    if (clean):
-        # If there's already references in those namespaces, just delete them
-        if (logo_ref): logo_ref.remove()
-        if (sign_ref): sign_ref.remove()
-        # Reference in the asset to the namespace
-        if sign_path: asset.reference(sign_path, sign_nspc)
-        if logo_path: asset.reference(logo_path, logo_nspc)
-
-        # Attach them to their parent locators
-        attachTeamToSign(location)
-        attachSignToScene(location)
-
-    # (If) there are already references in the namespaces, and the user is requesting
-    # to replace the reference and maintain reference edits (dirty mode)
-    elif not (clean):
-        # If the right sign is already loaded, pass
-        if (sign+'.mb') in sign_ref.path:
-            pass
-        # Or else replace the sign reference
-        else:
-            sign_ref.replaceWith(sign_path)
-        # Same thing with school logos this time
-        if (team.tricode+'.mb') in logo_ref.path:
-            pass
-        else:
-            logo_ref.replaceWith(logo_path)
-
-    # Cleanup foster parents
-    try:
-        sign_re = re.compile('{0}RNfosterParent.'.format(sign_nspc))
-        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
-
-        pm.delete(pm.ls(regex=sign_re))
-        pm.delete(pm.ls(regex=logo_re))
-    except:
-        pass
-
-
-def loadAssetsNYS(tricode, location, diagnostic=False, clean=True):
-    # Get team info from database
-    """ Given a specific location (home/away), this function attempts to reference
-        in a selected team's assets and attach them to respected 01, 05 and 06
-        attachment points."""
-    try:
-        team = Team(tricode)
-    except: 
-        pm.warning('Build Scene  ERROR Could not find team in database.')
-        return
-
-    
-    ''' LK SPECIFIC SECTION '''
-    # The full path of this scene
-    this_scene = pm.sceneName()
-    # Split into tokens
-    scene_token = this_scene.split('/')
-    # 4th from the right is the project name
-    this_project = scene_token[len(scene_token)-1].replace('_SKELETON.mb', '')
-    ''' END LK '''
-
-
-    # Create paths for signs / team logo / region / layout scenes
-    logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
-    
-
-    if (diagnostic):
-        print '\n'
-        print '{} Team:   {}'.format(location, team.tricode)
-        print 'Project:     {}'.format(this_project)
-        print '{} Sign:   {}'.format(location, sign_path)
-        print '{} Logo:   {}'.format(location, logo_path)
-        print 'Light Rig:   {}'.format(lgtrig_path)
-
-
-    # Check for missing files and print warnings
-    if not os.path.exists(logo_path):
-        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
-        logo_path = None
-
-    if (diagnostic):
-        return
-
-    # Generate namespaces
-    sign_nspc = '{0}SIGN'.format(location)
-    logo_nspc = '{0}LOGO'.format(location)
-
-    # Check for existing references
-    sign_ref = None
-    logo_ref = None
-
-    # Get those reference nodess
-    for ref in pm.listReferences():
-        if ref.namespace == logo_nspc:
-            logo_ref = ref
-
-    # If there are references missing, force a clean run for simplicity's sake (i implore you)
-    if (logo_ref) == None and clean == False:
-        pm.warning('Build Scene  Existing reference not found.  Forcing clean reference.')
-        clean = True
-
-    # If the user has asked to do a clean reference of the asset, including attachment
-    if (clean):
-        # If there's already references in those namespaces, just delete them
-        if (logo_ref): logo_ref.remove()
-        # Reference in the asset to the namespace
-        if logo_path: asset.reference(logo_path, logo_nspc)
-
-        # Attach them to their parent locators
-        attachTeamToSign(location)
-
-    # (If) there are already references in the namespaces, and the user is requesting
-    # to replace the reference and maintain reference edits (dirty mode)
-    elif not (clean):
-        # Same thing with school logos this time
-        if (team.tricode+'.mb') in logo_ref.path:
-            pass
-        else:
-            logo_ref.replaceWith(logo_path)
-
-    # Cleanup foster parents
-    try:
-        logo_re = re.compile('{0}RNfosterParent.'.format(logo_nspc))
-
-        pm.delete(pm.ls(regex=logo_re))
-    except:
-        pass
-
-
-def loadAssetsLite(tricode, location, playoff=False, diagnostic=True):
-    ''' Load the selected team logo (only) into the specificed 'location' (home/away)
-        as a namespace.
-        LITE version attaches only the logo to a locator called HOME_LOCATOR.'''
-
-    try:
-        team = Team(tricode)
-    except:
-        pm.warning('Build Scene  ERROR Could not find team in database.')
-        return
-
-    # Generate target logo path and namespace
-    if not playoff:
-        logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, team.tricode, (team.tricode+'.mb'))
-    elif playoff:
-        logo_path = os.path.join(cfb.TEAMS_ASSET_DIR, (team.tricode + '_CHAMP'), (team.tricode+'_CHAMP.mb'))
-    if not os.path.exists(logo_path):
-        pm.warning('Build Scene  WARNING could not find {0}'.format(logo_path))
-        return
-    logo_nspc = '{}LOGO'.format(location)
-
-    # Get existing reference nodes and kill them
-    logo_ref = None
-    for ref in pm.listReferences():
-        if ref.namespace == logo_nspc:
-            logo_ref = ref
-
-    if (logo_ref): logo_ref.remove()
-
-    # Reference the logo
-    try:
-        asset.reference(logo_path, logo_nspc)
-    except:
-        pm.warning('Build Scene  ERROR Could not reference {} logo.'.format(tricode))
-
-    # Attach the logo
-    try:
-        attachTeamLite(location)
-    except:
-        pm.warning('Build Scene  ERROR Could not attach {} logo.'.format(tricode))       
-
-    foster_re = re.compile('.RNfosterParent.')
-    pm.delete(pm.ls(regex=foster_re))
-
-
-def loadTeamsStadium(home_team, away_team=None, diagnostic=False, clean=True, *a):
-    loadAssetsStadium(home_team, 'HOME', diagnostic, clean)
-    if away_team:
-        loadAssetsStadium(away_team, 'AWAY', diagnostic, clean)
-    return
-
-
-def loadTeamsNYS(home_team, away_team=None, diagnostic=False, clean=True, *a):
-    loadAssetsNYS(home_team, 'HOME', diagnostic, clean)
-    if away_team:
-        loadAssetsNYS(away_team, 'AWAY', diagnostic, clean)
-    return
-
-
-def loadTeamsLite(home_team, away_team=None, playoff=False, *a):
-    ''' A lite version of loadTeams that skips signs and major authoring steps,
-        only loading a team primary logo and attaching it to a scene locator.'''
-    loadAssetsLite(home_team, 'HOME', playoff)
-    if away_team:
-        loadAssetsLite(away_team, 'AWAY', playoff)
-    return
-

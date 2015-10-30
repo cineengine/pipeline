@@ -213,6 +213,8 @@ def getMatchingSets( sort_set_string ):
 
     all_matching = []
 
+    print sort_set_string
+
     # Since some scenes will have multiple sort sets with the same name, 
     # including a namespace, we will have to include logic to account for this
 
