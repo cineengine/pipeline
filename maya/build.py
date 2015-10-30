@@ -200,8 +200,8 @@ def multiTeam(tricode_list, load_signs=False):
         if load_signs:
             loadAssetsStadium(tricode, namespaces[idx])
         elif not load_signs:
-            loadAssetsStadium(tricode, namespaces[idx])
-            
+            loadAssetsNYS(tricode, namespaces[idx])
+
     sort.sceneTeardown()
     sc = sort.SortControl('Multi-Team (NYS / CHAMP)')
     sc.run()
