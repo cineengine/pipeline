@@ -49,7 +49,7 @@ class Team(object):
                 break
         
         if not found:
-            print 'Team not found in database!'
+            raise AttributeError('Team not found in database -- check your tricodes and try again.')
 
         else:    
             # Team info
