@@ -182,25 +182,44 @@ def splitMatchupPlayoff(tricode):
 
 
 ### MULTI-TEAM SCENE #########################################################
-def multiTeam(tricode_list, load_signs=False):
-    namespaces = getMultiTeamNamespaces()
+def multiTeam(tricode_list, playoff=False):
 
-    if len(namespaces) > len(tricode_list):
-        pm.warning('ERROR  Not enough teams specified ({} minimum).  Aborting...'.format(len(namespaces)))
-        return
+    if (playoff):
+        attachments = getMultiTeamAttachments()
 
-    if len(namespaces) < len(tricode_list):
-        pm.warning('ERROR  Too many teams specified ({} maximum).  Aborting...'.format(len(namespaces)))
-        return
+        if len(attachments) > len(tricode_list):
+            pm.warning('ERROR  Not enough teams specified ({} minimum).  Aborting...'.format(len(attachments)))
+            return
 
-    for idx, namespace in enumerate(namespaces):
-        namespaces[idx] = namespace[:-4].strip()
+        if len(attachments) < len(tricode_list):
+            pm.warning('ERROR  Too many teams specified ({} maximum).  Aborting...'.format(len(attachments)))
+            return
+    
+        for idx, loc in enumerate(attachments):
+            print attachments[idx]
+            attachments[idx] = loc[:-7].strip()
 
-    for idx, tricode in enumerate(tricode_list):
-        if load_signs:
-            loadAssetsStadium(tricode, namespaces[idx])
-        elif not load_signs:
+        for idx, tricode in enumerate(tricode_list):
+            loadAssetsLite(tricode, attachments[idx], playoff=playoff)
+
+
+    elif not (playoff):
+        namespaces = getMultiTeamAttachments(references=True)
+
+        if len(namespaces) > len(tricode_list):
+            pm.warning('ERROR  Not enough teams specified ({} minimum).  Aborting...'.format(len(namespaces)))
+            return
+
+        if len(namespaces) < len(tricode_list):
+            pm.warning('ERROR  Too many teams specified ({} maximum).  Aborting...'.format(len(namespaces)))
+            return
+
+        for idx, namespace in enumerate(namespaces):
+            namespaces[idx] = namespace[:-4].strip()
+
+        for idx, tricode in enumerate(tricode_list):
             loadAssetsNYS(tricode, namespaces[idx])
+
 
     sort.sceneTeardown()
     sc = sort.SortControl('Multi-Team (NYS / CHAMP)')
@@ -218,8 +237,6 @@ def multiTeam(tricode_list, load_signs=False):
         return
     else:
         return
-
-
 
 
 ### AUTOMATION ###############################################################
@@ -323,9 +340,6 @@ def cityWeeklyBuild(tricode_list):
         pm.warning('Build Scene  Update team logo operation completed with no errors.  Check the farm for your submissions.')
     elif flag:
         pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
-
-
-#def playoffBuild(tricode_list):
 
 
 def nysBuild(tricode_list):
@@ -657,20 +671,32 @@ def loadTeamsNYS(home_team, away_team=None, diagnostic=False, clean=True, *a):
 ##############################################################################
 ### HELPER FUNCTIONS  ########################################################
 ##############################################################################
-def getMultiTeamNamespaces():
-    ''' Used in multiTeam scenes -- gets a list of all active team asset namespaces'''
+def getMultiTeamAttachments(references=False):
+    ''' Used in multiTeam scenes -- gets a list of all attachment points'''
 
-    reg = re.compile(r"\ATEAM_\d{2,3}_SIGN\Z")
-
-    references = pm.listReferences()
+    attachments = []
     namespaces = []
 
-    for idx, ref in enumerate(references):
-        if re.match(reg, ref.namespace):
-            namespaces.append(ref.namespace)
-        else: pass
+    if not (references):    
+        reg = re.compile(r"^TEAM_\d{2,3}_LOCATOR")
 
-    return namespaces
+        locators = pm.ls(typ='locator')
+        for idx, loc in enumerate(locators):
+            if re.match(reg, str(loc)):
+                attachments.append(loc.getParent())
+            else: pass
+        return sorted(attachments)
+
+
+    elif (references):
+        reg = re.compile(r"^TEAM_\d{2,3}_SIGN")
+        
+        references = pm.listReferences()
+        for idx, ref in enumerate(references):
+            if re.match(reg, ref.namespace):
+                namespaces.append(ref.namespace)
+            else: pass
+        return sorted(namespaces)
 
 
 def attachTeamLite(location):
@@ -684,6 +710,10 @@ def attachTeamLite(location):
         logo_atch = pm.PyNode('{0}LOGO:ATTACH_01'.format(location))
     except:
         pm.warning('Build Scene  ERROR Could not find logo attachment for {} team.'.format(location))
+
+    # terrible, terrible hacking (for playoff elements)
+    if 'TEAM' in location:
+        location = location[:-1]
 
     scene_atch = None
     try:
