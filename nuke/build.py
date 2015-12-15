@@ -5,6 +5,8 @@ from os import mkdir
 from os.path import exists
 from os.path import split
 from os.path import join
+from os.path import dirname
+from os.path import basename
 
 # Nuke packages
 import nuke
@@ -87,6 +89,37 @@ def loadTeam(location, tricode=None, renders=False):
     selectTeamPodThree(location, team)
     if renders:
         selectLogoRender(location, team)
+
+
+def renameSave(matchup=False):
+    m_ctrl         = nuke.toNode(MASTER_CTRL)
+    deliverable    = m_ctrl.knob('deliverable').getValue()
+    scene          = nuke.root().name()
+    #scene_dir_name = dirname(scene) + '/TEAMS'
+    scene_dir_name = join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'nuke', 'TEAMS')
+
+    tricode = m_ctrl.knob('home_team').getValue()
+    if (matchup):
+        away_tricode = m_ctrl.knob('away_team').getValue()
+        tricode += '_{}'.format(away_tricode)
+
+    scene_name = deliverable + ('_{}.nk'.format(tricode))
+
+    if not exists(scene_dir_name):
+        mkdir(scene_dir_name)
+
+    out_path = join(scene_dir_name, scene_name)
+
+    print out_path
+
+    nuke.scriptSaveAs(out_path)
+
+
+def quickSubmit(*a):
+    nuke.scriptSave()
+    frame_range = '{0}-{1}'.format(nuke.root().firstFrame(), nuke.root().lastFrame())
+    scene_name  = basename(nuke.root().name())
+    submit.singleNode(scene_name, nuke.root().name(), frame_range, '5000', '8', 'MASTER_WRITE') 
 
 
 def selectColors(location, team):    
@@ -366,6 +399,53 @@ def teamLogoUpdate(team_list):
     # Deliverable name, frame range, matchup?, primetime?
     scenes = [
         ('CFB_E_MATCHUP_FE_01_ST', '1-75', True, True),
+        ('CFB_E_MATCHUP_ENDSTAMP_01_ST', '1-300', True, True),
+        ('CFB_S_MATCHUP_FE_01_ST', '1-83', True, False),
+        ('CFB_E_TEAM_FE_01_ST', '1-75', False, True),
+        ('CFB_E_TEAM_ENDSTAMP_01_ST', '1-300', False, True),
+        ('CFB_S_TEAM_FE_01', '1-90', False, False)
+        ]
+
+    for scene in scenes:
+        # Pull values from the scene list
+        deliverable, frange, matchup, primetime = scene
+        print deliverable
+        
+        # check that the _TOOLKIT.nk file exists for that deliverable
+        file_name = '{}_TOOLKIT.nk'.format(deliverable)
+        scene_path = join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'nuke', file_name)
+        
+        # if it exists, do the business
+        if exists(scene_path):
+            nuke.scriptClear()
+            nuke.scriptOpen(scene_path)
+            createTeamScenes(team_list, frange, submit_to_farm=True, matchup=matchup, jumbo=matchup)
+            report += '\nCOOL:  Successfully submitted nuke scene for {}'.format(deliverable)
+        else:
+            report += '\nERROR: Could not find toolkit nuke scene for {}'.format(deliverable)
+            
+        # Repeat the process with a PRIMETIME tag if this is a nighttime scene as well
+        if (primetime):
+            file_name = '{}_PRIMETIME_TOOLKIT.nk'.format(deliverable)
+            scene_path = join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'nuke', file_name)
+        
+            if exists(scene_path):
+                nuke.scriptClear()
+                nuke.scriptOpen(scene_path)
+                createTeamScenes(team_list, frange, submit_to_farm=True, matchup=matchup, jumbo=matchup)
+                report += '\nCOOL:  Successfully submitted nuke scene for {}_PRIMETIME'.format(deliverable)
+            else:    
+                report += '\nERROR: Could not find toolkit nuke scene for {}_PRIMETIME'.format(deliverable)
+
+    print report
+
+
+def nysBuild(team_list):
+    report = ''
+
+    # Deliverable name, frame range, matchup?, primetime?
+    scenes = [
+        ('CFB_E_NYS_TEAM_TRANS_01', '1-75', True, True),
         ('CFB_E_MATCHUP_ENDSTAMP_01_ST', '1-300', True, True),
         ('CFB_S_MATCHUP_FE_01_ST', '1-83', True, False),
         ('CFB_E_TEAM_FE_01_ST', '1-75', False, True),

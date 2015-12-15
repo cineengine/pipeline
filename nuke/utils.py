@@ -30,7 +30,11 @@ SWAP_PATHS = {
     '/Volumes/LK_RAID/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_NYS_ROLLOUT_FE_MATCHUP_01/ren/work/maya/images': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_NYS_MATCHUP_ROLLOUT_FE_01/render_3d',
     '/Volumes/LK_RAID/Projects/14_009_ESPN_CFB/04_Prod/packages/Base/Base_Logo_Artwork_for_Comp/bld/work/photoshop': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/001_3D_ASSETS/Base/Base_Logo_Artwork_for_Comp/bld/work/photoshop',
     'R:/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_CHAMP_ROLLOUT_FE_MATCHUP_01/ren/work/maya/images': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_PLAYOFF_MATCHUP_ROLLOUT_FE_01/render_3d',
-    'R:/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_CHAMP_ROLLOUT_FE_MATCHUP_01/ren/work/nuke/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_PLAYOFF_MATCHUP_ROLLOUT_FE_01/render_2d/'
+    'R:/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_CHAMP_ROLLOUT_FE_MATCHUP_01/ren/work/nuke/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_PLAYOFF_MATCHUP_ROLLOUT_FE_01/render_2d/',
+    '/Volumes/LK_RAID/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_NYS_TEAM_MATCHUP_TRANS_01/cmp/work/nuke/includes/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_MATCHUP_TRANS_01/nuke/includes/',
+    '/Volumes/LK_RAID/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_NYS_ROLLOUT_FE_MATCHUP_01/cmp/work/nuke/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_NYS_MATCHUP_ROLLOUT_FE_01/nuke/',
+    'R:/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_NYS_ROLLOUT_FE_MATCHUP_01/cmp/work/nuke/':  'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_NYS_MATCHUP_ROLLOUT_FE_01/nuke/',
+    'R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_LK/TEXTURES/MATTES/MP00-generic/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/001_3D_ASSETS/TEXTURES/MATTES/MP00-generic/'
     }
 
 def printReport():
@@ -115,21 +119,21 @@ def remapAlembicNodes():
                 rg['file'].setValue(rg_path.replace(k,v))
 
 
-def quickFix():
-    readgeo_nodes = getAllNodesByType('ReadGeo2')
+def checkForQT():
     read_nodes = getAllNodesByType('Read')
+    qt_found = []
 
-    for rg in readgeo_nodes:
-        rg_path = rg['file'].getValue()
-        if 'CFB_E_FFE_01_BOWLMANIA' in rg_path:
-            rg['file'].setValue(rg_path.replace('CFB_E_FFE_01_BOWLMANIA/', 'CFB_ES_HALLMARK_FE_01/'))
+    for rn in read_nodes:
+        read_path = rn['file'].getValue()
+        if '.mov' in read_path:
+            qt_found.append(rn)
 
-    for rg in read_nodes:
-        rg_path = rg['file'].getValue()
-        if 'CFB_E_FFE_01_BOWLMANIA' in rg_path:
-            rg['file'].setValue(rg_path.replace('CFB_E_FFE_01_BOWLMANIA/', 'CFB_ES_HALLMARK_FE_01/'))
-
-
+    if len(qt_found):
+        for rn in qt_found:
+            print rn.name()
+            rn.setSelected(True)
+    else:
+        print 'No quicktimes found!'
 
 
 def makeFolders():

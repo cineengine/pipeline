@@ -107,3 +107,20 @@ def getAllTeams( asNames=False, asDict=False ):
            return [t['tricode'] for t in stream if t['tricode']]
         elif asDict:
            return [t for t in stream]
+
+def checkTeams( team_list ):
+    report = ''
+    flag = 0
+    for team in team_list:
+        try:
+            t = Team(team)
+        except: 
+            report += str(team) + ' '
+            flag = 1
+
+    if (flag):
+        print '\n\nTricode  ERROR One or more tricodes not found. ({}) Stopping ... '.format(report.rstrip())
+        return False
+
+    else:
+        return True

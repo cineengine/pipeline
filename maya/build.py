@@ -9,6 +9,7 @@ from pipeline.maya import project
 from pipeline.maya import submit
 
 from pipeline.database.team import Team
+from pipeline.database.team import checkTeams
 import pipeline.vray.utils as utils
 
 # Built-in modules
@@ -21,7 +22,9 @@ reload(sort)
 reload(project)
 reload(submit)
 
+
 cluster = "/C"
+priority = "6000"
 
 ##############################################################################
 ### CALLED FUNCTIONS #########################################################
@@ -182,7 +185,7 @@ def splitMatchupPlayoff(tricode):
 
 
 ### MULTI-TEAM SCENE #########################################################
-def multiTeam(tricode_list, playoff=False):
+def multiTeam(tricode_list, playoff=False, force_name=None):
 
     if (playoff):
         attachments = getMultiTeamAttachments()
@@ -227,7 +230,7 @@ def multiTeam(tricode_list, playoff=False):
 
     if project.isScene():
         scene = project.Scene()    
-        scene.rename(save=False)
+        scene.rename(name=force_name, save=False)
 
         prefix = scene.custom_string
         vrs = pm.PyNode('vraySettings')
@@ -278,7 +281,7 @@ def updateTeamLogo(tricode):
             elif type_ == 'quad':
                 quad(tricode)
             ## submit to farm
-            submit.autoSubmitAll(frange, '/C', '', '5000')
+            submit.autoSubmitAll(frange, '/C', '', priority)
             ## append to report
             report += '\nSuccessfully modified & submitted {} update for {}'.format(deliverable, tricode)
         except:
@@ -328,7 +331,7 @@ def cityWeeklyBuild(tricode_list):
                     singleTeamCity(tricode)
                 elif type_ == 'split':
                     splitMatchupCity(tricode)
-                submit.autoSubmitAll(frange, cluster, '', '5000')
+                submit.autoSubmitAll(frange, cluster, '', priority)
                 report += '\nSuccessfully modified & submitted {} update for {}'.format(deliverable, tricode)
             except:
                 flag = 1
@@ -347,14 +350,14 @@ def nysBuild(tricode_list):
     flag = 0
     # 
     skeletons = [('CFP_E_NYS_TEAM_TRANS_01', 'single', '1-60'),
-                 ('CFP_E_NYS_TEAM_ENDSTAMP_01', 'single', '1-130'),
+                 ('CFP_E_NYS_TEAM_ENDSTAMP_01', 'single', '45-345'),
                  ('CFP_E_NYS_TEAM_ROLLOUT_FE_01', 'single', '1-60'),
-                 ('CFP_E_NYS_MATCHUP_REJOIN_01', 'split', '1-150'),
+                 ('CFP_E_NYS_PLAYER_ENDSTAMP_01', 'single', '1-300'),
+                 #('CFP_E_NYS_MATCHUP_REJOIN_01', 'split', '1-150'),
                  ('CFP_E_NYS_MATCHUP_TRANS_01', 'split', '1-60'),
-                 #('CFP_E_NYS_MATCHUP_TRANS_02', 'split', '1-150'),
+                 ('CFP_E_NYS_MATCHUP_TRANS_02', 'split', '1-120'),
                  ('CFP_E_NYS_MATCHUP_ENDSTAMP_01', 'split', '1-150'),
-                 #('CFP_E_NYS_MATCHUP_ROLLOUT_FE_01', 'split', '1-150'),
-                 ('CFP_E_NYS_MATCHUP_B2B_01', 'split', '1-90')
+                 ('CFP_E_NYS_MATCHUP_ROLLOUT_FE_01', 'split', '1-150')
                  ]
 
     for tricode in tricode_list:
@@ -376,7 +379,193 @@ def nysBuild(tricode_list):
                     singleTeamNYS(tricode)
                 elif type_ == 'split':
                     splitMatchupNYS(tricode)
-                submit.autoSubmitAll(frange, cluster, '', '5000')
+                submit.autoSubmitAll(frange, cluster, '', priority)
+                report += '\nSuccessfully modified & submitted {} update for {}'.format(deliverable, tricode)
+            except:
+                flag = 1
+                report += '\nWARNING failed to update {} for {}'.format(deliverable, tricode)
+
+    print report
+
+    if not flag:
+        pm.warning('Build Scene  Update team logo operation completed with no errors.  Check the farm for your submissions.')
+    elif flag:
+        pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
+
+
+def nysOpensBuild(matchup_dict, cgd=False, nys=True):
+    report = ''
+    flag = 0
+    # 
+    nys_skeletons = {
+                    ('CFP_E_OPEN_SHOT_010', 'nys', 'away', '1-184'),
+                    ('CFP_E_OPEN_SHOT_020', 'nys', 'home', '1-120'),
+                    ('CFP_E_OPEN_SHOT_050', 'nys', 'matchups', '1-200')
+                    }
+
+    cgd_skeletons = {
+                    ('CFP_E_OPEN_SHOT_010', 'cgd', 6, '1-184'),
+                    ('CFP_E_OPEN_SHOT_020', 'cgd', 3, '1-120'),
+                    ('CFP_E_OPEN_SHOT_030', 'cgd', 3, '1-122')
+                    }
+
+
+    # Make a list of all tricodes listed in the dictionary
+    all_teams_list = []
+    itr = 0
+
+    for bowl in matchup_dict:
+        all_teams_list.append(matchup_dict[bowl][0])
+        all_teams_list.append(matchup_dict[bowl][1])
+    # and check that they all exist...
+    if not checkTeams(all_teams_list):
+        return False
+
+    nys_dict = {}
+    for bowl in matchup_dict:
+        away_team, home_team, playoff_flag = matchup_dict[bowl]
+        if not playoff_flag:
+            nys_dict[bowl] = matchup_dict[bowl]
+
+    # NYS elements
+    if (nys):
+        for bowl in nys_dict:
+
+            print '\n\nStarting batching for {} BOWL\n'.format(bowl)
+
+            other_bowls = nys_dict.copy()
+
+            # We extract the information about THIS bowl game
+            away_team, home_team, playoff_flag = other_bowls.pop(bowl)
+            # By popping we create a list of the other bowl matchups
+
+            # Skip playoff matchups!!!!
+            if playoff_flag == True:
+                continue
+
+            # We convert those other bowl matchups into an ordered list
+            team_list = []
+            for ob in other_bowls:
+                team_list.append(other_bowls[ob][0])
+                team_list.append(other_bowls[ob][1])
+
+            # Now, with that information, we put our current matchup at the end
+            team_list += [away_team, home_team]
+
+
+            for skeleton in nys_skeletons:
+
+                # Parse skeleton infomration
+                deliverable, type_, team_sel, frange = skeleton
+
+                # Build the name of the skeleton scene
+                file_name = deliverable + '_' + type_.upper() + '_SKELETON.mb'
+                file_path = os.path.join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'maya', 'scenes', file_name)
+
+
+                # Check that the skeleton exists
+                if not os.path.exists(file_path):
+                    flag = 1
+                    report += '\nWARNING could not find {}.'.format(deliverable)
+                    continue
+
+                # DO THE BUSINESS
+                try:
+                    project.Scene.open(file_=file_path, force=True)
+                    if team_sel == 'away':
+                        multiTeam([away_team], playoff=False, force_name=bowl)
+                    elif team_sel == 'home':
+                        multiTeam([home_team], playoff=False, force_name=bowl)
+                    elif team_sel == 'matchups':
+                        multiTeam(team_list, playoff=False, force_name=bowl)
+
+                    submit.autoSubmitAll(frange, cluster, '', priority)
+
+                    report += '\nSuccessfully modified & submitted {} scene for {}'.format(deliverable, bowl)
+                except:
+                    flag = 1
+                    report += '\nWARNING failed to build {} for {}'.format(deliverable, bowl)
+
+
+    # Gameday only uses each team once, so we need to build a single list of teams and
+    # pop elements out as needed
+    if (cgd):
+        for skeleton in cgd_skeletons:
+
+            deliverable, type_, num_teams, frange = skeleton
+
+            # GAMEDAY HAX
+            # Using the # of teams specified from the skeleton dictionary, pop that number out and make a new list
+            team_list = []
+            for i in range(num_teams):
+                team_list.append(all_teams_list.pop(0))
+
+            print team_list
+
+            # Build the name of the skeleton scene
+            file_name = deliverable + '_' + type_.upper() + '_SKELETON.mb'
+            file_path = os.path.join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'maya', 'scenes', file_name)
+
+            # Check that the skeleton exists
+            if not os.path.exists(file_path):
+                flag = 1
+                report += '\nWARNING could not find {}.'.format(deliverable)
+                continue
+
+            # DO THE BUSINESS
+            try:
+                project.Scene.open(file_=file_path, force=True)
+                multiTeam(team_list, playoff=False, force_name='GAMEDAY')
+                submit.autoSubmitAll(frange, cluster, '', priority)
+
+                report += '\nSuccessfully modified & submitted {} scene for GAMEDAY'.format(deliverable)
+            except:
+                flag = 1
+                report += '\nWARNING failed to build {} for GAMEDAY'.format(deliverable)
+
+    print report
+
+    if not flag:
+        pm.warning('Build Scene  Update team logo operation completed with no errors.  Check the farm for your submissions.')
+    elif flag:
+        pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
+
+
+def playoffBuild(tricode_list):
+    report = ''
+    flag = 0
+    # 
+    skeletons = [('CFP_E_PLAYOFF_TEAM_TRANS_01', 'single', '1-60'),
+                 ('CFP_E_PLAYOFF_TEAM_ENDSTAMP_01', 'single', '45-345'),
+                 ('CFP_E_PLAYOFF_TEAM_ROLLOUT_FE_01', 'single', '1-60'),
+                 ('CFP_E_PLAYOFF_PLAYER_ENDSTAMP_01', 'single', '1-300'),
+                 #('CFP_E_PLAYOFF_MATCHUP_REJOIN_01', 'split', '1-150'),
+                 ('CFP_E_PLAYOFF_MATCHUP_TRANS_01', 'split', '1-60'),
+                 ('CFP_E_PLAYOFF_MATCHUP_TRANS_02', 'split', '1-120'),
+                 ('CFP_E_PLAYOFF_MATCHUP_ENDSTAMP_01', 'split', '1-150'),
+                 ('CFP_E_PLAYOFF_MATCHUP_ROLLOUT_FE_01', 'split', '1-150')
+                 ]
+
+    for tricode in tricode_list:
+        for skeleton in skeletons:
+
+            deliverable, type_, frange = skeleton
+
+            file_name = deliverable + '_SKELETON.mb'
+            file_path = os.path.join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'maya', 'scenes', file_name)
+
+            if not os.path.exists(file_path):
+                flag = 1
+                report += '\nWARNING could not find {}.'.format(deliverable)
+                continue
+
+            try:
+                project.Scene.open(file_=file_path, force=True)
+                if type_ == 'single':
+                    singleTeamPlayoff(tricode)
+                elif type_ == 'split':
+                    splitMatchupPlayoff(tricode)
+                submit.autoSubmitAll(frange, cluster, '', priority)
                 report += '\nSuccessfully modified & submitted {} update for {}'.format(deliverable, tricode)
             except:
                 flag = 1

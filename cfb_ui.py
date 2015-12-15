@@ -280,6 +280,7 @@ def getTeamList(*a):
         raw_list = pm.promptDialog(q=True, text=True)
         raw_list = raw_list.replace(" ", "")
         team_list = raw_list.split(',')
+        print team_list
         return team_list
 
     else:
@@ -287,13 +288,101 @@ def getTeamList(*a):
 
 
 ######################################################################
+# PLAYOFF MATCHUP BUILDER
+######################################################################
+
+def playoffMatchupWin(*a):
+    def run(*a):
+        matchups = {'ROSE': (),
+                    'SUGAR': (),
+                    'ORANGE': (),
+                    'COTTON': (),
+                    'FIESTA': (),
+                    'PEACH': ()
+                    }
+
+        matchups['ROSE'] = rose_bowl_grp.getText().replace(" ", "").split(',')
+        matchups['ROSE'].append(rose_bowl_bool.getValue())
+
+        matchups['SUGAR'] = sugar_bowl_grp.getText().replace(" ", "").split(',')
+        matchups['SUGAR'].append(sugar_bowl_bool.getValue())        
+
+        matchups['ORANGE'] = orange_bowl_grp.getText().replace(" ", "").split(',')
+        matchups['ORANGE'].append(orange_bowl_bool.getValue())      
+
+        matchups['COTTON'] = cotton_bowl_grp.getText().replace(" ", "").split(',')
+        matchups['COTTON'].append(cotton_bowl_bool.getValue())      
+
+        matchups['FIESTA'] = fiesta_bowl_grp.getText().replace(" ", "").split(',')
+        matchups['FIESTA'].append(fiesta_bowl_bool.getValue())
+
+        matchups['PEACH'] = peach_bowl_grp.getText().replace(" ", "").split(',')
+        matchups['PEACH'].append(peach_bowl_bool.getValue())
+
+        build.nysOpensBuild(matchups)
+
+    try:
+        pm.deleteUI('matchup_win')
+    except: pass
+
+    matchup_win = pm.window('matchup_win',
+                        tlb=True, rtf=0, s=1,
+                        title='NYS / Playoff Matchup Selector'
+                        )
+    top = pm.verticalLayout(width = 200, p=matchup_win)
+
+    lay = pm.horizontalLayout(p=top)
+    inst_text = """    Enter the matchups for each bowl, separated by commas.
+        Then check the boxes to the right to indicate the two PLAYOFF bowls."""
+    inst_text_ui = pm.text(label=inst_text, font='boldLabelFont', align='left', p=lay)
+    lay.redistribute()
+
+    lay = pm.horizontalLayout(height = 10, p=top)
+    rose_bowl_grp = pm.textFieldGrp(label='Rose Bowl:', p=lay, cw2=(70, 300))
+    rose_bowl_bool = pm.checkBox(label='', p=lay)
+    lay.redistribute(40,5)
+
+    lay = pm.horizontalLayout(p=top)
+    sugar_bowl_grp = pm.textFieldGrp(label='Sugar Bowl:', p=lay, cw2=(70, 300))
+    sugar_bowl_bool = pm.checkBox(label='', p=lay)
+    lay.redistribute(40,5)
+
+    lay = pm.horizontalLayout(p=top)
+    orange_bowl_grp = pm.textFieldGrp(label='Orange Bowl:', p=lay, cw2=(70, 300))
+    orange_bowl_bool = pm.checkBox(label='', p=lay)
+    lay.redistribute(40,5)
+
+    lay = pm.horizontalLayout(p=top)
+    cotton_bowl_grp = pm.textFieldGrp(label='Cotton Bowl:', p=lay, cw2=(70, 300))
+    cotton_bowl_bool = pm.checkBox(label='', p=lay)
+    lay.redistribute(40,5)
+
+    lay = pm.horizontalLayout(p=top)
+    fiesta_bowl_grp = pm.textFieldGrp(label='Fiesta Bowl:', p=lay, cw2=(70, 300))
+    fiesta_bowl_bool = pm.checkBox(label='', p=lay)
+    lay.redistribute(40,5)
+
+    lay = pm.horizontalLayout(p=top)
+    peach_bowl_grp = pm.textFieldGrp(label='Peach Bowl:', p=lay, cw2=(70, 300))
+    peach_bowl_bool = pm.checkBox(label='', p=lay)
+    lay.redistribute(40,5)
+
+    lay = pm.horizontalLayout(p=top)
+    exec_btn = pm.button(label='Build', height=30, align='right', c=run)
+    lay.redistribute()
+
+    top.redistribute(1)
+    matchup_win.setHeight(200)
+    matchup_win.setWidth(250)
+    matchup_win.show()
+
+
+######################################################################
 # MAIN MENU 
 ######################################################################
 
 def save_ui(*a):
-    if project.isScene():
-        scene = project.Scene()
-        scene.save()
+    if project.isScene():0
     else: 
         return
 
@@ -308,10 +397,29 @@ def rename_ui(*a):
     else:
         return
 
+def buildNys_ui(*a):
+    team_list = getTeamList()
+
+    if not team.checkTeams(team_list):
+        return False
+
+    build.nysBuild(team_list)
+
+def buildPlayoff_ui(*a):
+    team_list = getTeamList()
+
+    if not team.checkTeams(team_list):
+        return False
+
+    build.playoffBuild(team_list)
+
 def buildCity_ui(*a):
     team_list = getTeamList()
-    if team_list:
-        build.cityWeeklyBuild(team_list)
+
+    if not team.checkTeams(team_list):
+        return False
+
+    build.cityWeeklyBuild(team_list)
 
 def updateLogo_ui(*a):
     team_list = getTeamList()
@@ -358,10 +466,16 @@ pm.setParent(mmenu, menu=True)
 pm.menuItem(divider=True)
 #pm.menuItem(subMenu=True, to=True, label="Assets")
 pm.menuItem(l="Build Factory Scene", c=lambda *args: build.factory())
-pm.menuItem(l="Build SNF Elements", c=buildCity_ui)
 pm.menuItem(l="Update Team Logo", c=updateLogo_ui)
 
 #pm.menuItem(l="Sort Factory Scene", c=sort.factory)
+pm.menuItem(divider=True)
+pm.menuItem(subMenu=True, to=True, l='Automation')
+pm.menuItem(l="Batch NYS Teams", c=buildNys_ui)
+pm.menuItem(l="Batch NYS Opens", c=playoffMatchupWin)
+pm.menuItem(l="Batch SNF Teams", c=buildCity_ui)
+pm.setParent(mmenu, menu=True)
+
 
 pm.menuItem(divider=True)
 pm.menuItem(subMenu=True, to=True, l='Asset Creation')
