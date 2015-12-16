@@ -193,9 +193,9 @@ def selectTeamBanner(location, team):
 
 
 def selectLogoRender(location, team):
-    m_ctrl = nuke.toNode(MASTER_CTRL)
+    m_ctrl  = nuke.toNode(MASTER_CTRL)
 
-    package     = m_ctrl.knob('tod').getValue()
+    package = m_ctrl.knob('tod').getValue()
 
     logo_render_reads = {
         0.0: STUDIO_LOGO_READS,
@@ -216,6 +216,28 @@ def selectLogoRender(location, team):
 
         rn.knob('file').setValue(new_path)
 
+
+def selectBowlRender():
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+
+    bowl   = m_ctrl.knob('bowl_select').getValue()
+
+    bowl_name = {
+        0.0: 'SUGAR',
+        1.0: 'ROSE',
+        2.0: 'ORANGE',
+        3.0: 'COTTON',
+        4.0: 'PEACH',
+        5.0: 'FIESTA'
+        }[bowl]
+
+    for rn in ['BOWL_TEAMS_BTY','BOWL_TEAMS_UTIL']:
+        rn = nuke.toNode(rn)
+        render_path = rn.knob('file').getValue().split('/')
+        render_path[-3] = bowl_name
+        new_path = '/'.join(render_path)
+
+        rn.knob('file').setValue(new_path)
 
 
 #############################################################################
