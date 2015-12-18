@@ -16,6 +16,7 @@ import threading, thread
 from pipeline import cfb
 from pipeline.nuke import submit
 import pipeline.database.team as t
+
 reload(t)
 reload(submit)
 
@@ -63,7 +64,7 @@ CITY_LOGO_READS = [
 ## LOAD TEAM FUNCTIONS ######################################################
 #############################################################################
 
-def loadTeam(location, tricode=None, renders=False):
+def loadTeam(location, tricode=None, renders=False, multi=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
 
     if not (tricode):
@@ -73,46 +74,64 @@ def loadTeam(location, tricode=None, renders=False):
 
     team = t.Team(tricode)
 
-    m_ctrl.knob('{}_sign'.format(location)).setValue(team.signNum)
-    m_ctrl.knob('{}_region'.format(location)).setValue(int(team.matteNum))
-    if location == 'home':
-        m_ctrl.knob('sky').setValue(int(team.skyNum))
+    if not (multi):
+        m_ctrl.knob('{}_sign'.format(location)).setValue(team.signNum)
+        m_ctrl.knob('{}_region'.format(location)).setValue(int(team.matteNum))
+        if location == 'home':
+            m_ctrl.knob('sky').setValue(int(team.skyNum))
+
+        selectRegions(location, team)
+        selectSkies(location, team)
+        selectSigns(location, team)
 
     selectColors(location, team)
     selectColorVariants(location, team)
-    selectRegions(location, team)
-    selectSkies(location, team)
-    selectSigns(location, team)
     selectTeamLogo(location, team)
     selectTeamBanner(location, team)
     selectTeamPodTwo(location, team)
     selectTeamPodThree(location, team)
-    if renders:
+
+    if (renders):
         selectLogoRender(location, team)
 
 
-def renameSave(matchup=False):
+
+def renameSave(matchup=False, multi=False):
     m_ctrl         = nuke.toNode(MASTER_CTRL)
     deliverable    = m_ctrl.knob('deliverable').getValue()
     scene          = nuke.root().name()
     #scene_dir_name = dirname(scene) + '/TEAMS'
     scene_dir_name = join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'nuke', 'TEAMS')
 
-    tricode = m_ctrl.knob('home_team').getValue()
-    if (matchup):
-        away_tricode = m_ctrl.knob('away_team').getValue()
-        tricode += '_{}'.format(away_tricode)
 
-    scene_name = deliverable + ('_{}.nk'.format(tricode))
+    ## I.e. if only a team name or matchup is needed to version the file out (most common case)
+    if not (multi):
+        tricode = m_ctrl.knob('home_team').getValue()
+        if (matchup):
+            away_tricode = m_ctrl.knob('away_team').getValue()
+            tricode += '_{}'.format(away_tricode)
+
+        scene_name = deliverable + ('_{}.nk'.format(tricode))
+
+
+    ## "MULTI" is a total hack and only used in a few scenes in the Playoff opens ...
+    if (multi):
+        event, bowl = getBowlEventFromScene()
+
+        if (bowl):
+            scene_name = deliverable + ('_{}_{}.nk'.format(event.upper(), bowl.upper()))
+
+        else:
+            scene_name = deliverable + ('_{}.nk'.format(event.upper()))
+
 
     if not exists(scene_dir_name):
         mkdir(scene_dir_name)
 
     out_path = join(scene_dir_name, scene_name)
 
-    print out_path
-
     nuke.scriptSaveAs(out_path)
+
 
 
 def quickSubmit(*a):
@@ -127,7 +146,7 @@ def selectColors(location, team):
     secondary = convertColor(team.secondary, toFloat=True)
 
     m_ctrl = nuke.toNode(MASTER_CTRL)
-
+    
     try:
         m_ctrl.knob('{}_primary'.format(location)).setValue(primary)
         m_ctrl.knob('{}_secondary'.format(location)).setValue(secondary)
@@ -137,10 +156,10 @@ def selectColors(location, team):
 def selectColorVariants(location, team):
     m_ctrl = nuke.toNode(MASTER_CTRL)
 
-    try:
-        m_ctrl.knob('{}_bboard_color'.format(location)).setValue(team.billboard)
-        m_ctrl.knob('{}_neon_color'.format(location)).setValue(team.neon)
-    except: pass
+    #try:
+    m_ctrl.knob('{}_bboard_color'.format(location)).setValue(team.billboard)
+    m_ctrl.knob('{}_neon_color'.format(location)).setValue(team.neon)
+    #except: pass
 
 
 def selectRegions(location, team):    
@@ -348,6 +367,59 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
             test.knob('file').setValue(matte_str)
 
         return
+
+
+def setOutputPathMulti(create_dirs=False):
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+    m_write = nuke.toNode(MASTER_WRITE)
+    deliverable = m_ctrl.knob('deliverable').getValue()
+    event, bowl = getBowlEventFromScene()
+
+    base_dir = "{}/{}/render_2d/TEAMS".format(BASE_OUTPUT_DIR, deliverable)
+    
+    if (bowl):
+        version_dir = base_dir + '/' + bowl.upper()
+        out_str = '{}/{}_{}.%04d.png'.format(version_dir, deliverable, bowl.upper())  
+    else:
+        version_dir = base_dir + '/' + event.upper()
+        out_str = '{}/{}_{}.%04d.png'.format(version_dir, deliverable, event.upper())  
+
+
+
+    if (create_dirs):
+        if not exists(version_dir):
+            makedirs(version_dir)
+    
+    m_write.knob('file').setValue(out_str)
+
+    return
+
+def getBowlEventFromScene():
+    m_ctrl = nuke.toNode(MASTER_CTRL)
+
+    event_idx = m_ctrl.knob('event_select').getValue()
+    bowl_idx = m_ctrl.knob('bowl_select').getValue()
+
+    event = {
+        0: 'NYS',
+        1: 'Playoff',
+        2: 'Gameday'
+        }[event_idx]
+
+    bowl = {
+        0: 'Sugar',
+        1: 'Rose',
+        2: 'Orange',
+        3: 'Cotton',
+        4: 'Peach',
+        5: 'Fiesta'
+        }[bowl_idx]
+
+    if event_idx != 2:
+        return (event, bowl)
+
+    elif event_idx == 2:
+        return (event, None)
 
 
 #############################################################################
