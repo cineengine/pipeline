@@ -319,7 +319,11 @@ def playoffMatchupWin(*a):
         matchups['PEACH'] = peach_bowl_grp.getText().replace(" ", "").split(',')
         matchups['PEACH'].append(peach_bowl_bool.getValue())
 
-        build.nysOpensBuild(matchups)
+        do_cgd = cgd_chk.getValue()
+        do_nys = nys_chk.getValue()
+        do_cfp = cfp_chk.getValue()
+
+        build.nysOpensBuild(matchups, cgd=do_cgd, nys=do_nys, playoff=do_cfp)
 
     try:
         pm.deleteUI('matchup_win')
@@ -335,6 +339,12 @@ def playoffMatchupWin(*a):
     inst_text = """    Enter the matchups for each bowl, separated by commas.
         Then check the boxes to the right to indicate the two PLAYOFF bowls."""
     inst_text_ui = pm.text(label=inst_text, font='boldLabelFont', align='left', p=lay)
+    lay.redistribute()
+
+    lay = pm.horizontalLayout(p=top)
+    cgd_chk = pm.checkBox(l='Gameday', p=lay)
+    nys_chk = pm.checkBox(l='NYS', p=lay)
+    cfp_chk = pm.checkBox(l='Playoffs', p=lay)
     lay.redistribute()
 
     lay = pm.horizontalLayout(height = 10, p=top)
