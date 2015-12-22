@@ -539,7 +539,7 @@ def nysOpensBuild(matchup_dict, cgd, nys, playoff):
                 except:
                     flag = 1
                     report += '\nWARNING failed to build {} for {}'.format(deliverable, bowl)
-
+ 
 
     # Gameday only uses each team once, so we need to build a single list of teams and
     # pop elements out as needed
