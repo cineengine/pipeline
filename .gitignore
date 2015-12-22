@@ -7,6 +7,8 @@ __pycache__/
 
 *.bat
 
+PyYAML-3.11/
+
 # Distribution / packaging
 .Python
 env/
