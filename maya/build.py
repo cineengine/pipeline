@@ -24,7 +24,7 @@ reload(submit)
 
 
 cluster = "/C"
-priority = "6000"
+priority = "5000"
 
 ##############################################################################
 ### CALLED FUNCTIONS #########################################################
@@ -393,7 +393,7 @@ def nysBuild(tricode_list):
         pm.warning('Build Scene  ERROR updating team logo.  Check script editor for details.')
 
 
-def nysOpensBuild(matchup_dict, cgd=False, nys=True):
+def nysOpensBuild(matchup_dict, cgd, nys, playoff):
     report = ''
     flag = 0
     # 
@@ -409,6 +409,9 @@ def nysOpensBuild(matchup_dict, cgd=False, nys=True):
                     ('CFP_E_OPEN_SHOT_030', 'cgd', 3, '1-122')
                     }
 
+    playoff_skeletons = {
+                    ('CFP_E_OPEN_SHOT_050', 'playoff', 'matchups', '1-200')
+                    }
 
     # Make a list of all tricodes listed in the dictionary
     all_teams_list = []
@@ -422,10 +425,61 @@ def nysOpensBuild(matchup_dict, cgd=False, nys=True):
         return False
 
     nys_dict = {}
+    playoff_dict = {}
+
     for bowl in matchup_dict:
         away_team, home_team, playoff_flag = matchup_dict[bowl]
         if not playoff_flag:
             nys_dict[bowl] = matchup_dict[bowl]
+        elif playoff_flag:
+            playoff_dict[bowl] = matchup_dict[bowl]
+
+    if (playoff):
+        for bowl in playoff_dict:
+
+            print '\n\nStarting batching for {} BOWL\n'.format(bowl)
+
+            other_bowl = playoff_dict.copy()
+
+            away_team, home_team, playoff_flag = other_bowl.pop(bowl)
+
+            for b in other_bowl:
+                o_away_team, o_home_team, playoff_flag = other_bowl[b]
+
+            team_list = [o_away_team,
+                         o_home_team,
+                         away_team,
+                         home_team]
+            
+            print team_list 
+
+            for skeleton in playoff_skeletons:
+
+                # Parse skeleton infomration
+                deliverable, type_, team_sel, frange = skeleton
+
+                # Build the name of the skeleton scene
+                file_name = deliverable + '_' + type_.upper() + '_SKELETON.mb'
+                file_path = os.path.join(cfb.ANIMATION_PROJECT_DIR, deliverable, 'maya', 'scenes', file_name)
+
+
+                # Check that the skeleton exists
+                if not os.path.exists(file_path):
+                    flag = 1
+                    report += '\nWARNING could not find {}.'.format(deliverable)
+                    continue
+
+                # DO THE BUSINESS
+                try:
+                    project.Scene.open(file_=file_path, force=True)
+                    if team_sel == 'matchups':
+                        multiTeam(team_list, playoff=True, force_name=bowl)
+
+                    submit.autoSubmitAll(frange, cluster, '', priority)
+
+                    report += '\nSuccessfully modified & submitted {} scene for {}'.format(deliverable, bowl)
+                except:
+                    flag = 1
 
     # NYS elements
     if (nys):
@@ -485,7 +539,7 @@ def nysOpensBuild(matchup_dict, cgd=False, nys=True):
                 except:
                     flag = 1
                     report += '\nWARNING failed to build {} for {}'.format(deliverable, bowl)
-
+ 
 
     # Gameday only uses each team once, so we need to build a single list of teams and
     # pop elements out as needed
