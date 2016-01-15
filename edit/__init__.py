@@ -1,13 +1,70 @@
+# built-in
 import sys
 import xml.etree.ElementTree as ET
-sys.path.append('f:/dev/py')
+
+# external
+from PyQt4 import QtGui, QtCore, uic
+sys.path.append('Y:/Workspace/SCRIPTS/python')
 from timecode import Timecode
 
-
-TC_BASE = '30'
+TC_BASE = '59.94'
 DEBUG = False
-TEST_TREE = 'C:/users/wtron/desktop/Sequence 02.xml'
-TEST_CSV = 'C:/users/wtron/desktop/test.csv'
+
+QT_UI = "V:/dev/pipeline/edit/editLog.ui"
+TEST_TREE = 'V:/dev/test/Sequence 02.xml'
+TEST_CSV = 'V:/dev/test/Sequence 02.csv'
+TEST_EDL = 'V:/dev/test/CFP ELEMENT REEL SALES.edl'
+EDL_CSV = 'V:/dev/test/CFP ELEMENT REEL SALES.csv'
+
+
+class LogWidget(QtGui.QWidget):
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+        
+        uic.loadUi(QT_UI, self)
+        self.setWindowTitle('Edit Log Generator')
+        self.initUI()
+
+    def initUI(self):
+        self.input_edl = ''
+        self.input_xml = ''
+
+        self.edl_btn.clicked.connect(self.importEDL)
+        #self.xml_btn.clicked.connect(self.importXML)
+
+        self.export_btn.setEnabled(False)
+
+        self.show()
+
+    def importEDL(self, state):
+        self.input_edl = QtGui.QFileDialog.getOpenFileName()
+
+        if not self.input_edl == '':
+            self.export_btn.setEnabled(True)
+            self.xml_btn.setEnabled(False)
+
+        print self.input_edl
+
+    def importXML(self, state):
+        self.input_xml = QtGui.QFileDialog.getOpenFileName()
+        
+        if not self.input_xml == '':
+            self.export_btn.setEnabled(True)
+            self.xml_btn.setEnabled(False)
+
+        print self.input_edl
+
+    def export(self, state):
+        
+        print self.edl_btn.getEnabled()
+  
+
+
+def run():
+    app = QtGui.QApplication(sys.argv)
+    wid = LogWidget()
+    sys.exit(app.exec_())
 
 
 def frameToTC(frame, base=TC_BASE):
@@ -35,7 +92,6 @@ def sequence(in_, out_, base=TC_BASE, debug=DEBUG):
     return (in_, out_)
 
 
-# XML TO LOG PROCEDURE
 def xmlToLog(XML=TEST_TREE):
 
     # LOAD XML TREE
@@ -76,4 +132,37 @@ def xmlToLog(XML=TEST_TREE):
     # Write the CSV
     with open(TEST_CSV, 'w') as out_stream:
         out_stream.write(out_string)
+
+
+def edlToLog(EDL=TEST_EDL):
+
+    out_stream = ''
+
+    with open(TEST_EDL, 'r') as edl:
+    
+        for line in edl:
+
+            line = line.split()
+            
+            clip_name  = line[1]
+            try:
+                clip_start = line[6]
+                clip_end   = line[7]
+            except:
+                continue
+
+            '''
+            if ('SLATE' in clip_name) or \
+               ('BLK' in clip_name) or \
+               ('BLACK' in clip_name):
+                continue
+
+            else:
+            '''
+            out_stream += "{},{},{}\n".format(clip_name, clip_start, clip_end)
+
+    with open(EDL_CSV, 'w') as csv:
+        csv.write(out_stream)
+
+    return True
 
