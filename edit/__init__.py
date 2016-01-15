@@ -3,18 +3,19 @@ import sys
 import xml.etree.ElementTree as ET
 
 # external
-from PyQt4 import QtGui, QtCore, uic
 sys.path.append('Y:/Workspace/SCRIPTS/python')
+from PyQt4 import QtGui, QtCore, uic
 from timecode import Timecode
 
 TC_BASE = '59.94'
 DEBUG = False
 
 QT_UI = "V:/dev/pipeline/edit/editLog.ui"
-TEST_TREE = 'V:/dev/test/Sequence 02.xml'
-TEST_CSV = 'V:/dev/test/Sequence 02.csv'
-TEST_EDL = 'V:/dev/test/CFP ELEMENT REEL SALES.edl'
-EDL_CSV = 'V:/dev/test/CFP ELEMENT REEL SALES.csv'
+
+TEST_TREE = 'V:/dev/pipeline/edit/test_data/Sequence 02.xml'
+TEST_CSV = 'V:/dev/pipeline/edit/test_data/Sequence 02.csv'
+TEST_EDL = 'V:/dev/pipeline/edit/test_data/CFP ELEMENT REEL SALES.edl'
+EDL_CSV = 'V:/dev/pipeline/edit/test_data/CFP ELEMENT REEL SALES.csv'
 
 
 class LogWidget(QtGui.QWidget):
@@ -58,8 +59,6 @@ class LogWidget(QtGui.QWidget):
     def export(self, state):
         
         print self.edl_btn.getEnabled()
-  
-
 
 def run():
     app = QtGui.QApplication(sys.argv)
