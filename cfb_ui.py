@@ -392,7 +392,9 @@ def playoffMatchupWin(*a):
 ######################################################################
 
 def save_ui(*a):
-    if project.isScene():0
+    if project.isScene():
+        scene = project.Scene()
+        scene.save()
     else: 
         return
 
@@ -482,6 +484,7 @@ pm.menuItem(l="Update Team Logo", c=updateLogo_ui)
 pm.menuItem(divider=True)
 pm.menuItem(subMenu=True, to=True, l='Automation')
 pm.menuItem(l="Batch NYS Teams", c=buildNys_ui)
+pm.menuItem(l="Batch CFP Teams", c=buildPlayoff_ui)
 pm.menuItem(l="Batch NYS Opens", c=playoffMatchupWin)
 pm.menuItem(l="Batch SNF Teams", c=buildCity_ui)
 pm.setParent(mmenu, menu=True)

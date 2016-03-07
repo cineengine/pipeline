@@ -247,7 +247,8 @@ def selectBowlRender():
         2.0: 'ORANGE',
         3.0: 'COTTON',
         4.0: 'PEACH',
-        5.0: 'FIESTA'
+        5.0: 'FIESTA',
+        6.0: 'CHAMP'
         }[bowl]
 
     for rn in ['BOWL_TEAMS_BTY','BOWL_TEAMS_UTIL']:
@@ -403,7 +404,8 @@ def getBowlEventFromScene():
     event = {
         0: 'NYS',
         1: 'Playoff',
-        2: 'Gameday'
+        2: 'Gameday',
+        3: 'Championship'
         }[event_idx]
 
     bowl = {
@@ -412,7 +414,8 @@ def getBowlEventFromScene():
         2: 'Orange',
         3: 'Cotton',
         4: 'Peach',
-        5: 'Fiesta'
+        5: 'Fiesta',
+        6: 'Champ'
         }[bowl_idx]
 
     if event_idx != 2:
