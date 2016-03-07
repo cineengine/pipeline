@@ -77,11 +77,10 @@ def init():
 
 def setOutput(output_path = '', multipass_path = ''):
     ''' A generic (non-pipeline-specific) function that sets up basic parameters for rendering. '''
-    res    = (1280, 720)
+    res    = (1920, 1080)
     frate  = 60
     aspect = 1.7777
-    doc_   = doc()
-    rd     = doc_.GetActiveRenderData()
+    rd     = doc().GetActiveRenderData()
 
     # GLOBALS
     # Output paths
@@ -141,6 +140,7 @@ def setOutput(output_path = '', multipass_path = ''):
         rd.InsertMultipass(mp_obj)
 
     c4d.EventAdd()
+    return
 
 
 # BUILDERS ########################################################################################

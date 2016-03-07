@@ -27,8 +27,8 @@ def ls( regex=False, type_=c4d.BaseObject, obj_=None ):
     if not (obj_):
         obj_ = scene.doc().GetSelection()
 
-    # If a string is passed to obj_, the command will search the scene for it. 
-    # Optional 'guess' flag will match based on regex (i assume)
+    # If a string is passed to obj_, the command will attempt to locate it by exact name. 
+    # Optional 'regex' flag will search for the best match in the scene.
     elif (isinstance(obj_, str)):
         if not (regex):
             obj_ = scene.doc().SearchObject(obj_)
@@ -52,19 +52,4 @@ def ls( regex=False, type_=c4d.BaseObject, obj_=None ):
     return obj_
 
 
-def visible( v=None, r=None, obj_=None ):
-    ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
-    vis = {
-        True:  c4d.MODE_ON,
-        False: c4d.MODE_OFF,
-        None:  c4d.MODE_UNDEF
-    }
-    # Get selection if no object is passed
-    if not (obj_):
-        obj_ = ls()
-    # If a flag is passed, set it
-    for o in obj_:
-        o.SetEditorMode(vis[v])
-        o.SetRenderMode(vis[r])
-    return
 

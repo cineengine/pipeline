@@ -19,7 +19,6 @@ import c4d
 from pipeline.c4d import core
 
 
-
 def visible( v=None, r=None, obj_=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
     vis = {
