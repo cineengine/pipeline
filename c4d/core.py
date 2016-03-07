@@ -54,12 +54,17 @@ def ls( regex=False, type_=c4d.BaseObject, obj_=None ):
 
 def visible( v=None, r=None, obj_=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
+    vis = {
+        True:  c4d.MODE_ON,
+        False: c4d.MODE_OFF,
+        None:  c4d.MODE_UNDEF
+    }
     # Get selection if no object is passed
     if not (obj_):
         obj_ = ls()
     # If a flag is passed, set it
     for o in obj_:
-        if not (v == None): obj_.SetEditorMode(v)
-        if not (r == None): obj_.SetRenderMode(r)
+        o.SetEditorMode(vis[v])
+        o.SetRenderMode(vis[r])
     return
 
