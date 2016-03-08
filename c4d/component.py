@@ -19,16 +19,24 @@ import c4d
 from pipeline.c4d import core
 
 
-def tag( obj_=None, type_=None, name=None ):
+OVERRIDE_GROUPS = [
+    'bty',
+    'pv_off',
+    'black_hole',
+    'disable'
+    ]
 
-    ''' Creates a tag on the selected (or specified) object. '''
+
+def tag( typ=None, name=None, obj_=None ):
+    ''' Creates a tag on the selected (or specified) object. For tag types, see:
+    https://developers.maxon.net/docs/Cinema4DPythonSDK/html/types/tags.html '''
     # Get the selected object, if none is passed
     obj_ = core.ls(obj_)
     # Empty return container
     tags = []
     # Make a tag for each object
     for o in obj_:
-        tag = o.MakeTag(type_)
+        tag = o.MakeTag(typ)
         # Add the tag to the return list
         tags.append(tag)
         # Name the tag
@@ -38,6 +46,28 @@ def tag( obj_=None, type_=None, name=None ):
     c4d.EventAdd()
 
     return tags
+
+
+def take( name=None, obj_=None ):
+    ''' Create a new take / render layer. '''
+    # TakeData is a singleton container for all the takes in the scene
+    take_data = doc.GetTakeData()
+    # Add the take and name it
+    take = take_data.AddTake(name)
+
+    c4d.EventAdd()
+
+    return take
+
+
+def override( take, name=None ):
+    ''' Adds an override group to a specified take. '''
+    og = take.AddOverrideGroup()
+    if (name): og.SetName(name)
+
+    c4d.EventAdd()
+
+    return og
 
 
 def findTag():

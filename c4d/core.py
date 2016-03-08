@@ -19,7 +19,7 @@ import c4d
 from pipeline.c4d import scene
 
 
-def ls( regex=False, type_=c4d.BaseObject, obj_=None ):
+def ls( regex=False, typ=c4d.BaseObject, obj_=None ):
     ''' Returns a list of objects of specified type (default is BaseObject) that are either 
         currently selected, or passed by object reference. Both types are validated before 
         being returned as a list.'''
@@ -41,7 +41,7 @@ def ls( regex=False, type_=c4d.BaseObject, obj_=None ):
     
     # Cull any selected elements that don't match the specified object type
     for o in obj_:
-        if not (isinstance(o, type_)):
+        if not (isinstance(o, typ)):
             obj_.remove(o)
         else: continue
 
