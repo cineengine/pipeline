@@ -23,54 +23,6 @@ from pipeline.c4d import project
 from pipeline.c4d import component
 from pipeline.c4d import scene
 
-reload(core)
-reload(project)
-reload(component)
-reload(scene)
-
-
-def setCompositingTag( tag, preset, reset=False ):
-    ''' Sets a compositing tag with preset values for primary visibility, etc.'''
-    # Some overrides take place on the override group, so we store tha
-    og = tag.GetObject()
-    # In the event that this isn't called at creation, we first reset the affected values to default
-    if (reset):
-        og.SetEditorMode(c4d.MODE_UNDEF)
-        og.SetRenderMode(c4d.MODE_UNDEF)
-        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = True
-        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = True
-        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = True
-        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = True
-        tag[c4d.COMPOSITINGTAG_SEENBYGI] = True
-        tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = True
-        tag[c4d.COMPOSITINGTAG_MATTEOBJECT] = False
-        tag[c4d.COMPOSITINGTAG_MATTECOLOR] = c4d.Vector(0,0,0)
-
-    # Now the business
-    if (preset) == 'bty':
-        pass
-    elif (preset) == 'pv_off':
-        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = True
-        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = False
-        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = False
-        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = True
-        tag[c4d.COMPOSITINGTAG_SEENBYGI] = True
-    elif (preset) == 'black_hole':
-        tag[c4d.COMPOSITINGTAG_MATTEOBJECT] = True
-        tag[c4d.COMPOSITINGTAG_MATTECOLOR] = c4d.Vector(0,0,0)
-    elif (preset) == 'disable':
-        og.SetEditorMode(c4d.MODE_OFF)
-        og.SetRenderMode(c4d.MODE_OFF)
-        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = False
-        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = False
-        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = False
-        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = False
-        tag[c4d.COMPOSITINGTAG_SEENBYGI] = False
-        tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = False
-
-    c4d.EventAdd()
-    return
-
 
 def setOutput( output_path='' ):
     ''' A generic (non-pipeline-specific) function that sets up basic parameters for rendering. 
@@ -144,24 +96,22 @@ def setTakes():
 
 def sortTakes():
     ''' Sorts objects into takes (via override groups) using sorting logic stored in a proj database.'''
-    proj = project.NBA_SORT
+    sort_dict = project.NBA_SORT
     td = scene.doc().GetTakeData()
-
-    for layer_, sort in proj.iteritems():
-        for tag_ in sort['rgba']:
+    # Parse the sorting dictionary into lists of objects
+    for layer_, sort in sort_dict.iteritems():
+        for tag_ in sort['rgb']:
             rgba_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
         for tag_ in sort['pvo']:
             pvo_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
         for tag_ in sort['occ']:
             occ_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
-        for tag_ in sort['lgt']:
-            lgt_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
-
-        print rgba_obj, '\n', pvo_obj, '\n', occ_obj, '\n', lgt_obj, '\n'
-
+        for tag_ in sort['off']:
+            off_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
+        # Make the layer for sorting
         layer = component.take(layer_, set_active=True)
         start = layer.GetFirstOverrideGroup()
-
+        # Add the sorted objects to their respective render layers / takes
         for og in core.ObjectIterator(start):
             if og.GetName() == 'bty':
                 for obj in rgba_obj:
@@ -171,4 +121,7 @@ def sortTakes():
                     og.AddToGroup(td, obj)
             elif og.GetName() == 'black_hole':
                 for obj in occ_obj:
+                    og.AddToGroup(td, obj)
+            elif og.GetName() == 'disable':
+                for obj in off_obj:
                     og.AddToGroup(td, obj)

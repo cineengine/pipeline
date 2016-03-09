@@ -12,6 +12,8 @@
 #
 #    Features to be added: none
 
+import c4d
+
 # Default project parameters
 DEFAULT = {
     'res'     : (1920, 1080),
@@ -52,22 +54,22 @@ NBA = {
 # NBA sorting parameters
 NBA_SORT = {
     'homeLogo': {
-        'rgba': ['home_logo_geo'],
+        'rgb' : ['home_logo_geo'],
         'occ' : ['home_env_geo'],
         'pvo' : [''],
-        'lgt' : ['home_logo_lgt']
+        'off' : ['']
     },
     'homeEnv': {
-        'rgba': ['home_env_geo'],
+        'rgb' : ['home_env_geo'],
         'occ' : [''],
         'pvo' : ['home_logo_geo'],
-        'lgt' : ['home_env_lgt']
+        'off' : ['']
     },
     'showLogo': {
-        'rgba': ['show_logo_geo'],
+        'rgb' : ['show_logo_geo'],
         'occ' : [''],
         'pvo' : [''],
-        'lgt' : ['show_logo_lgt']
+        'off' : ['']
     }
 }
 
