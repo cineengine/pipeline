@@ -2,7 +2,8 @@
 # coding: UTF-8
 
 #    Components (sub-objects) wrapper for Cinema 4d Python API
-#    - This is a catch-all for any non-geometry component in C4D (tags, deformers, effectors, etc)
+#    - This is a set of helper functions for operating on non-geometry components in C4D (tags, 
+#      deformers, effectors, etc)
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
@@ -17,6 +18,8 @@
 import c4d
 # custom libraries
 from pipeline.c4d import core
+from pipeline.c4d import scene
+from pipeline.c4d import ops    # operations library
 
 
 OVERRIDE_GROUPS = [
@@ -44,19 +47,27 @@ def tag( typ=None, name=None, obj_=None ):
             tag[c4d.ID_BASELIST_NAME] = name
 
     c4d.EventAdd()
-
     return tags
 
 
-def take( name=None, obj_=None ):
+def take( name=None, set_active=False ):
     ''' Create a new take / render layer. '''
     # TakeData is a singleton container for all the takes in the scene
-    take_data = doc.GetTakeData()
+    take_data = scene.doc().GetTakeData()
     # Add the take and name it
-    take = take_data.AddTake(name)
+    take = take_data.AddTake(name, parent=None, cloneFrom=None)
+    # Add the default override groups to the take
+    for og_ in OVERRIDE_GROUPS:
+        og = override(take, og_)
+        # Add the compositing tag for overriding
+        tag = og.AddTag(take_data, c4d.Tcompositing, mat=None)
+        tag.SetName('VISIBILITY_OVERRIDE')
+        # ... and set the default values
+        ops.setCompositingTag( tag, og_ )
+    # If flagged, set the current take as active
+    if (set_active): take_data.SetCurrentTake(take)
 
     c4d.EventAdd()
-
     return take
 
 
@@ -66,9 +77,5 @@ def override( take, name=None ):
     if (name): og.SetName(name)
 
     c4d.EventAdd()
-
     return og
 
-
-def findTag():
-    return
