@@ -20,7 +20,7 @@ import os.path
 # custom libraries
 from pipeline.c4d import core
 from pipeline.c4d import project
-from pipeline.c4d import component
+from pipeline.c4d import component as comp
 from pipeline.c4d import scene
 
 
@@ -89,8 +89,18 @@ def setOutput( output_path='' ):
 def setTakes():
     ''' Makes the default takes (render layers) and overrides for the specified project. '''
     proj = project.DEFAULT
-    for lyr in proj['layers']:
-        take(lyr)
+    td   = scene.doc().GetTakeData()
+    for take_ in proj['layers']:
+        take = comp.take(take_, set_active=True)
+        take.SetChecked(True)
+        # Add the default override groups to the take
+        for og_ in comp.OVERRIDE_GROUPS:
+            og = comp.override(take, og_)
+            # Add the compositing tag for overriding
+            tag = og.AddTag(td, c4d.Tcompositing, mat=None)
+            tag.SetName('VISIBILITY_OVERRIDE')
+            # ... and set the default values
+            setCompositingTag( tag, og_ )
     return
 
 
@@ -125,3 +135,46 @@ def sortTakes():
             elif og.GetName() == 'disable':
                 for obj in off_obj:
                     og.AddToGroup(td, obj)
+
+
+def setCompositingTag( tag, preset, reset=False ):
+    ''' Sets a compositing tag with preset values for primary visibility, etc.'''
+    # Some overrides take place on the override group, so we store tha
+    og = tag.GetObject()
+    # In the event that this isn't called at creation, we first reset the affected values to default
+    if (reset):
+        og.SetEditorMode(c4d.MODE_UNDEF)
+        og.SetRenderMode(c4d.MODE_UNDEF)
+        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = True
+        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYGI] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = True
+        tag[c4d.COMPOSITINGTAG_MATTEOBJECT] = False
+        tag[c4d.COMPOSITINGTAG_MATTECOLOR] = c4d.Vector(0,0,0)
+
+    # Now the business
+    if (preset) == 'bty':
+        pass
+    elif (preset) == 'pv_off':
+        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = True
+        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYGI] = True
+    elif (preset) == 'black_hole':
+        tag[c4d.COMPOSITINGTAG_MATTEOBJECT] = True
+        tag[c4d.COMPOSITINGTAG_MATTECOLOR] = c4d.Vector(0,0,0)
+    elif (preset) == 'disable':
+        og.SetEditorMode(c4d.MODE_OFF)
+        og.SetRenderMode(c4d.MODE_OFF)
+        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = False
+        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYGI] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = False
+
+    c4d.EventAdd()
+    return
