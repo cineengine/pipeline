@@ -44,6 +44,20 @@ def save( file_=None ):
     return
 
 
+def backup():
+    ''' Backs up the current scene file. '''
+    doc        = doc()
+    scene_path = doc.GetDocumentPath()
+    scene_name = doc.GetDocumentName()
+
+    if not (os.path.exists(os.path.join(scene_path, scene_name))):
+        return
+    else:
+        new_path = os.path.join(scene_path, 'backup')
+        new_name = scene_name.split('.')
+        new_name[0] += 'test'
+
+
 def saveAs( file_=None ):
     ''' Saves the current scene with a new name. '''
     # Explicit output path / name
