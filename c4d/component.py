@@ -32,12 +32,12 @@ OVERRIDE_GROUPS = [
 def tag( typ=None, name=None, obj_=None ):
     ''' Creates a tag on the selected (or specified) object. For tag types, see:
     https://developers.maxon.net/docs/Cinema4DPythonSDK/html/types/tags.html '''
-    # Get the selected object, if none is passed
-    obj_ = core.ls(obj_)
+    # Parse the passed object, or get the current selection
+    obj = core.ls(obj=obj_)
     # Empty return container
     tags = []
     # Make a tag for each object
-    for o in obj_:
+    for o in obj:
         tag = o.MakeTag(typ)
         # Add the tag to the return list
         tags.append(tag)
@@ -52,7 +52,7 @@ def tag( typ=None, name=None, obj_=None ):
 def take( name=None, set_active=False ):
     ''' Create a new take / render layer. '''
     # TakeData is a singleton container for all the takes in the scene
-    td = scene.doc().GetTakeData()
+    td = core.doc().GetTakeData()
 
     # Iterate over all takes to see if one with that name already exists
     main = td.GetMainTake()

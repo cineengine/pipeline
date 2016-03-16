@@ -14,6 +14,7 @@
 
 import c4d
 
+
 # Default project parameters
 DEFAULT = {
     'res'     : (1920, 1080),
@@ -35,17 +36,17 @@ DEFAULT = {
 
 # NBA project parameters
 NBA = {
-    'res'     : DEFAULT['res'],
-    'frate'   : DEFAULT['frate'],
-    'passes'  : DEFAULT['passes'],
-    'layers'  : DEFAULT['layers'],
-    'folders' : {
-        'ae'  : [],
-        'c4d' : ['tex', 'export', 'backup'],
-        'cam' : [],
-        'maya': [],
-        'nuke': [],
-        'qt'  : [],
+    'res'     :      DEFAULT['res'],
+    'frate'   :      DEFAULT['frate'],
+    'passes'  :      DEFAULT['passes'],
+    'layers'  :      DEFAULT['layers'],
+    'folders' :      {
+        'ae'  :      [],
+        'c4d' :      ['tex', 'export', 'backup'],
+        'cam' :      [],
+        'maya':      [],
+        'nuke':      [],
+        'qt'  :      [],
         'render_2d': ['prerenders'],
         'render_3d': []
         }

@@ -20,28 +20,34 @@ import c4d
 from pipeline.c4d import scene
 
 
-def ls( typ=c4d.BaseObject, obj_=None ):
+def doc():
+    ''' Returns the active document. '''
+    return c4d.documents.GetActiveDocument()
+
+
+def ls( typ=c4d.BaseObject, name=None, obj=None ):
     ''' Returns a list of BaseObjects of specified type that are either currently selected,
         or passed by object reference. Both types are validated before being returned as a list.'''
     # Get selection if no object reference is passed
-    if not (obj_):
-        obj = scene.doc().GetSelection()
+    if not (name or obj):
+        obj = doc().GetSelection()
 
-    # If a string is passed to obj_, the command will attempt to locate it by exact name. 
-    # If an exact match isn't found, it will expand the search parameters to near-matches
-    # (Obviously this is somewhat unreliable and will require further testing.)
-    elif (isinstance(obj_, str)):
-        obj = scene.doc().SearchObject(obj_)
-        if not obj:
-            obj = scene.doc().SearchObjectInc(obj_)
+    # If a string is passed to name, the command will attempt to locate it by exact name.
+    # Since C4D allows objects to have the same name, it will always return a list
+    elif (isinstance(name, str)):
+        start = doc().GetFirstObject()
+        obj   = []
+        for o in ObjectIterator(start):
+            if o.GetName() == name:
+                obj.append(o)
 
     # If a passed object is not already a list, we force the recast
-    if not (isinstance(o, list)):
+    if not (isinstance(obj, list)):
         obj = [obj]
     
     # Cull any selected elements that don't match the specified object type
     for o in obj:
-        if not (isinstance(o, c4d.BaseObject)):
+        if not (isinstance(o, typ)):
             obj.remove(o)
         else: continue
 
@@ -52,17 +58,18 @@ def ls( typ=c4d.BaseObject, obj_=None ):
     return obj
 
 
-def lsTags( name=None, typ=None ):
+def lsTags( name=None, typ=None, obj=None ):
     ''' Returns a list of tags in the scene.  Search parameters based on tag type or tag name.  At
     least one must be included in the command. '''
     if (name==None) and (typ==None):
         return
     return_tags = []
-    # Search all objects in the scene for tags
-    first = scene.doc().GetFirstObject()
-    for obj in ObjectIterator(first):
+    # If an object reference is passed, search only its heirarchy
+    if not (obj): obj = doc().GetFirstObject()
+
+    for o in ObjectIterator(obj):
         # Search each object for tags
-        for tag in TagIterator(obj):
+        for tag in TagIterator(o):
             # Compare the tag to requirements
             if (tag.GetName() == name) and (tag.GetType() == typ):
                 return_tags.append(tag)

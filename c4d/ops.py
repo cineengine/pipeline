@@ -27,7 +27,7 @@ from pipeline.c4d import scene
 def setOutput( output_path='' ):
     ''' A generic (non-pipeline-specific) function that sets up basic parameters for rendering. 
     Specifics are pulled from 'project' global parameters module.'''
-    doc    = scene.doc()
+    doc    = core.doc()
     proj   = project.DEFAULT
     res    = (proj['res'][0], proj['res'][1])
     frate  = proj['frate']
@@ -89,7 +89,7 @@ def setOutput( output_path='' ):
 def setTakes():
     ''' Makes the default takes (render layers) and overrides for the specified project. '''
     proj = project.DEFAULT
-    td   = scene.doc().GetTakeData()
+    td   = core.doc().GetTakeData()
     for take_ in proj['layers']:
         take = comp.take(take_, set_active=True)
         take.SetChecked(True)
@@ -107,7 +107,7 @@ def setTakes():
 def sortTakes():
     ''' Sorts objects into takes (via override groups) using sorting logic stored in a proj database.'''
     sort_dict = project.NBA_SORT
-    td = scene.doc().GetTakeData()
+    td = core.doc().GetTakeData()
     # Parse the sorting dictionary into lists of objects
     for layer_, sort in sort_dict.iteritems():
         for tag_ in sort['rgb']:
