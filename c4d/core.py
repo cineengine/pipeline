@@ -19,6 +19,14 @@ import os.path
 import c4d
 
 
+OVERRIDE_GROUPS = [
+    'bty',
+    'pv_off',
+    'black_hole',
+    'disable'
+    ]
+
+
 # SIMPLE OPERATIONS ###############################################################################
 def new():
     ''' Create a new empty document. '''
@@ -128,7 +136,14 @@ def take( name=None, set_active=False ):
 
     # Otherwise add the take and name it
     take = td.AddTake(name, parent=None, cloneFrom=None)
-
+    # Add the default override groups to the take
+    for og_ in OVERRIDE_GROUPS:
+        og = override(take, og_)
+        # Add the compositing tag for overriding
+        tag = og.AddTag(td, c4d.Tcompositing, mat=None)
+        tag.SetName('VISIBILITY_OVERRIDE')
+        # ... and set the default values
+        setCompositingTag( tag, og_ )
     # If flagged, set the current take as active
     if (set_active): td.SetCurrentTake(take)
 

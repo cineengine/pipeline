@@ -31,6 +31,12 @@ DEFAULT = {
         ]
 }
 
+OVERRIDE_GROUPS = [
+    'bty',
+    'pv_off',
+    'black_hole',
+    'disable'
+    ]
 
 # NBA sorting parameters
 NBA_SORT = {
