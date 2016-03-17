@@ -3,21 +3,64 @@
 
 #    Core wrapper for Cinema 4d Python API
 #    - This wraps C4D functionality of a broad range of object operations with common conditionals
-#      and error handling.  (Selection, visibility, etc.)
+#      and error handling.  These functions have no other dependencies besides Maxon's c4d module.
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.1
-#    Date:    03/07/2016
+#    Version: 0.2
+#    Date:    03/17/2016
 #
 #    This version is still in progress.    
 #
 #    Features to be added:  a lot
 
+import os.path
 # internal libraries
 import c4d
-# custom libraries
-from pipeline.c4d import scene
+
+
+# SIMPLE OPERATIONS ###############################################################################
+def new():
+    ''' Create a new empty document. '''
+    c4d.CallCommand(12094, 12094)
+    return
+
+
+def open( file_=None ):
+    ''' Open the specified scene.  If no file is specified, open a dialog. '''
+    if (file_):
+        c4d.documents.LoadFile(file_)
+    else:
+        c4d.CallCommand(12095, 12095)
+
+
+def save( file_=None ):
+    ''' Saves the current scene. '''
+    c4d.CallCommand(12098, 12098)
+    return
+
+
+def saveAs( file_ ):
+    ''' Saves the current scene with a new name. '''
+    # Explicit output path / name
+    if (file_):
+        save_path = os.path.dirname(file_)
+        save_file = os.path.basename(file_)
+
+        doc().SetDocumentPath(save_path)
+        doc().SetDocumentName(save_file)
+
+        c4d.CallCommand(12098, 12098)
+
+    # Dialog
+    else: pass
+    return
+
+
+def close():
+    ''' Closes the current scene. '''
+    c4d.CallCommand(12664, 12664)
+    return
 
 
 def doc():
@@ -25,6 +68,141 @@ def doc():
     return c4d.documents.GetActiveDocument()
 
 
+def visiblity( v=None, r=None, obj_=None ):
+    ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
+    vis = {
+        True:  c4d.MODE_ON,
+        False: c4d.MODE_OFF,
+        None:  c4d.MODE_UNDEF
+    }
+    # Get selection if no object is passed
+    if not (obj_):
+        obj_ = ls()
+    # If a flag is passed, set it
+    for o in obj_:
+        o.SetEditorMode(vis[v])
+        o.SetRenderMode(vis[r])
+    return
+
+
+def merge( file_=None ):
+    ''' Imports a file into the scene. '''
+    if (file_):
+        c4d.documents.LoadFile(file_)
+    else:
+        c4d.CallCommand(12096, 12096)
+    return
+
+
+def tag( typ=None, name=None, obj_=None ):
+    ''' Creates a tag on the selected (or specified) object. For tag types, see:
+    https://developers.maxon.net/docs/Cinema4DPythonSDK/html/types/tags.html '''
+    # Parse the passed object, or get the current selection
+    obj = ls(obj=obj_)
+    # Empty return container
+    tags = []
+    # Make a tag for each object
+    for o in obj:
+        tag = o.MakeTag(typ)
+        # Add the tag to the return list
+        tags.append(tag)
+        # Name the tag
+        if name:
+            tag[c4d.ID_BASELIST_NAME] = name
+
+    c4d.EventAdd()
+    return tags
+
+
+# TAKE / RENDER LAYER UTILITIES ###################################################################
+def take( name=None, set_active=False ):
+    ''' Create a new take / render layer. '''
+    # TakeData is a singleton container for all the takes in the scene
+    td = doc().GetTakeData()
+
+    # Iterate over all takes to see if one with that name already exists
+    main = td.GetMainTake()
+    for take in ObjectIterator(main):
+        if (take.GetName() == name):
+            return take
+
+    # Otherwise add the take and name it
+    take = td.AddTake(name, parent=None, cloneFrom=None)
+
+    # If flagged, set the current take as active
+    if (set_active): td.SetCurrentTake(take)
+
+    c4d.EventAdd()
+    return take
+
+
+def override( take, name=None ):
+    ''' Adds an override group to a specified take. '''
+    og = take.AddOverrideGroup()
+    if (name): og.SetName(name)
+
+    c4d.EventAdd()
+    return og
+
+
+def setCompositingTag( tag, preset, reset=False ):
+    ''' Sets a compositing tag with preset values for primary visibility, etc.'''
+    # Some overrides take place on the override group, so we store tha
+    og = tag.GetObject()
+    # In the event that this isn't called at creation, we first reset the affected values to default
+    if (reset):
+        og.SetEditorMode(c4d.MODE_UNDEF)
+        og.SetRenderMode(c4d.MODE_UNDEF)
+        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = True
+        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYGI] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = True
+        tag[c4d.COMPOSITINGTAG_MATTEOBJECT] = False
+        tag[c4d.COMPOSITINGTAG_MATTECOLOR] = c4d.Vector(0,0,0)
+
+    # Now the business
+    if (preset) == 'bty':
+        pass
+    elif (preset) == 'pv_off':
+        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = True
+        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = True
+        tag[c4d.COMPOSITINGTAG_SEENBYGI] = True
+    elif (preset) == 'black_hole':
+        tag[c4d.COMPOSITINGTAG_MATTEOBJECT] = True
+        tag[c4d.COMPOSITINGTAG_MATTECOLOR] = c4d.Vector(0,0,0)
+    elif (preset) == 'disable':
+        og.SetEditorMode(c4d.MODE_OFF)
+        og.SetRenderMode(c4d.MODE_OFF)
+        tag[c4d.COMPOSITINGTAG_CASTSHADOW] = False
+        tag[c4d.COMPOSITINGTAG_RECEIVESHADOW] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYGI] = False
+        tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = False
+
+    c4d.EventAdd()
+    return
+
+
+def createRenderData( rd, name ):
+    ''' Inserts a RenderData document into the scene, overwriting any other document with the same
+    name.  Seriously, fuck C4D sometimes. '''
+    start = doc().GetFirstRenderData()
+    for rd_ in ObjectIterator(start):
+        if rd_.GetName() == name:
+            rd_.Remove()
+    rd.SetName(name)
+    doc().InsertRenderData(rd)
+    doc().SetActiveRenderData(rd)
+    c4d.EventAdd()
+    return
+
+
+# OBJECT-PARSING / SELECTION UTILITIES ############################################################
 def ls( typ=c4d.BaseObject, name=None, obj=None ):
     ''' Returns a list of BaseObjects of specified type that are either currently selected,
         or passed by object reference. Both types are validated before being returned as a list.'''
@@ -51,10 +229,9 @@ def ls( typ=c4d.BaseObject, name=None, obj=None ):
             obj.remove(o)
         else: continue
 
+    # Returns a list of the specified object type, or none for an empty list
     if obj == []:
         obj = None
-
-    # Returns a list of the specified object type
     return obj
 
 
@@ -81,27 +258,9 @@ def lsTags( name=None, typ=None, obj=None ):
     return return_tags
 
 
-def visiblity( v=None, r=None, obj_=None ):
-    ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
-    vis = {
-        True:  c4d.MODE_ON,
-        False: c4d.MODE_OFF,
-        None:  c4d.MODE_UNDEF
-    }
-    # Get selection if no object is passed
-    if not (obj_):
-        obj_ = core.ls()
-    # If a flag is passed, set it
-    for o in obj_:
-        o.SetEditorMode(vis[v])
-        o.SetRenderMode(vis[r])
-    return
-
-
 ### The following iterators were borrowed directly from Martin Weber via cgrebel.com.
 ### All credit goes to him -- thank you Martin! -- I could not find any license usage for this code.
 ### http://cgrebel.com/2015/03/c4d-python-scene-iterator/
-
 class ObjectIterator:
     ''' Iterates over all BaseObjects below the input object in the hierarchy, including children. '''
     def __init__(self, baseObject):
@@ -170,4 +329,4 @@ class MaterialIterator:
 
         mat = self.currentMaterial
         self.currentMaterial = self.currentMaterial.GetNext()
-        return mat
+        return ma
