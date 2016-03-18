@@ -5,8 +5,8 @@
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.1
-#    Date:    03/07/2016
+#    Version: 0.2
+#    Date:    03/18/2016
 #
 #    This version represents core functionality.    
 #
