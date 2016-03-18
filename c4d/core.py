@@ -142,6 +142,7 @@ def take( name=None, set_active=False ):
         # Add the compositing tag for overriding
         tag = og.AddTag(td, c4d.Tcompositing, mat=None)
         tag.SetName('VISIBILITY_OVERRIDE')
+        tag.SetChecked(True)
         # ... and set the default values
         setCompositingTag( tag, og_ )
     # If flagged, set the current take as active
@@ -344,4 +345,4 @@ class MaterialIterator:
 
         mat = self.currentMaterial
         self.currentMaterial = self.currentMaterial.GetNext()
-        return ma
+        return mat
