@@ -21,17 +21,12 @@ import os.path
 from pipeline.c4d import core
 from pipeline.c4d import database
 from pipeline.c4d import error
-from pipeline.c4d import ui
-
-reload(core)
-
 
 
 # OPERATIONS ######################################################################################
 # Each of these operations is dependent on a scene_data object, which is a dictionary parsed from a
 # __SCENE__ node's annotation tag.  In other words, these are pipeline-specific operations, and 
 # (with few exceptions) cannot be run outside of that context
-
 def saveWithBackup(scene_data):
     ''' Backs up the current scene file. '''
     def increment(filename):
@@ -111,7 +106,7 @@ def init(set_output=False, make_folders=False, save=False):
     scene_ctrl, scene_tag = getSceneCtrl()
     # No control nodes exist (make one via user query)
     if not (scene_ctrl):
-        dlg = ui.ProjectInitWindow()
+        dlg = ProjectInitWindow()
         if dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50):
             pass
         else: return
@@ -310,6 +305,132 @@ def sortTakes(scene_data):
                     og.AddToGroup(td, obj)
 
 
+# UI OBJECTS ######################################################################################
+class ProjectInitWindow(gui.GeDialog):
+    def __init__(self):
+        self.LBL_SHOW_NAME    = 1000
+        self.LBL_PROJECT_NAME = 1001
+        self.LBL_SCENE_NAME   = 1002
+        self.LBL_FRAMERATE    = 1003
+        self.LBL_PREVIEW_DIR  = 1004
+        self.LBL_PREVIEW_SCN  = 1005
+
+        self.TXT_PROJECT_NAME = 2001
+        self.TXT_SCENE_NAME   = 2002
+        self.TXT_PREVIEW_DIR  = 2004
+        self.TXT_PREVIEW_SCN  = 2005
+
+        self.DRP_SHOW_NAME    = 3000
+        self.RDO_FRAMERATE    = 3003
+        self.RDO_FRAMERATE_T  = 3030
+        self.RDO_FRAMERATE_S  = 3060
+        self.BTN_EXECUTE      = 3009
+        self.BTN_CANCEL       = 3010
+
+        self.GROUP_MAIN       = 9000
+        self.GROUP_BTNS       = 9001
+
+        self.PRODUCTION_ID    = {}
+        self.PRODUCTION_ITR   = 10000
+        for proj in database.PRODUCTIONS:
+            self.PRODUCTION_ID[self.PRODUCTION_ITR] = proj
+            self.PRODUCTION_ITR += 1
 
 
+    def CreateLayout(self):
+        # Headers
+        self.SetTitle('Create New Project')        
+        self.GroupBegin(self.GROUP_MAIN, c4d.BFH_LEFT, 2, 1)
+        # Show selection dropdown
+        self.AddStaticText(self.LBL_SHOW_NAME, c4d.BFH_LEFT, name='Select Production:')
+        self.AddComboBox(self.DRP_SHOW_NAME, c4d.BFH_LEFT, 600)
+        for proj in self.PRODUCTION_ID:
+            self.AddChild(self.DRP_SHOW_NAME, proj, self.PRODUCTION_ID[proj])
+        # Project text field
+        self.AddStaticText(self.LBL_PROJECT_NAME, c4d.BFH_LEFT, name='Project Name:')
+        self.AddEditText(self.TXT_PROJECT_NAME, c4d.BFH_LEFT, 600)
+        # Scene text field
+        self.AddStaticText(self.LBL_SCENE_NAME, c4d.BFH_LEFT, name='Scene Tag:')
+        self.AddEditText(self.TXT_SCENE_NAME, c4d.BFH_LEFT, 200)
+        # Framerate radio button
+        self.AddStaticText(self.LBL_FRAMERATE, c4d.BFH_LEFT, name='Framerate:')
+        self.AddRadioGroup(self.RDO_FRAMERATE, c4d.BFH_LEFT, rows=2)
+        self.AddChild(self.RDO_FRAMERATE, self.RDO_FRAMERATE_T, '30 fps')
+        self.AddChild(self.RDO_FRAMERATE, self.RDO_FRAMERATE_S, '60 fps')
+        # Preview area
+        self.AddStaticText(self.LBL_PREVIEW_SCN, c4d.BFH_LEFT, name='Scene Name:')
+        self.AddEditText(self.TXT_PREVIEW_SCN, c4d.BFH_LEFT, 600)
+        self.Enable(self.TXT_PREVIEW_SCN, 0)
+        self.AddStaticText(self.LBL_PREVIEW_DIR, c4d.BFH_LEFT, name='Proj Folder:')
+        self.AddEditText(self.TXT_PREVIEW_DIR, c4d.BFH_LEFT, 600)
+        self.Enable(self.TXT_PREVIEW_DIR, 0)
+        self.GroupEnd()
+        # Execute btn
+        self.GroupBegin(self.GROUP_BTNS, c4d.BFH_RIGHT, 2, 1)
+        self.AddButton(self.BTN_EXECUTE, c4d.BFH_SCALE, name='Create Project')
+        self.AddButton(self.BTN_CANCEL, c4d.BFH_SCALE, name='Cancel')
+        # Footers
+        self.GroupEnd()
+        self.ok = False
+        return True
 
+
+    def Command(self, id, msg):
+        if id == self.BTN_EXECUTE:
+            self.ok = True
+            self.execute()
+            self.Close()
+        elif id == self.BTN_CANCEL:
+            self.Close()
+        elif (id == self.TXT_PROJECT_NAME or
+              id == self.TXT_SCENE_NAME or
+              id == self.DRP_SHOW_NAME):
+            self.preview()
+        return True
+
+
+    @classmethod
+    def makeSceneCtrl(self):
+        ''' Makes a scene control node -- a null called '__SCENE__' '''
+        doc = core.doc()
+        scene_ctrl = c4d.BaseObject(c4d.Onull)
+        doc.InsertObject(scene_ctrl)
+        scene_ctrl.SetName('__SCENE__')
+        scene_tag = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
+        c4d.EventAdd()
+        return (scene_ctrl, scene_tag)
+
+
+    def execute(self):
+        show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
+        proj_name  = self.GetString(self.TXT_PROJECT_NAME)
+        scene_name = self.GetString(self.TXT_SCENE_NAME)
+        framerate  = self.GetInt32(self.RDO_FRAMERATE)-3000
+
+        scene_ctrl, tag   = self.makeSceneCtrl()
+        annotation        = "Production: {}\nProject: {}\nScene: {}\nFramerate: {}\nVersion: {}"
+        annotation        = annotation.format(show_name, proj_name, scene_name, str(framerate), str(1))
+        tag[c4d.ANNOTATIONTAG_TEXT] = annotation
+
+        scene_data = getSceneData()
+        makeFolders(scene_data)
+        setOutput(scene_data)
+        saveWithBackup(scene_data)
+        return True
+
+
+    def preview(self):
+        show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
+        proj_name  = self.GetString(self.TXT_PROJECT_NAME)
+        scene_name = self.GetString(self.TXT_SCENE_NAME)
+        prod_data  = database.PRODUCTIONS[show_name]['project']
+
+        scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
+        proj_prev  = os.path.relpath(
+            "{}\\{}\\c4d\\".format(prod_data, proj_name),
+            "\\\\cagenas\\workspace\\MASTER_PROJECTS\\"            
+            )
+
+        self.SetString(self.TXT_PREVIEW_DIR, proj_prev)
+        self.SetString(self.TXT_PREVIEW_SCN, scene_prev)
+        return True

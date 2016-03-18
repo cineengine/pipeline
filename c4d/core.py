@@ -76,7 +76,7 @@ def doc():
     return c4d.documents.GetActiveDocument()
 
 
-def visiblity( v=None, r=None, obj_=None ):
+def visibility( obj_=None, v=None, r=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
     vis = {
         True:  c4d.MODE_ON,
@@ -102,7 +102,7 @@ def merge( file_=None ):
     return
 
 
-def tag( typ=None, name=None, obj_=None ):
+def tag( obj_=None, typ=None, name=None ):
     ''' Creates a tag on the selected (or specified) object. For tag types, see:
     https://developers.maxon.net/docs/Cinema4DPythonSDK/html/types/tags.html '''
     # Parse the passed object, or get the current selection
@@ -218,7 +218,7 @@ def createRenderData( rd, name ):
 
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
-def ls( typ=c4d.BaseObject, name=None, obj=None ):
+def ls( obj=None, typ=c4d.BaseObject, name=None ):
     ''' Returns a list of BaseObjects of specified type that are either currently selected,
         or passed by object reference. Both types are validated before being returned as a list.'''
     # Get selection if no object reference is passed
@@ -250,7 +250,7 @@ def ls( typ=c4d.BaseObject, name=None, obj=None ):
     return obj
 
 
-def lsTags( name=None, typ=None, obj=None ):
+def lsTags( obj=None, name=None, typ=None ):
     ''' Returns a list of tags in the scene.  Search parameters based on tag type or tag name.  At
     least one must be included in the command. '''
     if (name==None) and (typ==None):
