@@ -17,6 +17,7 @@
 import os.path
 # internal libraries
 import c4d
+from c4d.modules import render
 
 
 OVERRIDE_GROUPS = [
@@ -76,6 +77,16 @@ def doc():
     return c4d.documents.GetActiveDocument()
 
 
+def merge( file_=None ):
+    ''' Imports a file into the scene. '''
+    if (file_):
+        c4d.documents.LoadFile(file_)
+    else:
+        c4d.CallCommand(12096, 12096)
+    return
+
+
+# FLAGS & TAGS ####################################################################################
 def visibility( obj_=None, v=None, r=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
     vis = {
@@ -90,15 +101,6 @@ def visibility( obj_=None, v=None, r=None ):
     for o in obj_:
         o.SetEditorMode(vis[v])
         o.SetRenderMode(vis[r])
-    return
-
-
-def merge( file_=None ):
-    ''' Imports a file into the scene. '''
-    if (file_):
-        c4d.documents.LoadFile(file_)
-    else:
-        c4d.CallCommand(12096, 12096)
     return
 
 
@@ -122,6 +124,57 @@ def tag( obj_=None, typ=None, name=None ):
     return tags
 
 
+# MATERIALS & TEXTURES ############################################################################
+def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
+    ''' Changes the texture on a material's specified channel.  Defaults to the color channel.
+    C:\Program Files\MAXON\CINEMA 4D R17\resource\modules\c4dplugin\description\mmaterial.h '''
+    if isinstance(mat, str):
+        for mat_ in MaterialIterator(doc()):
+            if mat_.GetName() == mat:
+                mat = mat_
+                break
+
+    if not isinstance(mat, c4d.Material):
+        return
+
+    if type(channel) == int:
+        tex = c4d.BaseList2D(c4d.Xbitmap)
+        tex[c4d.BITMAPSHADER_FILENAME] = tex_path
+        mat[channel] = tex
+        mat.InsertShader(tex)
+
+    elif channel == ('reflect' or 'reflection'):
+        refl_shd = mat.GetAllReflectionShaders()
+        for rs in refl_shd:
+            rs[c4d.BITMAPSHADER_FILENAME] = tex_path
+
+    mat.Message(c4d.MSG_UPDATE)
+    mat.Update(1,1)
+    c4d.EventAdd()
+    return True
+
+
+def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR ):
+    ''' Changes the color on a material's specified channel.  Defaults to the diffuse color channel.'''
+    if isinstance(mat, str):
+        for mat_ in MaterialIterator(doc()):
+            if mat_.GetName() == mat:
+                mat = mat_
+                break
+
+    if not isinstance(mat, c4d.Material):
+        return
+
+    if type(channel) == int:
+        mat[channel] = vector
+
+    mat.Message(c4d.MSG_UPDATE)
+    mat.Update(1,1)
+    c4d.EventAdd()
+    return True
+
+
+
 # TAKE / RENDER LAYER UTILITIES ###################################################################
 def take( name=None, set_active=False ):
     ''' Create a new take / render layer. '''
@@ -142,11 +195,11 @@ def take( name=None, set_active=False ):
         # Add the compositing tag for overriding
         tag = og.AddTag(td, c4d.Tcompositing, mat=None)
         tag.SetName('VISIBILITY_OVERRIDE')
-        tag.SetChecked(True)
         # ... and set the default values
         setCompositingTag( tag, og_ )
     # If flagged, set the current take as active
     if (set_active): td.SetCurrentTake(take)
+    take.SetChecked(True)
 
     c4d.EventAdd()
     return take
