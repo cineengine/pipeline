@@ -208,7 +208,7 @@ def setOutput( scene_data=None ):
     # GLOBAL SETTINGS
     doc.SetFps(frate)
     # Output paths
-    rd[c4d.RDATA_PATH]            = output_path
+    rd[c4d.RDATA_PATH]            = str(output_path)
     # Resolution & frame rate
     rd[c4d.RDATA_XRES]            = res[0]
     rd[c4d.RDATA_YRES]            = res[1]
@@ -234,7 +234,7 @@ def setOutput( scene_data=None ):
     # MULTIPASS
     # Output paths
     if not (output_path == ''):
-        rd[c4d.RDATA_MULTIPASS_FILENAME] = multi_path
+        rd[c4d.RDATA_MULTIPASS_FILENAME] = str(multi_path)
     # Format options
     rd[c4d.RDATA_MULTIPASS_SAVEFORMAT] = c4d.FILTER_PNG
     rd[c4d.RDATA_MULTIPASS_SAVEDEPTH]  = c4d.RDATA_FORMATDEPTH_16
