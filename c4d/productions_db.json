@@ -1,0 +1,29 @@
+{
+    "DEFAULT":  {
+        "xres"      : 1280,
+        "yres"      : 720,
+        "frate"     : 60,
+        "layers"    : ["main"],
+        "passes"    : [3,4,6,7,109,113,114,115,116,100],
+        "folders"   : {
+            "ae"    : [],
+            "c4d"   : ["tex", "export", "backup"],
+            "cam"   : [],
+            "maya"  : [],
+            "nuke"  : [],
+            "qt"    : [],
+            "render_2d": ["prerenders"],
+            "render_3d": []
+            }
+    },
+
+    "NBA_2016": {
+        "project"   : "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\NBA_2016\\001_PROJECTS\\000_Animation",
+        "assets"    : "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\001_3D_ASSETS",
+        "teams"     : "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
+        "xres"      : 1920,
+        "yres"      : 1080,
+        "frate"     : 30
+    }
+    
+}

@@ -164,7 +164,8 @@ def getSceneCtrl():
 
 def getProductionData(scene_data):
     ''' Retrieves production database based on scene data. '''
-    prod_data = database.PRODUCTIONS[scene_data['Production']]
+    #prod_data = database.PRODUCTIONS[scene_data['Production']]
+    prod_data = database.getProduction(scene_data['Production'])
     return prod_data
 
 
@@ -174,7 +175,7 @@ def setOutput( scene_data=None ):
     Specifics are pulled from 'project' global parameters module.'''
     if (scene_data == None):
         output_path = ''
-        prod_data   = database.DEFAULT
+        prod_data   = database.getProduction('DEFAULT')
     else:
         prod_data = getProductionData(scene_data)
         prod_data['frate'] = scene_data['Framerate']
@@ -197,7 +198,7 @@ def setOutput( scene_data=None ):
             '{}_{}'.format(scene_data['Scene'], '$take')
             )
 
-    res    = (prod_data['res'][0], prod_data['res'][1])
+    res    = (prod_data['xres'], prod_data['yres'])
     frate  = int(prod_data['frate'])
     aspect = 1.7777
 
@@ -332,7 +333,7 @@ class ProjectInitWindow(gui.GeDialog):
 
         self.PRODUCTION_ID    = {}
         self.PRODUCTION_ITR   = 10000
-        for proj in database.PRODUCTIONS:
+        for proj in database.getAllProductions():
             self.PRODUCTION_ID[self.PRODUCTION_ITR] = proj
             self.PRODUCTION_ITR += 1
 
@@ -423,7 +424,12 @@ class ProjectInitWindow(gui.GeDialog):
         show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
         proj_name  = self.GetString(self.TXT_PROJECT_NAME)
         scene_name = self.GetString(self.TXT_SCENE_NAME)
-        prod_data  = database.PRODUCTIONS[show_name]['project']
+        prod_data  = database.getProduction(show_name)['project']
+
+        proj_name  = proj_name.replace(' ', '_')
+        scene_name = scene_name.replace(' ', '_')
+        self.SetString(self.TXT_PROJECT_NAME, proj_name)
+        self.SetString(self.TXT_SCENE_NAME, scene_name)
 
         scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
         proj_prev  = os.path.relpath(

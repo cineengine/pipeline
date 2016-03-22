@@ -142,7 +142,6 @@ def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
         tex[c4d.BITMAPSHADER_FILENAME] = tex_path
         mat[channel] = tex
         mat.InsertShader(tex)
-
     elif channel == ('reflect' or 'reflection'):
         refl_shd = mat.GetAllReflectionShaders()
         for rs in refl_shd:
