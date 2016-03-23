@@ -1,0 +1,212 @@
+{
+    "PHI": {
+        "city": "Philadelphia",
+        "nick": "76ers",
+        "primary": [0,107,182],
+        "secondary": [236,22,75],
+        "tertiary": [0,107,182]
+    },
+    "MIL": {
+        "city": "Milwaukee",
+        "nick": "Bucks",
+        "primary": [0,70,27],
+        "secondary": [237,224,197],
+        "tertiary": [6,25,34]
+    },
+    "CHI": {
+        "city": "Chicago",
+        "nick": "Bulls",
+        "primary": [17,17,17],
+        "secondary": [169,25,25],
+        "tertiary": [133,19,19]
+    },
+    "CLE": {
+        "city": "Cleveland",
+        "nick": "Cavaliers",
+        "primary": [134,0,56],
+        "secondary": [253,186,49],
+        "tertiary": [253,186,49]
+    },
+    "BOS": {
+        "city": "Boston",
+        "nick": "Celtics",
+        "primary": [0,118,66],
+        "secondary": [230,230,230],
+        "tertiary": [0,118,66]
+    },
+    "LAC": {
+        "city": "Los Angeles",
+        "nick": "Clippers",
+        "primary": [0,107,182],
+        "secondary": [237,23,76],
+        "tertiary": [0,107,182]
+    },
+    "MEM": {
+        "city": "Memphis",
+        "nick": "Grizzlies",
+        "primary": [74,113,157],
+        "secondary": [22,37,69],
+        "tertiary": [211,150,37]
+    },
+    "ATL": {
+        "city": "Atlanta",
+        "nick": "Hawks",
+        "primary": [224,58,62],
+        "secondary": [16,16,16],
+        "tertiary": [16,16,16]
+    },
+    "MIA": {
+        "city": "Miami",
+        "nick": "Heat",
+        "primary": [19,15,15],
+        "secondary": [156,47,52],
+        "tertiary": [156,47,52]
+    },
+    "CHA": {
+        "city": "Charlotte",
+        "nick": "Hornets",
+        "primary": [29,16,96],
+        "secondary": [0,140,160],
+        "tertiary": [29,16,96]
+    },
+    "UTAH": {
+        "city": "Utah",
+        "nick": "Jazz",
+        "primary": [0,43,92],
+        "secondary": [252,176,52],
+        "tertiary": [0,72,18]
+    },
+    "SAC": {
+        "city": "Sacramento",
+        "nick": "Kings",
+        "primary": [67,48,132],
+        "secondary": [188,197,201],
+        "tertiary": [67,48,132]
+    },
+    "NYK": {
+        "city": "New York",
+        "nick": "Knicks",
+        "primary": [0,108,183],
+        "secondary": [247,132,41],
+        "tertiary": [0,108,183]
+    },
+    "LAL": {
+        "city": "Los Angeles",
+        "nick": "Lakers",
+        "primary": [237,165,33],
+        "secondary": [73,39,104],
+        "tertiary": [73,39,104]
+    },
+    "ORL": {
+        "city": "Orlando",
+        "nick": "Magic",
+        "primary": [4,116,175],
+        "secondary": [180,187,191],
+        "tertiary": [3,99,157]
+    },
+    "DAL": {
+        "city": "Dallas",
+        "nick": "Mavericks",
+        "primary": [17,52,133],
+        "secondary": [133,133,132],
+        "tertiary": [133,133,132]
+    },
+    "BKN": {
+        "city": "Brooklyn",
+        "nick": "Nets",
+        "primary": [16,16,16],
+        "secondary": [245,245,245],
+        "tertiary": [145,145,145]
+    },
+    "DEN": {
+        "city": "Denver",
+        "nick": "Nuggets",
+        "primary": [77,144,205],
+        "secondary": [228,182,54],
+        "tertiary": [0,117,184]
+    },
+    "IND": {
+        "city": "Indiana",
+        "nick": "Pacers",
+        "primary": [255,199,87],
+        "secondary": [4,15,79],
+        "tertiary": [4,15,79]
+    },
+    "NO": {
+        "city": "New Orleans",
+        "nick": "Pelicans",
+        "primary": [0,42,92],
+        "secondary": [229,25,55],
+        "tertiary": [181,152,90]
+    },
+    "DET": {
+        "city": "Detroit",
+        "nick": "Pistons",
+        "primary": [25,77,152],
+        "secondary": [219,28,62],
+        "tertiary": [25,77,152]
+    },
+    "TOR": {
+        "city": "Toronto",
+        "nick": "Raptors",
+        "primary": [206,17,65],
+        "secondary": [6,24,33],
+        "tertiary": [255,255,255]
+    },
+    "HOU": {
+        "city": "Houston",
+        "nick": "Rockets",
+        "primary": [225,227,225],
+        "secondary": [187,41,69],
+        "tertiary": [150,150,150]
+    },
+    "SAS": {
+        "city": "San Antonio",
+        "nick": "Spurs",
+        "primary": [8,8,8],
+        "secondary": [186,195,201],
+        "tertiary": [186,195,201]
+    },
+    "PHX": {
+        "city": "Phoenix",
+        "nick": "Suns",
+        "primary": [249,160,27],
+        "secondary": [200,97,56],
+        "tertiary": [176,83,48]
+    },
+    "OKC": {
+        "city": "Oklahoma City",
+        "nick": "Thunder",
+        "primary": [225,88,61],
+        "secondary": [16,46,98],
+        "tertiary": [225,88,61]
+    },
+    "MIN": {
+        "city": "Minnesota",
+        "nick": "Timberwolves",
+        "primary": [0,80,131],
+        "secondary": [0,169,79],
+        "tertiary": [0,169,79]
+    },
+    "POR": {
+        "city": "Portland",
+        "nick": "Trailblazers",
+        "primary": [16,16,16],
+        "secondary": [166,29,31],
+        "tertiary": [16,16,16]
+    },
+    "GSW": {
+        "city": "Golden State",
+        "nick": "Warriors",
+        "primary": [0,104,179],
+        "secondary": [252,176,52],
+        "tertiary": [0,104,179]
+    },
+    "WAS": {
+        "city": "Washington",
+        "nick": "Wizards",
+        "primary": [0,43,92],
+        "secondary": [226,23,55],
+        "tertiary": [0,43,92]
+    }
+}

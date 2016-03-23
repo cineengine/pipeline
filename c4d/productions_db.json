@@ -21,6 +21,7 @@
         "project"   : "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\NBA_2016\\001_PROJECTS\\000_Animation",
         "assets"    : "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\001_3D_ASSETS",
         "teams"     : "\\\\cagenas\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
+        "team_db"   : "teams_nba",
         "xres"      : 1920,
         "yres"      : 1080,
         "frate"     : 30
