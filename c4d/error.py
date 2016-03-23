@@ -12,6 +12,7 @@ class BaseError(Exception):
         }
         gui.MessageDialog(notification[self.message])
 
+
 class FileError(BaseError):
     def _alert(self):
         notification = {
@@ -21,6 +22,7 @@ class FileError(BaseError):
             3: 'Could not create one or more project folders.'
         }
         gui.MessageDialog(notification[self.message])
+
 
 class PipelineError(BaseError):
     def _alert(self):

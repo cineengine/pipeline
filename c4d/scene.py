@@ -164,7 +164,6 @@ def getSceneCtrl():
 
 def getProductionData(scene_data):
     ''' Retrieves production database based on scene data. '''
-    #prod_data = database.PRODUCTIONS[scene_data['Production']]
     prod_data = database.getProduction(scene_data['Production'])
     return prod_data
 

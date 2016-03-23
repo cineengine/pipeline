@@ -107,3 +107,20 @@ def getAllTeams(prod_, name='tricode'):
         for k,v in team_db.iteritems():
             team_ls.append('{}'.format(team_db[k]['nick']))
         return sorted(team_ls)
+
+
+def convertColor(colorvec, to='float'):
+    ''' Converts a color vector from 0-255 (int) to 0-1 (float) or back again. '''
+    def _clamp(value):
+        if value < 0: return 0
+        if value > 255: return 255
+    if (to == 'float'):
+        r_ = (1.0/255) * colorvec[0]
+        g_ = (1.0/255) * colorvec[1]
+        b_ = (1.0/255) * colorvec[2]
+        return (r_, g_, b_)
+    if (to == 'int'):
+        r_ = _clamp(int(255 * colorvec[0]))
+        g_ = _clamp(int(255 * colorvec[1]))
+        b_ = _clamp(int(255 * colorvec[2]))
+        return (r_, g_, b_)
