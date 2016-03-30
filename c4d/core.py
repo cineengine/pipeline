@@ -155,23 +155,23 @@ def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
 
 def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR ):
     ''' Changes the color on a material's specified channel.  Defaults to the diffuse color channel.'''
+    mats = []
     if isinstance(mat, str):
         for mat_ in MaterialIterator(doc()):
             if mat_.GetName() == mat:
-                mat = mat_
-                break
+                mats.append(mat_)
 
-    if not isinstance(mat, c4d.Material):
-        return
+    elif isinstance(mat, c4d.Material):
+        mats = list(mat)
 
     if type(channel) == int:
-        mat[channel] = vector
+        for mat_ in mats:
+            mat_[channel] = vector
+            mat_.Message(c4d.MSG_UPDATE)
+            mat_.Update(1,1)
 
-    mat.Message(c4d.MSG_UPDATE)
-    mat.Update(1,1)
     c4d.EventAdd()
     return True
-
 
 
 # TAKE / RENDER LAYER UTILITIES ###################################################################
@@ -324,6 +324,7 @@ def lsTags( obj=None, name=None, typ=None ):
                 return_tags.append(tag)
 
     return return_tags
+
 
 
 ### The following iterators were borrowed directly from Martin Weber via cgrebel.com.

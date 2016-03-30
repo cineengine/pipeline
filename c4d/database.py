@@ -109,6 +109,16 @@ def getAllTeams(prod_, name='tricode'):
         return sorted(team_ls)
 
 
+def getTeamColors(prod_, tricode):
+    team = getTeam(prod_, tricode)
+    ret_colors = {
+        'primary': c4d.Vector(*convertColor(team['primary'])),
+        'secondary': c4d.Vector(*convertColor(team['secondary'])),
+        'tertiary': c4d.Vector(*convertColor(team['tertiary']))
+        }
+    return ret_colors
+
+
 def convertColor(colorvec, to='float'):
     ''' Converts a color vector from 0-255 (int) to 0-1 (float) or back again. '''
     def _clamp(value):

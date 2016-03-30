@@ -22,11 +22,15 @@ from pipeline.c4d import core
 from pipeline.c4d import database
 from pipeline.c4d import error
 
+reload(core)
+reload(database)
+reload(error)
+
 
 # OPERATIONS ######################################################################################
 # Each of these operations is dependent on a scene_data object, which is a dictionary parsed from a
-# __SCENE__ node's annotation tag.  In other words, these are pipeline-specific operations, and 
-# (with few exceptions) cannot be run outside of that context
+# __SCENE__ node's annotation tag.  Put simply, these are pipeline-specific operations, and (with 
+# few exceptions) cannot be run outside of that context
 def saveWithBackup(scene_data):
     ''' Backs up the current scene file. '''
     def increment(filename):
