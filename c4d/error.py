@@ -1,5 +1,10 @@
 from c4d import gui
 
+SCENE_NEW     = 0
+SCENE_OK      = 1
+SCENE_BROKEN  = 2
+SCENE_MISSING = 3
+
 class BaseError(Exception):
     def __init__(self, message, alert=True):
         super(BaseError, self).__init__(message)
@@ -26,11 +31,6 @@ class FileError(BaseError):
 
 class PipelineError(BaseError):
     def _alert(self):
-        SCENE_NEW     = 0
-        SCENE_OK      = 1
-        SCENE_BROKEN  = 2
-        SCENE_MISSING = 3
-
         notification = {
             SCENE_NEW:    'No valid __SCENE__ object found. Has this scene been set up in the pipeline? If not, run the pipeline setup and try again.',
             SCENE_BROKEN: 'Multiple __SCENE__ objects were found. Delete any extras from merged scenes to continue.',

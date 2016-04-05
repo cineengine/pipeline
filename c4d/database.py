@@ -32,6 +32,7 @@ def getProduction(prod_):
                 default_prod = full_db[k]
             elif (k == prod_):
                 request_prod = full_db[k]
+            else: request_prod = {}
 
     merged_prod = default_prod.copy()
     merged_prod.update(request_prod)
