@@ -153,13 +153,17 @@ def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
     return True
 
 
-def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR ):
+def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
     ''' Changes the color on a material's specified channel.  Defaults to the diffuse color channel.'''
     mats = []
     if isinstance(mat, str):
         for mat_ in MaterialIterator(doc()):
-            if mat_.GetName() == mat:
-                mats.append(mat_)
+            if (exact):
+                if mat_.GetName() == mat:
+                    mats.append(mat_)
+            elif not (exact):
+                if mat in mat_.GetName():
+                    mats.append(mat_)
 
     elif isinstance(mat, c4d.Material):
         mats = list(mat)

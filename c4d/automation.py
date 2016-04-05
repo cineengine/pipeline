@@ -8,19 +8,14 @@ reload(core)
 reload(scene)
 reload(database)
 
-TEAM_MATERIALS = [
-    '{}_PRIMARY',
-    '{}_SECONDARY',
-    '{}_TERTIARY'
-    ]
 
 # TEAM AUTOMATION #################################################################################
 def assignTeamColors( tricode, location, swap=False ):
     scene_data    = scene.getSceneData()
     color_vectors = database.getTeamColors(scene_data['Production'], tricode)
 
-    core.changeColor('{}_PRIMARY'.format(location), color_vectors['primary'])
-    core.changeColor('{}_SECONDARY'.format(location), color_vectors['secondary'])
-    core.changeColor('{}_TERTIARY'.format(location), color_vectors['tertiary'])
+    core.changeColor('{}_PRIMARY'.format(location.upper()), color_vectors['primary'], exact=False)
+    core.changeColor('{}_SECONDARY'.format(location.upper()), color_vectors['secondary'], exact=False)
+    core.changeColor('{}_TERTIARY'.format(location.upper()), color_vectors['tertiary'], exact=False)
 
     return True

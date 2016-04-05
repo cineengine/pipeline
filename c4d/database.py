@@ -64,6 +64,12 @@ def getAllProductions():
     return sorted(productions)
 
 
+def getAllProjects(prod_):
+    ''' Gets all projects associated with a production.'''
+    prod = getProduction(prod_)
+    return [p for p in os.listdir(prod['project']) if os.path.isdir(os.path.join(prod['project'], p))]
+
+
 def getTeamDatabase(prod_):
     ''' Gets the team database for a production. '''
     prod_db  = getProduction(prod_)
@@ -71,7 +77,6 @@ def getTeamDatabase(prod_):
     db_path  = os.path.join(PRODUCTION_TEAM_DB_DIR, '{}.json'.format(team_db_))
 
     with open(db_path, 'r') as stream:
-        print db_path
         full_db = json.load(stream)
 
     return full_db

@@ -27,6 +27,102 @@ reload(database)
 reload(error)
 
 
+def test2(test):
+    return test
+    raise AttributeError
+    return test
+
+class Scene(object):
+    def __init__(self, delay=False):
+        self.SCENE_NEW = 0
+        self.SCENE_OK = 1
+        self.SCENE_BROKEN = 9
+
+    # check scene for existing scene controller
+
+        # A - pass scene controller for parsing
+
+            # parse into attributes
+
+            # parse attributes into production data
+
+            # generate on-the-fly attributes (project paths, etc)
+
+        # B - initialize new scene
+
+    def init(self, quiet):
+        self.getSceneStatus()
+
+        scene_ctrl, scene_tag, status = self._status
+
+        if (status == error.SCENE_OK):
+            self.scene_ctrl = scene_ctrl
+            self.scene_tag  = scene_tag
+            self.getSceneData()
+            self.getProductionData()
+        elif (status == error.SCENE_BROKEN):
+            raise error.PipelineError(status)
+        elif (status == error.SCENE_NEW) and (delay):
+            raise error.PipelineError(status)
+        elif (status == error.SCENE_NEW):
+            self.createNew()
+        return True
+
+
+    @classmethod
+    def getSceneStatus(self):
+        ''' Gets the status of the scene and returns any valid pipeline control objects.'''
+        # Tuple to store scene_ctrl node, scene_tag node, and status message
+        self._status = (None, None, None)
+        scene_ctrl   = core.ls(name='__SCENE__')
+        # No scene_ctrl found -- must be new scene
+        if (scene_ctrl == None or scene_ctrl == []):
+            self._status = (None, None, error.SCENE_NEW)
+        # One scene_ctrl found -- check it for a tag
+        elif (len(scene_ctrl)==1):
+            scene_ctrl = scene_ctrl[0]
+            scene_tag  = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl)[0]
+            # tag found -- status is green
+            if (scene_tag):
+                self._status = (scene_ctrl, scene_tag, error.SCENE_OK)
+            # no tag found on scene_ctrl -- scene is broken
+            else:
+                self._status = (scene_ctrl, None, error.SCENE_BROKEN)
+        # 2+ scene_ctrl found -- scene is broken
+        elif (len(scene_ctrl)>1):
+            self._status = (None, None, error.SCENE_BROKEN)
+
+
+    @classmethod
+    def getSceneData(self):
+        ''' Parses the data from the scene_ctrl tag into attributes for the scene and production.'''
+        def _annoToDict(tag_data):
+            ''' Takes a block of text from an annotation tag field and converts it to a dictionary.'''
+            a = tag_data.split('\n')
+            b = {}
+            for a_ in a:
+                kv = a_.split(':')
+                b[kv[0]] = kv[1].lstrip()
+            return b
+
+        scene_data = _annoToDict(self.scene_tag[c4d.ANNOTATIONTAG_TEXT])
+
+        self.production  = scene_data['Production']
+        self.project_nme = scene_data['Project']
+        self.scene_name  = scene_data['Scene']
+        self.framerate   = scene_data['Framerate']
+        self.version     = scene_data['Version']
+
+        return True
+
+
+    @classmethod
+    def getProductionData(self):
+        self.prod_data = database.getProduction(self.production)
+
+
+
+
 # OPERATIONS ######################################################################################
 # Each of these operations is dependent on a scene_data object, which is a dictionary parsed from a
 # __SCENE__ node's annotation tag.  Put simply, these are pipeline-specific operations, and (with 
@@ -140,16 +236,6 @@ def getSceneData():
     return scene_data
 
 
-def annoToDict(tag_data):
-    ''' Takes a block of text from an annotation tag field and converts it to a dictionary.'''
-    a = tag_data.split('\n')
-    b = {}
-    for a_ in a:
-        kv = a_.split(':')
-        b[kv[0]] = kv[1].lstrip()
-    return b
-
-
 def getSceneCtrl():
     ''' Gets the scene controller and its annotation tag from the current scene. '''
     scene_ctrl = core.ls(name='__SCENE__')
@@ -163,7 +249,14 @@ def getSceneCtrl():
         else:
             return (scene_ctrl, scene_tag)
     elif (len(scene_ctrl)>1):
-        raise PipelineError(1)
+        raise error.PipelineError(1)
+
+
+def checkScene():
+    ''' Checks a scene for existing scene data objects.'''
+    if not Scene.getSceneData():
+        return False
+    else: return True
 
 
 def getProductionData(scene_data):
@@ -325,6 +418,9 @@ class ProjectInitWindow(gui.GeDialog):
         self.TXT_PREVIEW_SCN  = 2005
 
         self.DRP_SHOW_NAME    = 3000
+        self.DRP_PROJ_NAME    = 3001
+        self.CHK_EXISTING     = 3002
+
         self.RDO_FRAMERATE    = 3003
         self.RDO_FRAMERATE_T  = 3030
         self.RDO_FRAMERATE_S  = 3060
@@ -333,6 +429,7 @@ class ProjectInitWindow(gui.GeDialog):
 
         self.GROUP_MAIN       = 9000
         self.GROUP_BTNS       = 9001
+        self.GROUP_PROJ       = 9002
 
         self.PRODUCTION_ID    = {}
         self.PRODUCTION_ITR   = 10000
@@ -350,9 +447,13 @@ class ProjectInitWindow(gui.GeDialog):
         self.AddComboBox(self.DRP_SHOW_NAME, c4d.BFH_LEFT, 600)
         for proj in self.PRODUCTION_ID:
             self.AddChild(self.DRP_SHOW_NAME, proj, self.PRODUCTION_ID[proj])
-        # Project text field
+        # Project text field 
         self.AddStaticText(self.LBL_PROJECT_NAME, c4d.BFH_LEFT, name='Project Name:')
+        self.GroupBegin(self.GROUP_PROJ, c4d.BFH_LEFT, 1, 3)
+        self.AddCheckbox(self.CHK_EXISTING, c4d.BFH_LEFT, 600, 10, 'New Project')
+        self.AddComboBox(self.DRP_PROJ_NAME, c4d.BFH_LEFT, 600)
         self.AddEditText(self.TXT_PROJECT_NAME, c4d.BFH_LEFT, 600)
+        self.GroupEnd()
         # Scene text field
         self.AddStaticText(self.LBL_SCENE_NAME, c4d.BFH_LEFT, name='Scene Tag:')
         self.AddEditText(self.TXT_SCENE_NAME, c4d.BFH_LEFT, 200)
@@ -379,6 +480,11 @@ class ProjectInitWindow(gui.GeDialog):
         return True
 
 
+    def defaultState(self):
+        self.SetBool(self.CHK_EXISTING, 1)
+        self.Enable(self.DRP_PROJ_NAME, False)
+
+
     def Command(self, id, msg):
         if id == self.BTN_EXECUTE:
             self.ok = True
@@ -388,7 +494,9 @@ class ProjectInitWindow(gui.GeDialog):
             self.Close()
         elif (id == self.TXT_PROJECT_NAME or
               id == self.TXT_SCENE_NAME or
-              id == self.DRP_SHOW_NAME):
+              id == self.DRP_SHOW_NAME or
+              id == self.DRP_PROJ_NAME or
+              id == self.CHK_EXISTING):
             self.preview()
         return True
 
@@ -411,6 +519,11 @@ class ProjectInitWindow(gui.GeDialog):
         scene_name = self.GetString(self.TXT_SCENE_NAME)
         framerate  = self.GetInt32(self.RDO_FRAMERATE)-3000
 
+        if checkScene():
+            gui.MessageDialog('This scene is already set up to run in the pipeline.  Run \'Rename Project\' \
+to rename this scene or migrate it to another project.')
+            return True
+
         scene_ctrl, tag   = self.makeSceneCtrl()
         annotation        = "Production: {}\nProject: {}\nScene: {}\nFramerate: {}\nVersion: {}"
         annotation        = annotation.format(show_name, proj_name, scene_name, str(framerate), str(1))
@@ -424,22 +537,168 @@ class ProjectInitWindow(gui.GeDialog):
 
 
     def preview(self):
-        show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
-        proj_name  = self.GetString(self.TXT_PROJECT_NAME)
-        scene_name = self.GetString(self.TXT_SCENE_NAME)
-        prod_data  = database.getProduction(show_name)['project']
+        try:
+            proj_exist = self.GetBool(self.CHK_EXISTING)
 
-        proj_name  = proj_name.replace(' ', '_')
-        scene_name = scene_name.replace(' ', '_')
-        self.SetString(self.TXT_PROJECT_NAME, proj_name)
-        self.SetString(self.TXT_SCENE_NAME, scene_name)
+            self.Enable(self.TXT_PROJECT_NAME, proj_exist)
+            self.Enable(self.DRP_PROJ_NAME, 1-proj_exist)
 
-        scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
-        proj_prev  = os.path.relpath(
-            "{}\\{}\\c4d\\".format(prod_data, proj_name),
-            "\\\\cagenas\\workspace\\MASTER_PROJECTS\\"            
-            )
+            show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
+            proj_name  = self.GetString(self.TXT_PROJECT_NAME)
+            scene_name = self.GetString(self.TXT_SCENE_NAME)
+            prod_data  = database.getProduction(show_name)['project']
 
-        self.SetString(self.TXT_PREVIEW_DIR, proj_prev)
-        self.SetString(self.TXT_PREVIEW_SCN, scene_prev)
+            proj_name  = proj_name.replace(' ', '_')
+            scene_name = scene_name.replace(' ', '_')
+            self.SetString(self.TXT_PROJECT_NAME, proj_name)
+            self.SetString(self.TXT_SCENE_NAME, scene_name)
+
+            scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
+            proj_prev  = os.path.relpath(
+                "{}\\{}\\c4d\\".format(prod_data, proj_name),
+                "\\\\cagenas\\workspace\\MASTER_PROJECTS\\"            
+                )
+
+            self.SetString(self.TXT_PREVIEW_DIR, proj_prev)
+            self.SetString(self.TXT_PREVIEW_SCN, scene_prev)
+        except:
+            pass
         return True
+
+
+class TeamColorWindow(gui.GeDialog):
+    def __init__(self):
+        self.LBL_HOME_TRICODE = 1000
+        self.LBL_AWAY_TRICODE = 1001
+        self.LBL_HOME_COLORF  = 2000
+        self.LBL_AWAY_COLORF  = 2001
+
+        self.TXT_HOME_TRICODE = 3000
+        self.TXT_AWAY_TRICODE = 3001
+
+        self.VEC_HOME_COLOR_P = 4000
+        self.VEC_HOME_COLOR_S = 4001
+        self.VEC_HOME_COLOR_T = 4002
+        self.VEC_AWAY_COLOR_P = 4003
+        self.VEC_AWAY_COLOR_S = 4004
+        self.VEC_AWAY_COLOR_T = 4005
+
+
+        self.BOOL_SWAP_PRISEC = 4050
+
+        self.BTN_EXECUTE      = 5000
+        self.BTN_CANCEL       = 5001
+
+        self.GROUP_MAIN       = 9000
+        self.GROUP_ROW1       = 9001
+        self.GROUP_ROW2       = 9002
+        self.GROUP_BTNS       = 9003
+
+        self.left             = c4d.BFH_LEFT
+        self.center           = c4d.BFH_CENTER
+        self.right            = c4d.BFH_RIGHT
+
+        self.prod = getSceneData()['Production']
+
+
+    def CreateLayout(self):
+        self.SetTitle('Team Color Picker')
+        self.GroupBegin(self.GROUP_MAIN, self.left, 1, 2)
+
+        self.GroupBegin(self.GROUP_ROW1, self.left, 5, 1)
+        self.AddStaticText(self.LBL_HOME_TRICODE, self.left, initw=110, name='Home Team:')
+        self.AddEditText(self.TXT_HOME_TRICODE, self.left, 100)
+        self.AddColorField(self.VEC_HOME_COLOR_P, self.left)
+        self.AddColorField(self.VEC_HOME_COLOR_S, self.left)
+        self.AddColorField(self.VEC_HOME_COLOR_T, self.left)
+        self.GroupEnd()
+
+        self.GroupBegin(self.GROUP_ROW2, self.left, 5, 1)
+        self.AddStaticText(self.LBL_AWAY_TRICODE, self.left, initw=110, name='Away Team:')
+        self.AddEditText(self.TXT_AWAY_TRICODE, self.left, 100)
+        self.AddColorField(self.VEC_AWAY_COLOR_P, self.left)
+        self.AddColorField(self.VEC_AWAY_COLOR_S, self.left)
+        self.AddColorField(self.VEC_AWAY_COLOR_T, self.left)
+        self.GroupEnd()
+
+        self.GroupBegin(self.GROUP_BTNS, self.right, 2, 1)
+        self.AddButton(self.BTN_CANCEL, c4d.BFH_SCALE, name="Cancel")
+        self.AddButton(self.BTN_EXECUTE, c4d.BFH_SCALE, name="Assign Colors")
+        self.GroupEnd()
+
+        self.GroupEnd()
+        self.ok=False
+        return True
+
+
+    def Command(self, id, msg):
+        if (id == self.TXT_HOME_TRICODE or id == self.TXT_AWAY_TRICODE):
+            self.updateSwatches()
+        elif (id == self.BTN_EXECUTE):
+            self.updateMaterials()
+            self.Close()
+        elif (id == self.BTN_CANCEL):
+            self.Close()
+        return True
+
+
+    def updateSwatches(self):
+        home_tricode = self.GetString(self.TXT_HOME_TRICODE)
+        away_tricode = self.GetString(self.TXT_AWAY_TRICODE)
+
+        home_tricode
+
+        try: 
+            home_colors = database.getTeamColors(self.prod, home_tricode)
+            home_team = True
+        except: 
+            home_team = None
+        
+        try: 
+            away_colors = database.getTeamColors(self.prod, away_tricode)
+            away_team = True
+        except: 
+            away_team = None
+
+        if (home_team):
+            self.SetColorField(self.VEC_HOME_COLOR_P, home_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_HOME_COLOR_S, home_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_HOME_COLOR_T, home_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        else:
+            self.SetColorField(self.VEC_HOME_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_HOME_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_HOME_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+
+        if (away_team):
+            self.SetColorField(self.VEC_AWAY_COLOR_P, away_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_AWAY_COLOR_S, away_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_AWAY_COLOR_T, away_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        else:
+            self.SetColorField(self.VEC_AWAY_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_AWAY_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(self.VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        return True
+
+
+    def updateMaterials(self):
+        home_pri = self.GetColorField(self.VEC_HOME_COLOR_P)['color']
+        home_sec = self.GetColorField(self.VEC_HOME_COLOR_S)['color']
+        home_tri = self.GetColorField(self.VEC_HOME_COLOR_T)['color']
+
+        away_pri = self.GetColorField(self.VEC_AWAY_COLOR_P)['color']
+        away_sec = self.GetColorField(self.VEC_AWAY_COLOR_S)['color']
+        away_tri = self.GetColorField(self.VEC_AWAY_COLOR_T)['color']
+
+        core.changeColor('HOME_PRIMARY', home_pri, exact=False)
+        core.changeColor('HOME_SECONDARY', home_sec, exact=False)
+        core.changeColor('HOME_TERTIARY', home_tri, exact=False)
+
+        core.changeColor('AWAY_PRIMARY', away_pri, exact=False)
+        core.changeColor('AWAY_SECONDARY', away_sec, exact=False)
+        core.changeColor('AWAY_TERTIARY', away_tri, exact=False)
+        return True
+
+
+def test():
+    t = TeamColorWindow()
+    t.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=100)
