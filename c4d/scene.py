@@ -5,8 +5,8 @@
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.2
-#    Date:    03/18/2016
+#    Version: 0.3
+#    Date:    04/06/2016
 #
 #    This version represents core functionality.    
 #
@@ -31,6 +31,7 @@ class Scene(object):
         self.project_name = ''
         self.scene_name   = ''
         self.production   = ''
+        self.file_path    = ''
         self.framerate    = 0
         self.version      = 0
 
@@ -39,10 +40,11 @@ class Scene(object):
         if (self.status == error.SCENE_OK):
             self.getSceneData()
             self.getProductionData()
+            self.updateFilePath()
         elif (self.status == error.SCENE_BROKEN):
-            raise error.PipelineError(status)
+            raise error.PipelineError(self.status)
         elif (self.status == error.SCENE_NEW) and (delay):
-            raise error.PipelineError(status)
+            raise error.PipelineError(self.status)
         elif (self.status == error.SCENE_NEW):
             dlg = ProjectInitWindow()
             dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
@@ -94,6 +96,14 @@ class Scene(object):
     def getProductionData(self):
         ''' Attaches the production database dictionary to the scene object. '''
         self.prod_data = database.getProduction(self.production)
+
+    def updateFilePath(self):
+        self.file_name     = '{}_{}.c4d'.format(self.project_name, self.scene_name)
+        self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
+        self.backup_folder = os.path.join(self.file_folder, 'backup')
+        self.file_path     = os.path.join(self.file_folder, self.file_name)
+
+        return (self.file_name, self.file_folder, self.backup_folder, self.file_path)
 
     # SETTERS
     def setSceneData(self):
@@ -161,15 +171,29 @@ class Scene(object):
                 core.setCompositingTag( tag, og_ )
         return
 
-    def rename(self, name=None):
+    def rename(self, name=None, verbose=True):
         ''' Rename the scene (with optional dialog) '''
         if (name == None):
             dlg = c4d.gui.RenameDialog('New scene name')
             if (dlg==False):
                 return
             else: name = dlg
-
+        # store the old name and update self
+        old_name = self.scene_name
         self.scene_name = name
+        self.updateFilePath()
+        # check that the new file doesn't already exist
+        if os.path.isfile(self.file_path) and (verbose):
+            msg = 'Warning! A scene with this name already exists -- proceed anyway? (A backup will be saved regardless.)'
+            prompt = c4d.gui.MessageDialog(msg, c4d.GEMB_OKCANCEL)
+            if (prompt == c4d.GEMB_R_OK):
+                pass
+            elif (prompt == c4d.GEMB_R_CANCEL):
+                # restore the old scene name and exit
+                self.scene_name = old_name
+                self.updateFilePath()
+                return
+        # set clean version, update scene_ctrl with new data, and save
         self.version = 1
         self.setSceneData()
         self.saveWithBackup()
@@ -182,7 +206,7 @@ class Scene(object):
         self.saveWithBackup()
 
     # BUILDERS / OPERATIONS
-    def makeFolders(self):
+    def makeFolders(self, check_project=False):
         ''' Makes folders for a new project. '''
         def mkFolder(path_):
             if not os.path.exists(path_):
@@ -241,24 +265,21 @@ class Scene(object):
             if os.path.exists(incr_file):
                 incr_file = increment(incr_file)
             return incr_file
-        #   
-        prod_data   = self.prod_data
-        scene_path  = os.path.join(prod_data['project'], self.project_name, 'c4d')
-        scene_name  = '{}_{}.c4d'.format(self.project_name, self.scene_name)
-        scene_file  = os.path.join(scene_path, scene_name)
+        #
+        self.updateFilePath()
 
-        backup_path = os.path.join(scene_path, 'backup')
-        backup_file = os.path.join(backup_path, scene_name)
-        backup_file = increment(backup_file)
+        backup_folder = os.path.join(self.file_folder, 'backup')
+        backup_file  = os.path.join(backup_folder, self.file_name)
+        backup_path  = increment(backup_file)
 
-        if not os.path.exists(backup_path):
-            makedirs(backup_path)
-        if not os.path.exists(scene_path):
-            makedirs(scene_path)
+        if not os.path.exists(backup_folder):
+            makedirs(backup_folder)
+        if not os.path.exists(self.file_folder):
+            makedirs(self.file_folder)
 
         try:
-            core.saveAs(backup_file)
-            core.saveAs(scene_file)
+            core.saveAs(backup_path)
+            core.saveAs(self.file_path)
         except error.FileError:
             raise error.FileError(0)
 
@@ -301,7 +322,6 @@ class Scene(object):
                         doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
                         og.AddToGroup(td, obj)
             doc.EndUndo()
-
 
 def setOutput( default_override=True, **render_data ):
     ''' Sets up basic parameters for rendering. Specifics are pulled from 'project' global 
@@ -366,6 +386,7 @@ def setOutput( default_override=True, **render_data ):
     core.createRenderData(rd, 'DEFAULT')
     return
 
+
 # UI OBJECTS ######################################################################################
 class ProjectInitWindow(gui.GeDialog):
     def __init__(self, populate=False):
@@ -404,7 +425,6 @@ class ProjectInitWindow(gui.GeDialog):
         for proj in database.getAllProductions():
             self.PRODUCTION_ID[self.PRODUCTION_ITR] = proj
             self.PRODUCTION_ITR += 1
-
 
     def CreateLayout(self):
         # Headers
@@ -458,7 +478,6 @@ class ProjectInitWindow(gui.GeDialog):
 
         return True
 
-
     def Command(self, id, msg):
         if (id == self.BTN_EXECUTE):
             self.ok = True
@@ -476,12 +495,15 @@ class ProjectInitWindow(gui.GeDialog):
             self.preview_fast()
         return True
 
-
     def execute(self):
         show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_PROD_NAME)]
         proj_name  = self.GetString(self.TXT_PROJECT_NAME)
         scene_name = self.GetString(self.TXT_SCENE_NAME)
         framerate  = self.GetInt32(self.RDO_FRAMERATE)-3000
+
+        scene_ctrl, scene_tag, status = Scene.getSceneStatus()
+        if (status == error.SCENE_OK):
+            scene_ctrl.Remove()
 
         scene_ctrl, tag   = Scene.makeSceneCtrl()
         annotation        = "Production: {}\nProject: {}\nScene: {}\nFramerate: {}\nVersion: {}"
@@ -495,7 +517,6 @@ class ProjectInitWindow(gui.GeDialog):
         scn.saveWithBackup()
 
         return True
-
 
     def preview_fast(self):
         try:
@@ -530,7 +551,6 @@ class ProjectInitWindow(gui.GeDialog):
             pass
         return True
 
-
     def update_dropdown(self):
         try:
             if not self.GetBool(self.CHK_EXISTING):
@@ -544,7 +564,6 @@ class ProjectInitWindow(gui.GeDialog):
                 self.FreeChildren(self.DRP_PROJ_NAME)
         except:
             pass
-
 
     def populate(self):
         scn = Scene()
@@ -595,7 +614,9 @@ class TeamColorWindow(gui.GeDialog):
         self.center           = c4d.BFH_CENTER
         self.right            = c4d.BFH_RIGHT
 
-        self.prod = getSceneData()['Production']
+        scn = Scene()
+
+        self.prod = scn.production
 
 
     def CreateLayout(self):
@@ -694,8 +715,3 @@ class TeamColorWindow(gui.GeDialog):
         core.changeColor('AWAY_SECONDARY', away_sec, exact=False)
         core.changeColor('AWAY_TERTIARY', away_tri, exact=False)
         return True
-
-
-def test():
-    t = ProjectInitWindow()
-    t.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=100)

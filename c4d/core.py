@@ -7,8 +7,8 @@
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.2
-#    Date:    03/17/2016
+#    Version: 0.3
+#    Date:    04/06/2016
 #
 #    This version is still in progress.    
 #
@@ -151,7 +151,7 @@ def tag( obj_=None, typ=None, name=None ):
         doc.AddUndo(c4d.UNDOTYPE_NEW, tag)
 
     c4d.EventAdd()
-    c4d.EndUndo()
+    doc.EndUndo()
     return tags
 
 

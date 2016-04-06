@@ -1,20 +1,23 @@
 """
-Save With Backup
+Version Up Scene
 
 Copyright: 2016 ESPN Productions
 Compatible with Cinema4D R14, R15, R17
 Author: Mark Rohrer (mark.rohrer@espn.com)
 
-Name-US: Save With Backup
-Description-US: Saves the current scene, and saves a copy in the backup folder as well.
+Name-US: Version Up Scene
+Description-US: Increments the scene's version number by 1 (for render output.)
 """
 
 import c4d
+from c4d import gui
+
 from pipeline.c4d import scene
+
 
 def main():
 	scn = scene.Scene()
-	scn.saveWithBackup()
+	scn.versionUp()
 
 if __name__ == '__main__':
 	main()

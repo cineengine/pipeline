@@ -2,8 +2,8 @@
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.2
-#    Date:    03\\22\\2016
+#    Version: 0.3
+#    Date:    04/06/2016
 #
 #    
 #
