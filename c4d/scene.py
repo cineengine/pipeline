@@ -26,7 +26,6 @@ reload(core)
 reload(database)
 reload(error)
 
-
 class Scene(object):
     def __init__(self, delay=False):
         self.project_name = ''
@@ -48,7 +47,7 @@ class Scene(object):
             dlg = ProjectInitWindow()
             dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
 
-
+    # GETTERS
     @classmethod
     def getSceneStatus(self):
         ''' Gets the status of the scene and returns any valid pipeline control objects.'''
@@ -73,7 +72,6 @@ class Scene(object):
             _status = (None, None, error.SCENE_BROKEN)
         return _status
 
-
     def getSceneData(self):
         ''' Parses the data from the scene_ctrl tag into attributes for the scene and production.'''
         def _annoToDict(tag_data):
@@ -93,7 +91,11 @@ class Scene(object):
         self.framerate    = int(scene_data['Framerate'])
         self.version      = int(scene_data['Version'])
 
+    def getProductionData(self):
+        ''' Attaches the production database dictionary to the scene object. '''
+        self.prod_data = database.getProduction(self.production)
 
+    # SETTERS
     def setSceneData(self):
         ''' Does the opposite of getSceneData() '''
         def _sceneToAnno():
@@ -111,41 +113,6 @@ class Scene(object):
             return True
         else:
             return False
-
-
-    def getProductionData(self):
-        ''' Attaches the production database dictionary to the scene object. '''
-        self.prod_data = database.getProduction(self.production)
-
-
-    def makeFolders(self):
-        ''' Makes folders for a new project. '''
-        def mkFolder(path_):
-            if not os.path.exists(path_):
-                try: os.mkdir(path_)
-                except WindowsError: FileError(3)
-
-        folder_struct = self.prod_data['folders']
-        main_folder   = os.path.join(self.prod_data['project'], self.project_name)
-
-        mkFolder(main_folder)    
-        for main, sub in folder_struct.iteritems():
-            mkFolder(os.path.join(main_folder, main))
-            for s in sub: 
-                mkFolder(os.path.join(main_folder, main, s))
-
-
-    @classmethod
-    def makeSceneCtrl(self):
-        ''' Makes a scene control node -- a null called '__SCENE__' '''
-        doc = core.doc()
-        scene_ctrl = c4d.BaseObject(c4d.Onull)
-        doc.InsertObject(scene_ctrl)
-        scene_ctrl.SetName('__SCENE__')
-        scene_tag = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
-        c4d.EventAdd()
-        return (scene_ctrl, scene_tag)
-
 
     def setOutput(self):
         ''' Set render output settings (based on production) '''
@@ -178,6 +145,21 @@ class Scene(object):
             multi_path  = multi_path
             )
 
+    def setTakes(self):
+        ''' Makes the default takes (render layers) and overrides for the specified production. '''
+        td = core.doc().GetTakeData()
+        for take_ in self.prod_data['layers']:
+            take = core.take(take_, set_active=True)
+            take.SetChecked(True)
+            # Add the default override groups to the take
+            for og_ in core.OVERRIDE_GROUPS:
+                og = core.override(take, og_)
+                # Add the compositing tag for overriding
+                tag = og.AddTag(td, c4d.Tcompositing, mat=None)
+                tag.SetName('VISIBILITY_OVERRIDE')
+                # ... and set the default values
+                core.setCompositingTag( tag, og_ )
+        return
 
     def rename(self, name=None):
         ''' Rename the scene (with optional dialog) '''
@@ -192,13 +174,44 @@ class Scene(object):
         self.setSceneData()
         self.saveWithBackup()
 
-
     def versionUp(self):
         ''' Version up the scene and save a new backup. '''
         self.version += 1
         self.setSceneData()
+        self.setOutput()
         self.saveWithBackup()
 
+    # BUILDERS / OPERATIONS
+    def makeFolders(self):
+        ''' Makes folders for a new project. '''
+        def mkFolder(path_):
+            if not os.path.exists(path_):
+                try: os.mkdir(path_)
+                except WindowsError: FileError(3)
+
+        folder_struct = self.prod_data['folders']
+        main_folder   = os.path.join(self.prod_data['project'], self.project_name)
+
+        mkFolder(main_folder)    
+        for main, sub in folder_struct.iteritems():
+            mkFolder(os.path.join(main_folder, main))
+            for s in sub: 
+                mkFolder(os.path.join(main_folder, main, s))
+
+    @classmethod
+    def makeSceneCtrl(self):
+        ''' Makes a scene control node -- a null called '__SCENE__' '''
+        doc = core.doc()
+        doc.StartUndo()
+        scene_ctrl = c4d.BaseObject(c4d.Onull)
+        doc.InsertObject(scene_ctrl)
+        doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
+        scene_ctrl.SetName('__SCENE__')
+        scene_tag = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
+        doc.AddUndo(c4d.UNDOTYPE_NEW, scene_tag)
+        c4d.EventAdd()
+        doc.EndUndo()
+        return (scene_ctrl, scene_tag)
 
     def saveWithBackup(self):
         ''' Saves and backs up the current scene file. '''
@@ -249,28 +262,11 @@ class Scene(object):
         except error.FileError:
             raise error.FileError(0)
 
-
-    def setTakes(self):
-        ''' Makes the default takes (render layers) and overrides for the specified production. '''
-        td = core.doc().GetTakeData()
-        for take_ in self.prod_data['layers']:
-            take = core.take(take_, set_active=True)
-            take.SetChecked(True)
-            # Add the default override groups to the take
-            for og_ in core.OVERRIDE_GROUPS:
-                og = core.override(take, og_)
-                # Add the compositing tag for overriding
-                tag = og.AddTag(td, c4d.Tcompositing, mat=None)
-                tag.SetName('VISIBILITY_OVERRIDE')
-                # ... and set the default values
-                core.setCompositingTag( tag, og_ )
-        return
-
-
     def sortTakes(self):
         ''' Sorts objects into takes (via override groups) using sorting logic stored in a proj database.'''
         sort_dict = self.prod_data['sort']
-        td = core.doc().GetTakeData()
+        doc = core.doc()
+        td  = doc.GetTakeData()
         # Parse the sorting dictionary into lists of objects
         for layer_, sort in sort_dict.iteritems():
             for tag_ in sort['rgb']:
@@ -282,22 +278,29 @@ class Scene(object):
             for tag_ in sort['off']:
                 off_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
             # Make the layer for sorting
+            doc.StartUndo()
             layer = core.take(layer_, set_active=True)
+            doc.AddUndo(c4d.UNDOTYPE_NEW, layer)
             start = layer.GetFirstOverrideGroup()
             # Add the sorted objects to their respective render layers / takes
             for og in core.ObjectIterator(start):
                 if og.GetName() == 'bty':
                     for obj in rgba_obj:
+                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
                         og.AddToGroup(td, obj)
                 elif og.GetName() == 'pv_off':
                     for obj in pvo_obj:
+                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
                         og.AddToGroup(td, obj)
                 elif og.GetName() == 'black_hole':
                     for obj in occ_obj:
+                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
                         og.AddToGroup(td, obj)
                 elif og.GetName() == 'disable':
                     for obj in off_obj:
+                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
                         og.AddToGroup(td, obj)
+            doc.EndUndo()
 
 
 def setOutput( default_override=True, **render_data ):
@@ -362,7 +365,6 @@ def setOutput( default_override=True, **render_data ):
 
     core.createRenderData(rd, 'DEFAULT')
     return
-
 
 # UI OBJECTS ######################################################################################
 class ProjectInitWindow(gui.GeDialog):
@@ -560,7 +562,6 @@ class ProjectInitWindow(gui.GeDialog):
         self.SetInt32(self.RDO_FRAMERATE, 3000+fps)
         self.SetBool(self.CHK_EXISTING, True)
         self.preview_fast()
-
 
 class TeamColorWindow(gui.GeDialog):
     def __init__(self):

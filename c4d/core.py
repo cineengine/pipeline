@@ -34,6 +34,28 @@ def new():
     c4d.CallCommand(12094, 12094)
     return
 
+def test():
+    doc = c4d.documents.GetActiveDocument()
+    doc.StartUndo()
+
+    scene_ctrl = c4d.BaseObject(c4d.Onull)
+    doc.InsertObject(scene_ctrl)
+    doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
+    
+    doc.AddUndo(c4d.UNDOTYPE_CHANGE, scene_ctrl)
+    scene_ctrl.SetName('one')
+    
+
+    #scene_ctrl = c4d.BaseObject(c4d.Onull)
+    #doc.InsertObject(scene_ctrl)
+    #scene_ctrl.SetName('two')
+    #doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
+
+    #scene_ctrl = c4d.BaseObject(c4d.Onull)
+    #doc.InsertObject(scene_ctrl)
+    #scene_ctrl.SetName('three')
+    #doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
+    doc.EndUndo()
 
 def open( file_=None ):
     ''' Open the specified scene.  If no file is specified, open a dialog. '''
@@ -79,6 +101,7 @@ def doc():
 
 def merge( file_=None ):
     ''' Imports a file into the scene. '''
+    doc = c4d.documents.GetActiveDocument()
     if (file_):
         c4d.documents.LoadFile(file_)
     else:
@@ -89,6 +112,7 @@ def merge( file_=None ):
 # FLAGS & TAGS ####################################################################################
 def visibility( obj_=None, v=None, r=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
+    doc = c4d.documents.GetActiveDocument()
     vis = {
         True:  c4d.MODE_ON,
         False: c4d.MODE_OFF,
@@ -98,9 +122,12 @@ def visibility( obj_=None, v=None, r=None ):
     if not (obj_):
         obj_ = ls()
     # If a flag is passed, set it
+    doc.StartUndo()
     for o in obj_:
+        doc.AddUndo(c4d.UNDOTYPE_CHANGE, o)
         o.SetEditorMode(vis[v])
         o.SetRenderMode(vis[r])
+    doc.EndUndo()
     return
 
 
@@ -108,10 +135,12 @@ def tag( obj_=None, typ=None, name=None ):
     ''' Creates a tag on the selected (or specified) object. For tag types, see:
     https://developers.maxon.net/docs/Cinema4DPythonSDK/html/types/tags.html '''
     # Parse the passed object, or get the current selection
+    doc = c4d.documents.GetActiveDocument()
     obj = ls(obj=obj_)
     # Empty return container
     tags = []
     # Make a tag for each object
+    doc.StartUndo()
     for o in obj:
         tag = o.MakeTag(typ)
         # Add the tag to the return list
@@ -119,8 +148,10 @@ def tag( obj_=None, typ=None, name=None ):
         # Name the tag
         if name:
             tag[c4d.ID_BASELIST_NAME] = name
+        doc.AddUndo(c4d.UNDOTYPE_NEW, tag)
 
     c4d.EventAdd()
+    c4d.EndUndo()
     return tags
 
 
@@ -128,6 +159,7 @@ def tag( obj_=None, typ=None, name=None ):
 def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
     ''' Changes the texture on a material's specified channel.  Defaults to the color channel.
     C:\Program Files\MAXON\CINEMA 4D R17\resource\modules\c4dplugin\description\mmaterial.h '''
+    doc = c4d.documents.GetActiveDocument()
     if isinstance(mat, str):
         for mat_ in MaterialIterator(doc()):
             if mat_.GetName() == mat:
@@ -137,25 +169,30 @@ def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
     if not isinstance(mat, c4d.Material):
         return
 
+    doc.StartUndo()
     if type(channel) == int:
         tex = c4d.BaseList2D(c4d.Xbitmap)
+        doc.AddUndo(c4d.UNDOTYPE_CHANGE, tex)
         tex[c4d.BITMAPSHADER_FILENAME] = tex_path
         mat[channel] = tex
         mat.InsertShader(tex)
     elif channel == ('reflect' or 'reflection'):
         refl_shd = mat.GetAllReflectionShaders()
         for rs in refl_shd:
+            doc.AddUndo(c4d.UNDOTYPE_CHANGE, rs)
             rs[c4d.BITMAPSHADER_FILENAME] = tex_path
 
     mat.Message(c4d.MSG_UPDATE)
     mat.Update(1,1)
     c4d.EventAdd()
+    c4d.EndUndo()
     return True
 
 
 def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
     ''' Changes the color on a material's specified channel.  Defaults to the diffuse color channel.'''
     mats = []
+    doc  = c4d.documents.GetActiveDocument()
     if isinstance(mat, str):
         for mat_ in MaterialIterator(doc()):
             if (exact):
@@ -169,12 +206,14 @@ def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
         mats = list(mat)
 
     if type(channel) == int:
+        doc.StartUndo()
         for mat_ in mats:
+            doc.AddUndo(c4d.UNDOTYPE_CHANGE, mat_)
             mat_[channel] = vector
             mat_.Message(c4d.MSG_UPDATE)
             mat_.Update(1,1)
-
     c4d.EventAdd()
+    doc.EndUndo()
     return True
 
 
@@ -182,7 +221,8 @@ def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
 def take( name=None, set_active=False ):
     ''' Create a new take / render layer. '''
     # TakeData is a singleton container for all the takes in the scene
-    td = doc().GetTakeData()
+    doc = c4d.documents.GetActiveDocument()
+    td  = doc.GetTakeData()
 
     # Iterate over all takes to see if one with that name already exists
     main = td.GetMainTake()
@@ -190,9 +230,11 @@ def take( name=None, set_active=False ):
         if (take.GetName() == name):
             return take
 
+    doc.StartUndo()
     # Otherwise add the take and name it
     take = td.AddTake(name, parent=None, cloneFrom=None)
     # Add the default override groups to the take
+    doc.AddUndo(c4d.UNDOTYPE_NEW, take)
     for og_ in OVERRIDE_GROUPS:
         og = override(take, og_)
         # Add the compositing tag for overriding
@@ -201,10 +243,12 @@ def take( name=None, set_active=False ):
         # ... and set the default values
         setCompositingTag( tag, og_ )
     # If flagged, set the current take as active
+    doc.AddUndo(c4d.UNDOTYPE_CHANGE, take)
     if (set_active): td.SetCurrentTake(take)
     take.SetChecked(True)
 
     c4d.EventAdd()
+    doc.EndUndo()
     return take
 
 
@@ -263,14 +307,19 @@ def setCompositingTag( tag, preset, reset=False ):
 def createRenderData( rd, name ):
     ''' Inserts a RenderData document into the scene, overwriting any other document with the same
     name.  Seriously, fuck C4D sometimes. '''
-    start = doc().GetFirstRenderData()
+    doc   = c4d.documents.GetActiveDocument()
+    start = doc.GetFirstRenderData()
+    doc.StartUndo()
     for rd_ in ObjectIterator(start):
         if rd_.GetName() == name:
+            doc.AddUndo(c4d.UNDOTYPE_DELETE, rd_)
             rd_.Remove()
     rd.SetName(name)
-    doc().InsertRenderData(rd)
-    doc().SetActiveRenderData(rd)
+    doc.InsertRenderData(rd)
+    doc.AddUndo(c4d.UNDOTYPE_NEW, rd)
+    doc.SetActiveRenderData(rd)
     c4d.EventAdd()
+    doc.EndUndo()
     return
 
 
