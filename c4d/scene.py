@@ -37,10 +37,6 @@ class Scene(object):
 
         self.scene_ctrl, self.scene_tag, self.status = self.getSceneStatus()
 
-        self.init(delay)
-
-
-    def init(self, delay):
         if (self.status == error.SCENE_OK):
             self.getSceneData()
             self.getProductionData()
@@ -98,7 +94,27 @@ class Scene(object):
         self.version      = int(scene_data['Version'])
 
 
+    def setSceneData(self):
+        ''' Does the opposite of getSceneData() '''
+        def _sceneToAnno():
+            out_str = ''
+            out_str += 'Production: {}\n'.format(self.production)
+            out_str += 'Project: {}\n'.format(self.project_name)
+            out_str += 'Scene: {}\n'.format(self.scene_name)
+            out_str += 'Framerate: {}\n'.format(self.framerate)
+            out_str += 'Version: {}'.format(self.version)
+            return out_str
+        #
+        scene_ctrl, scene_tag, status = self.getSceneStatus()
+        if (status == error.SCENE_OK):
+            self.scene_tag[c4d.ANNOTATIONTAG_TEXT] = _sceneToAnno()
+            return True
+        else:
+            return False
+
+
     def getProductionData(self):
+        ''' Attaches the production database dictionary to the scene object. '''
         self.prod_data = database.getProduction(self.production)
 
 
@@ -110,7 +126,7 @@ class Scene(object):
                 except WindowsError: FileError(3)
 
         folder_struct = self.prod_data['folders']
-        main_folder   = os.path.join(self.prod_data['project'], self.project)
+        main_folder   = os.path.join(self.prod_data['project'], self.project_name)
 
         mkFolder(main_folder)    
         for main, sub in folder_struct.iteritems():
@@ -119,13 +135,26 @@ class Scene(object):
                 mkFolder(os.path.join(main_folder, main, s))
 
 
+    @classmethod
+    def makeSceneCtrl(self):
+        ''' Makes a scene control node -- a null called '__SCENE__' '''
+        doc = core.doc()
+        scene_ctrl = c4d.BaseObject(c4d.Onull)
+        doc.InsertObject(scene_ctrl)
+        scene_ctrl.SetName('__SCENE__')
+        scene_tag = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
+        c4d.EventAdd()
+        return (scene_ctrl, scene_tag)
+
+
     def setOutput(self):
+        ''' Set render output settings (based on production) '''
         output_path = os.path.join(
             self.prod_data['project'],
             self.project_name,
             'render_3d',
             self.scene_name,
-            'v{}'.format(self.version.zfill(3)),
+            'v{}'.format(str(self.version).zfill(3)),
             '$take',
             '{}_{}'.format(self.scene_name, '$take')
             )
@@ -134,7 +163,7 @@ class Scene(object):
             self.project_name,
             'render_3d',
             self.scene_name,
-            'v{}'.format(self.version.zfill(3)),
+            'v{}'.format(str(self.version).zfill(3)),
             '$take_passes',
             '{}_{}'.format(self.scene_name, '$take')
             )
@@ -150,8 +179,29 @@ class Scene(object):
             )
 
 
+    def rename(self, name=None):
+        ''' Rename the scene (with optional dialog) '''
+        if (name == None):
+            dlg = c4d.gui.RenameDialog('New scene name')
+            if (dlg==False):
+                return
+            else: name = dlg
+
+        self.scene_name = name
+        self.version = 1
+        self.setSceneData()
+        self.saveWithBackup()
+
+
+    def versionUp(self):
+        ''' Version up the scene and save a new backup. '''
+        self.version += 1
+        self.setSceneData()
+        self.saveWithBackup()
+
+
     def saveWithBackup(self):
-        ''' Backs up the current scene file. '''
+        ''' Saves and backs up the current scene file. '''
         def increment(filename):
             ''' This function takes a valid backup file-name and searches the destination folder for the 
             next valid version increment.  Note this is a fairly 'dumb' process, but ensures that a 
@@ -180,8 +230,8 @@ class Scene(object):
             return incr_file
         #   
         prod_data   = self.prod_data
-        scene_path  = os.path.join(prod_data['project'], self.project, 'c4d')
-        scene_name  = '{}_{}.c4d'.format(self.project, self.scene)
+        scene_path  = os.path.join(prod_data['project'], self.project_name, 'c4d')
+        scene_name  = '{}_{}.c4d'.format(self.project_name, self.scene_name)
         scene_file  = os.path.join(scene_path, scene_name)
 
         backup_path = os.path.join(scene_path, 'backup')
@@ -201,7 +251,7 @@ class Scene(object):
 
 
     def setTakes(self):
-        ''' Makes the default takes (render layers) and overrides for the specified project. '''
+        ''' Makes the default takes (render layers) and overrides for the specified production. '''
         td = core.doc().GetTakeData()
         for take_ in self.prod_data['layers']:
             take = core.take(take_, set_active=True)
@@ -316,8 +366,8 @@ def setOutput( default_override=True, **render_data ):
 
 # UI OBJECTS ######################################################################################
 class ProjectInitWindow(gui.GeDialog):
-    def __init__(self):
-        self.LBL_SHOW_NAME    = 1000
+    def __init__(self, populate=False):
+        self.LBL_PROD_NAME    = 1000
         self.LBL_PROJECT_NAME = 1001
         self.LBL_SCENE_NAME   = 1002
         self.LBL_FRAMERATE    = 1003
@@ -329,7 +379,7 @@ class ProjectInitWindow(gui.GeDialog):
         self.TXT_PREVIEW_DIR  = 2004
         self.TXT_PREVIEW_SCN  = 2005
 
-        self.DRP_SHOW_NAME    = 3000
+        self.DRP_PROD_NAME    = 3000
         self.DRP_PROJ_NAME    = 3001
         self.CHK_EXISTING     = 3002
 
@@ -345,6 +395,10 @@ class ProjectInitWindow(gui.GeDialog):
 
         self.PRODUCTION_ID    = {}
         self.PRODUCTION_ITR   = 10000
+
+        self.PROJECT_ID       = {}
+        self.PROJECT_ITR      = 10001
+
         for proj in database.getAllProductions():
             self.PRODUCTION_ID[self.PRODUCTION_ITR] = proj
             self.PRODUCTION_ITR += 1
@@ -355,10 +409,10 @@ class ProjectInitWindow(gui.GeDialog):
         self.SetTitle('Create New Project')        
         self.GroupBegin(self.GROUP_MAIN, c4d.BFH_LEFT, 2, 1)
         # Show selection dropdown
-        self.AddStaticText(self.LBL_SHOW_NAME, c4d.BFH_LEFT, name='Select Production:')
-        self.AddComboBox(self.DRP_SHOW_NAME, c4d.BFH_LEFT, 600)
+        self.AddStaticText(self.LBL_PROD_NAME, c4d.BFH_LEFT, name='Select Production:')
+        self.AddComboBox(self.DRP_PROD_NAME, c4d.BFH_LEFT, 600)
         for proj in self.PRODUCTION_ID:
-            self.AddChild(self.DRP_SHOW_NAME, proj, self.PRODUCTION_ID[proj])
+            self.AddChild(self.DRP_PROD_NAME, proj, self.PRODUCTION_ID[proj])
         # Project text field 
         self.AddStaticText(self.LBL_PROJECT_NAME, c4d.BFH_LEFT, name='Project Name:')
         self.GroupBegin(self.GROUP_PROJ, c4d.BFH_LEFT, 1, 3)
@@ -389,79 +443,76 @@ class ProjectInitWindow(gui.GeDialog):
         # Footers
         self.GroupEnd()
         self.ok = False
+
+        # populate the fields if this is an exisitng project
+        if (Scene.getSceneStatus()[2] == error.SCENE_OK):
+            msg    = 'This will migrate your existing scene to a new project.  Use \'Scene Rename\' utility to simply make a new version of this project.'
+            prompt = gui.MessageDialog(msg, c4d.GEMB_OKCANCEL)
+            if (prompt == c4d.GEMB_R_OK):
+                self.populate()
+            elif (prompt == c4d.GEMB_R_CANCEL):
+                self.Close()
+                return False
+
         return True
-
-
-    def defaultState(self):
-        self.SetBool(self.CHK_EXISTING, 1)
-        self.Enable(self.DRP_PROJ_NAME, False)
 
 
     def Command(self, id, msg):
-        if id == self.BTN_EXECUTE:
+        if (id == self.BTN_EXECUTE):
             self.ok = True
             self.execute()
             self.Close()
-        elif id == self.BTN_CANCEL:
+        elif (id == self.BTN_CANCEL):
             self.Close()
         elif (id == self.TXT_PROJECT_NAME or
-              id == self.TXT_SCENE_NAME or
-              id == self.DRP_SHOW_NAME or
-              id == self.DRP_PROJ_NAME or
+              id == self.TXT_SCENE_NAME):
+            self.preview_fast()
+        elif (id == self.DRP_PROJ_NAME or
+              id == self.DRP_PROD_NAME or
               id == self.CHK_EXISTING):
-            self.preview()
+            self.update_dropdown()
+            self.preview_fast()
         return True
 
 
-    @classmethod
-    def makeSceneCtrl(self):
-        ''' Makes a scene control node -- a null called '__SCENE__' '''
-        doc = core.doc()
-        scene_ctrl = c4d.BaseObject(c4d.Onull)
-        doc.InsertObject(scene_ctrl)
-        scene_ctrl.SetName('__SCENE__')
-        scene_tag = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
-        c4d.EventAdd()
-        return (scene_ctrl, scene_tag)
-
-
     def execute(self):
-        show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
+        show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_PROD_NAME)]
         proj_name  = self.GetString(self.TXT_PROJECT_NAME)
         scene_name = self.GetString(self.TXT_SCENE_NAME)
         framerate  = self.GetInt32(self.RDO_FRAMERATE)-3000
 
-        if checkScene():
-            gui.MessageDialog('This scene is already set up to run in the pipeline.  Run \'Rename Project\' to rename this scene or migrate it to another project.')
-            return True
-
-        scene_ctrl, tag   = self.makeSceneCtrl()
+        scene_ctrl, tag   = Scene.makeSceneCtrl()
         annotation        = "Production: {}\nProject: {}\nScene: {}\nFramerate: {}\nVersion: {}"
         annotation        = annotation.format(show_name, proj_name, scene_name, str(framerate), str(1))
         tag[c4d.ANNOTATIONTAG_TEXT] = annotation
 
         scn = Scene()
         scn.makeFolders()
+        scn.setTakes()
         scn.setOutput()
         scn.saveWithBackup()
 
         return True
 
 
-    def preview(self):
+    def preview_fast(self):
         try:
-            proj_exist = self.GetBool(self.CHK_EXISTING)
+            new_proj = self.GetBool(self.CHK_EXISTING)
 
-            self.Enable(self.TXT_PROJECT_NAME, proj_exist)
-            self.Enable(self.DRP_PROJ_NAME, 1-proj_exist)
+            self.Enable(self.TXT_PROJECT_NAME, new_proj)
+            self.Enable(self.DRP_PROJ_NAME, 1-new_proj)
 
-            show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_SHOW_NAME)]
-            proj_name  = self.GetString(self.TXT_PROJECT_NAME)
+            show_name  = self.PRODUCTION_ID[self.GetInt32(self.DRP_PROD_NAME)]
+            if not (new_proj):
+                proj_name = self.PROJECT_ID[self.GetInt32(self.DRP_PROJ_NAME)]
+            else:
+                proj_name  = self.GetString(self.TXT_PROJECT_NAME)
             scene_name = self.GetString(self.TXT_SCENE_NAME)
             prod_data  = database.getProduction(show_name)['project']
 
             proj_name  = proj_name.replace(' ', '_')
             scene_name = scene_name.replace(' ', '_')
+
             self.SetString(self.TXT_PROJECT_NAME, proj_name)
             self.SetString(self.TXT_SCENE_NAME, scene_name)
 
@@ -476,6 +527,39 @@ class ProjectInitWindow(gui.GeDialog):
         except:
             pass
         return True
+
+
+    def update_dropdown(self):
+        try:
+            if not self.GetBool(self.CHK_EXISTING):
+                all_projects = database.getAllProjects(self.PRODUCTION_ID[self.GetInt32(self.DRP_PROD_NAME)])
+                for proj in all_projects:
+                    self.PROJECT_ID[self.PROJECT_ITR] = proj
+                    self.PROJECT_ITR += 1
+                for proj in self.PROJECT_ID: 
+                    self.AddChild(self.DRP_PROJ_NAME, proj, self.PROJECT_ID[proj])
+            else:
+                self.FreeChildren(self.DRP_PROJ_NAME)
+        except:
+            pass
+
+
+    def populate(self):
+        scn = Scene()
+        doc = core.doc()
+        fps = doc.GetFps()
+
+        for k,v in self.PRODUCTION_ID.iteritems():
+            if (v == scn.production):
+                prod_id = k
+                break
+
+        self.SetInt32(self.DRP_PROD_NAME, prod_id)
+        self.SetString(self.TXT_PROJECT_NAME, '')
+        self.SetString(self.TXT_SCENE_NAME, '')
+        self.SetInt32(self.RDO_FRAMERATE, 3000+fps)
+        self.SetBool(self.CHK_EXISTING, True)
+        self.preview_fast()
 
 
 class TeamColorWindow(gui.GeDialog):
@@ -612,5 +696,5 @@ class TeamColorWindow(gui.GeDialog):
 
 
 def test():
-    t = TeamColorWindow()
+    t = ProjectInitWindow()
     t.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=100)

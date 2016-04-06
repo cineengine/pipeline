@@ -1,5 +1,5 @@
 import sys
-sys.path.append('V:/dev')
+sys.path.append('Y:\\workspace\\scripts\\')
 
 
 try:
