@@ -32,9 +32,9 @@ class FileError(BaseError):
 class PipelineError(BaseError):
     def _alert(self):
         notification = {
-            SCENE_NEW:    'No valid __SCENE__ object found. Has this scene been set up in the pipeline? If not, run the pipeline setup and try again.',
-            SCENE_BROKEN: 'Multiple __SCENE__ objects were found. Delete any extras from merged scenes to continue.',
-            SCENE_OK:     'Existing __SCENE__ object found.  This command is intended to be run on a clean scene.',
-            SCENE_MISSING:'Could not load project data from database.  Is this scene saved on the network in a project folder?'
+            0: 'No valid __SCENE__ object found. Has this scene been set up in the pipeline? If not, run the pipeline setup and try again.',
+            1: 'Multiple __SCENE__ objects were found. Delete any extras from merged scenes to continue.',
+            2: 'Existing __SCENE__ object found.  This command is intended to be run on a clean scene.',
+            3: 'Could not load project data from database.  Is this scene saved on the network in a project folder?'
         }
         gui.MessageDialog(notification[self.message])

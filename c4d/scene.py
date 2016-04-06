@@ -74,6 +74,12 @@ class Scene(object):
             _status = (None, None, error.SCENE_BROKEN)
         return _status
 
+    @classmethod
+    def isPipelined(self):
+        if (self.getSceneStatus()[2] == err.SCENE_OK):
+            return True
+        else: return False
+
     def getSceneData(self):
         ''' Parses the data from the scene_ctrl tag into attributes for the scene and production.'''
         def _annoToDict(tag_data):
@@ -200,6 +206,7 @@ class Scene(object):
 
     def versionUp(self):
         ''' Version up the scene and save a new backup. '''
+        if not self.isPipelined(): return False
         self.version += 1
         self.setSceneData()
         self.setOutput()
@@ -467,7 +474,7 @@ class ProjectInitWindow(gui.GeDialog):
         self.ok = False
 
         # populate the fields if this is an exisitng project
-        if (Scene.getSceneStatus()[2] == error.SCENE_OK):
+        if self.isPipelined():
             msg    = 'This will migrate your existing scene to a new project.  Use \'Scene Rename\' utility to simply make a new version of this project.'
             prompt = gui.MessageDialog(msg, c4d.GEMB_OKCANCEL)
             if (prompt == c4d.GEMB_R_OK):
