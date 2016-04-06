@@ -34,28 +34,6 @@ def new():
     c4d.CallCommand(12094, 12094)
     return
 
-def test():
-    doc = c4d.documents.GetActiveDocument()
-    doc.StartUndo()
-
-    scene_ctrl = c4d.BaseObject(c4d.Onull)
-    doc.InsertObject(scene_ctrl)
-    doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
-    
-    doc.AddUndo(c4d.UNDOTYPE_CHANGE, scene_ctrl)
-    scene_ctrl.SetName('one')
-    
-
-    #scene_ctrl = c4d.BaseObject(c4d.Onull)
-    #doc.InsertObject(scene_ctrl)
-    #scene_ctrl.SetName('two')
-    #doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
-
-    #scene_ctrl = c4d.BaseObject(c4d.Onull)
-    #doc.InsertObject(scene_ctrl)
-    #scene_ctrl.SetName('three')
-    #doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
-    doc.EndUndo()
 
 def open( file_=None ):
     ''' Open the specified scene.  If no file is specified, open a dialog. '''
