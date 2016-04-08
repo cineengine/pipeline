@@ -1,0 +1,32 @@
+DIALOGSTRINGS ESPNPipelineMenu
+{
+	MAIN_DIALOG           "ESPN Pipeline Menu";
+
+	FIRST_TAB_NAME        "Project / Scene Management";
+	LBL_PROD_NAME         "Select Production:";
+	LBL_PROJ_NAME         "Project Name:";
+	DRP_PROJ_NAME         "";
+	CHK_EXISTING          "Use existing project";
+	LBL_SCENE_NAME        "Scene Name:";
+	LBL_FRAMERATE         "Framerate:";
+	RDO_FRAMERATE_30      "30 fps";
+	RDO_FRAMERATE_60      "60 fps";
+	LBL_PREVIEW_NULL      " ";
+	LBL_PREVIEW_PROJ      "Project folder preview:";
+	LBL_PREVIEW_FILE      "Scene file preview:";
+	BTN_NEWPROJ_EXEC      "Setup Scene";
+	BTN_MIGPROJ_EXEC      "Migrate Scene";
+	BTN_RENAME_EXEC       "Rename Scene";
+	LBL_NEWPROJ_EXEC      "Pipelines a new scene and creates project folders (if necessary.)";
+	LBL_MIGPROJ_EXEC      "Migrates an existing scene into a new or existing project.";
+	LBL_RENAME_EXEC       "Renames an existing scene in its current project.";
+
+	SECOND_TAB_NAME       "Rendering";
+	SECOND_TAB_TEXT       "SECOND TAB";
+
+	THIRD_TAB_NAME        "Automation";
+	THIRD_TAB_TEXT        "THIRD TAB";
+
+	FOURTH_TAB_NAME       "Utilities";
+	FOURTH_TAB_TEXT       "FOURTH TAB";
+}
