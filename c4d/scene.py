@@ -62,10 +62,10 @@ class Scene(object):
         # One scene_ctrl found -- check it for a tag
         elif (len(scene_ctrl)==1):
             scene_ctrl = scene_ctrl[0]
-            scene_tag  = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl)[0]
+            scene_tag  = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl)
             # tag found -- status is green
             if (scene_tag):
-                _status = (scene_ctrl, scene_tag, error.SCENE_OK)
+                _status = (scene_ctrl, scene_tag[0], error.SCENE_OK)
             # no tag found on scene_ctrl -- scene is broken
             else:
                 _status = (scene_ctrl, None, error.SCENE_BROKEN)

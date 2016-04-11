@@ -14,12 +14,13 @@ DIALOGSTRINGS ESPNPipelineMenu
 	LBL_PREVIEW_NULL      " ";
 	LBL_PREVIEW_PROJ      "Project folder preview:";
 	LBL_PREVIEW_FILE      "Scene file preview:";
-	BTN_NEWPROJ_EXEC      "Setup Scene";
+	BTN_NEWPROJ_EXEC      "Create Pipeline Scene";
 	BTN_MIGPROJ_EXEC      "Migrate Scene";
 	BTN_RENAME_EXEC       "Rename Scene";
-	LBL_NEWPROJ_EXEC      "Pipelines a new scene and creates project folders (if necessary.)";
-	LBL_MIGPROJ_EXEC      "Migrates an existing scene into a new or existing project.";
-	LBL_RENAME_EXEC       "Renames an existing scene in its current project.";
+	BTN_HELP_EXEC         "Help & Instructions";
+	LBL_NEWPROJ_EXEC      "Sets the name of the project and the scene, and saves a backup >> ";
+	LBL_MIGPROJ_EXEC      "Migrates a pipelined scene into a new or existing project >>";
+	LBL_RENAME_EXEC       "Renames an existing scene in its current project >>";
 
 	SECOND_TAB_NAME       "Rendering";
 	SECOND_TAB_TEXT       "SECOND TAB";

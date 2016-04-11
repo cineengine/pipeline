@@ -18,9 +18,8 @@ PLUGIN_ID = 1037160
 
 ID_STATIC            = 99999
 ESPNPipelineMenu     = 10000
+ESPNHelpMenu         = 99998
 MAIN_DIALOG          = 10001
-
-
 
 FIRST_TAB            = 10002
 LBL_PROD_NAME        = 10004
@@ -43,11 +42,12 @@ TXT_PREVIEW_PROJ     = 10020
 LBL_PREVIEW_FILE     = 10021
 TXT_PREVIEW_FILE     = 10022
 BTN_NEWPROJ_EXEC     = 10023
-BTN_MIGPROJ_EXEC     = 10024
-BTN_RENAME_EXEC      = 10025
-LBL_NEWPROJ_EXEC     = 10026
-LBL_MIGPROJ_EXEC     = 10027
-LBL_RENAME_EXEC      = 10028
+BTN_HELP_EXEC        = 10024
+#BTN_RENAME_EXEC      = 10025
+#LBL_NEWPROJ_EXEC     = 10026
+#LBL_MIGPROJ_EXEC     = 10027
+#LBL_RENAME_EXEC      = 10028
+TAB1_HELP_IMAGE      = 10029
 
 SECOND_TAB           = 20000
 SECOND_TAB_TEXT      = 20001
@@ -77,65 +77,114 @@ class ESPNMenu(gui.GeDialog):
     def CreateLayout(self):
         self.LoadDialogResource(ESPNPipelineMenu)
         sc, st, status = scene.Scene.getSceneStatus()
-        self.pullProductionList()
-        self.populate()
+        self.tab1_pullProductionList()
 
         if (status == error.SCENE_OK):
             self.this_scene = scene.Scene()
-            self.populateExistingScene()
+            self.tab1_populate(existing=True)
+        else: 
+            self.tab1_populate(existing=False)
         return True
 
     def Command(self, id, msg):
+        # "Use existing project" checkbox
         if (id == CHK_EXISTING):
             chk = self.GetBool(CHK_EXISTING)
             self.Enable(DRP_PROJ_NAME, chk)
             self.Enable(TXT_PROJ_NAME, 1-chk)
-            self.refresh()
+            self.tab1_refresh()
+        # "Production" dropdown
         elif (id == DRP_PROD_NAME):
-             self.refreshProductionChange()
+             self.tab1_refresh(projects=True)
+        # Text fields or "project" dropdown
         elif (id == TXT_PROJ_NAME or
               id == TXT_SCENE_NAME or
               id == DRP_PROJ_NAME):
-            self.refresh()
+            self.tab1_refresh()
+        # "Create new" button
+        elif (id == BTN_NEWPROJ_EXEC):
+            self.tab1_create()
+        elif (id == BTN_HELP_EXEC):
+            self.tab1_help()
         return True
 
-    def populate(self):
+    ### TAB 01 FUNCTIONS #########################################################################
+    def tab1_populate(self, existing=False):
+        ''' Populates the UI with initial values.
+            existing: Pulls in data from a pipelined scene (if applicable).'''
         # set default values
-        self.productionSelected(False)
+        self.tab1_prodSelected(False)
         self.SetBool(CHK_EXISTING, False)
         self.Enable(TXT_PREVIEW_PROJ, False)
         self.Enable(TXT_PREVIEW_FILE, False)
 
-    def refresh(self):
-        # parse ui fields
-        prod_name = self.production_enum[self.GetInt32(DRP_PROD_NAME)]
-        if self.GetBool(CHK_EXISTING):
-            proj_name = self.project_enum[self.GetInt32(DRP_PROJ_NAME)]
-        else:
-            proj_name = self.GetString(TXT_PROJ_NAME)
-        scene_name = self.GetString(TXT_SCENE_NAME)
-        prod_folder = database.getProduction(prod_name)['project']
-        # Don't allow spaces as the user types
-        proj_name = proj_name.replace(' ', '_') 
-        scene_name = scene_name.replace(' ', '_')
-        self.SetString(TXT_PROJ_NAME, proj_name)
-        self.SetString(TXT_SCENE_NAME, scene_name)
-        # Generate preview paths
-        scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
-        proj_prev  = os.path.relpath(
-            "{}\\{}\\c4d\\".format(prod_folder, proj_name),
-            "\\\\cagenas\\workspace\\MASTER_PROJECTS\\"
-            )
-        self.SetString(TXT_PREVIEW_PROJ, proj_prev)
-        self.SetString(TXT_PREVIEW_FILE, scene_prev)
+        if (existing):
+            doc = c4d.documents.GetActiveDocument()
+            fps = doc.GetFps()
+            # get id of current production from the dict value
+            for k,v in self.production_enum.iteritems():
+                if (v == self.this_scene.production):
+                    prod_id = k
+            # set the production dropdown and get the project dropdown ready
+            self.SetInt32(DRP_PROD_NAME, prod_id)
+            self.tab1_refresh(preview=False, projects=True)
+            self.SetBool(CHK_EXISTING, True)
+            # get id of current project from the dict value
+            for k,v in self.project_enum.iteritems():
+                if (v == self.this_scene.project_name):
+                    proj_id = k
+            # set the project dropdown
+            self.SetInt32(DRP_PROJ_NAME, proj_id)
+            self.Enable(TXT_PROJ_NAME, False)
+            # set the scene name and framerate
+            self.SetString(TXT_SCENE_NAME, self.this_scene.scene_name)
+            self.SetInt32(RDO_FRAMERATE, 10000+fps)
+            # refresh to update preview values
+            self.tab1_refresh()
 
-    def refreshProductionChange(self):
-        if not (self.GetInt32(DRP_PROD_NAME) == 0):
-            self.productionSelected(True)
-            self.pullProjectList()
-            self.refresh()
+    def tab1_refresh(self, preview=True, projects=False):
+        ''' Updates the UI with selection or input changes.
+            preview:  Updates preview text fields (when typing or changing dropdowns)
+            projects:  Updates the project dropdown (when production selection changes)'''
+        if (preview):
+            # parse ui fields into string values
+            prod_name = self.production_enum[self.GetInt32(DRP_PROD_NAME)]
+            if self.GetBool(CHK_EXISTING):
+                proj_name = self.project_enum[self.GetInt32(DRP_PROJ_NAME)]
+                self.Enable(DRP_PROJ_NAME, True)
+                self.Enable(TXT_PROJ_NAME, False)
+            else:
+                proj_name = self.GetString(TXT_PROJ_NAME)
+                self.Enable(DRP_PROJ_NAME, False)
+                self.Enable(TXT_PROJ_NAME, True)
+            scene_name = self.GetString(TXT_SCENE_NAME)
+            prod_folder = database.getProduction(prod_name)['project']
+            # Don't allow spaces as the user types
+            proj_name = proj_name.replace(' ', '_') 
+            scene_name = scene_name.replace(' ', '_')
+            self.SetString(TXT_PROJ_NAME, proj_name)
+            self.SetString(TXT_SCENE_NAME, scene_name)
+            # Generate preview paths
+            scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
+            proj_prev  = os.path.relpath(
+                "{}\\{}\\c4d\\".format(prod_folder, proj_name),
+                "\\\\cagenas\\workspace\\MASTER_PROJECTS\\"
+                )
+            self.SetString(TXT_PREVIEW_PROJ, proj_prev)
+            self.SetString(TXT_PREVIEW_FILE, scene_prev)
 
-    def productionSelected(self, bool_):
+        if (projects):
+            if not (self.GetInt32(DRP_PROD_NAME) == 0):
+                # flag it as such
+                self.tab1_prodSelected(True)
+                # update the project list
+                self.tab1_pullProjectList()
+                # .. & refresh previews
+                self.tab1_refresh(preview=True, projects=False)
+
+    def tab1_prodSelected(self, bool_):
+        ''' Since the UI defaults to not having a production selected, most fields are disabled.
+            When a production *is* selected, this method enables the dependent fields.'''
         self.Enable(CHK_EXISTING, bool_)
         self.Enable(DRP_PROJ_NAME, bool_)
         self.Enable(TXT_PROJ_NAME, bool_)
@@ -146,51 +195,78 @@ class ESPNMenu(gui.GeDialog):
             self.Enable(DRP_PROJ_NAME, chk)
             self.Enable(TXT_PROJ_NAME, 1-chk)
 
-    def pullProductionList(self):
+    def tab1_pullProductionList(self):
         # generate a dictionary with gui ID as key and name as value
         id_ = DRP_PROD_NAME_START_ID
         for prod in database.getAllProductions():
             self.production_enum[id_] = prod
             self.production_ids.append(id_)
             id_ += 1
-        # populate production list
+        # tab1_populate production list
         for prod in self.production_enum:
             self.AddChild(DRP_PROD_NAME, prod, self.production_enum[prod])
 
-    def pullProjectList(self):
+    def tab1_pullProjectList(self):
         # generate a dictionary with gui ID as key and name as value
         id_ = DRP_PROJ_NAME_START_ID
         for proj in database.getAllProjects(self.production_enum[self.GetInt32(DRP_PROD_NAME)]):
             self.project_enum[id_] = proj
             self.project_ids.append(id_)
             id_ += 1
-        # populate project list
+        # tab1_populate project list
         for proj in self.project_enum:
             self.AddChild(DRP_PROJ_NAME, proj, self.project_enum[proj])
 
-    def populateExistingScene(self):
-        doc = c4d.documents.GetActiveDocument()
-        fps = doc.GetFps()
-        
-        for k,v in self.production_enum.iteritems():
-            if (v == self.this_scene.production):
-                prod_id = k
+    def tab1_create(self):
+        # populate strings from text fields
+        prod_name = self.production_enum[self.GetInt32(DRP_PROD_NAME)]
+        if (self.GetBool(CHK_EXISTING) == True):
+            proj_name = self.project_enum[self.GetInt32(DRP_PROJ_NAME)]
+        else:
+            proj_name = self.GetString(TXT_PROJ_NAME)
+        scene_name = self.GetString(TXT_SCENE_NAME)
+        framerate  = self.GetInt32(RDO_FRAMERATE)-10000
+        # check for existing scene controller
+        scene_ctrl, scene_tag, status = scene.Scene.getSceneStatus()
+        if (status == error.SCENE_OK):
+            scene_ctrl.Remove()
+        # create new scene controller
+        scene_ctrl, scene_tag = scene.Scene.makeSceneCtrl()
+        annotation = "Production: {}\nProject: {}\nScene: {}\nFramerate: {}\nVersion: {}"
+        annotation = annotation.format(prod_name, proj_name, scene_name, str(framerate), str(1))
+        scene_tag[c4d.ANNOTATIONTAG_TEXT] = annotation
+        # setup project and save
+        scn = scene.Scene()
+        scn.makeFolders()
+        scn.setTakes()
+        scn.setOutput()
+        scn.saveWithBackup()
+        return True
 
-        self.SetInt32(DRP_PROD_NAME, prod_id)
-        self.refreshProductionChange()
-        self.SetBool(CHK_EXISTING, True)
+    def tab1_help(self):
+        self.tab1_help_diag = ESPNHelp(panel='tab1')
+        self.tab1_help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
+        return True
 
-        for k,v in self.project_enum.iteritems():
-            if (v == self.this_scene.project_name):
-                proj_id = k
 
-        self.SetInt32(DRP_PROJ_NAME, proj_id)
-        self.Enable(TXT_PROJ_NAME, False)
+class ESPNHelp(gui.GeDialog):
+    def __init__(self, panel):
+        self.panel = panel
+        self.BUTTON_ID = 1037183
 
-        self.SetString(TXT_SCENE_NAME, self.this_scene.scene_name)
-        self.SetInt32(RDO_FRAMERATE, 10000+fps)
+    def CreateLayout(self):
+        self.LoadDialogResource(ESPNHelpMenu)
 
-        self.refresh()
+        bmp = bitmaps.BaseBitmap()
+
+        if (self.panel=='tab1'):
+            dir, file = os.path.split(__file__)
+            fn = os.path.join(dir, "res", "icons", "tab1_help.tif")
+            bmp.InitWith(fn)
+            gui.RegisterIcon(self.BUTTON_ID, bmp)
+            #btn.SetImage(bmp)
+        return True
+
 
 class ESPNPipelinePlugin(plugins.CommandData):
     dialog = None

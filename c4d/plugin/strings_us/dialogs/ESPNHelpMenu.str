@@ -1,0 +1,4 @@
+DIALOGSTRINGS ESPNHelpMenu
+{
+	HELP_DIALOG           "ESPN Pipeline Help";
+}
