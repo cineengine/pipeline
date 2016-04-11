@@ -19,3 +19,11 @@ def assignTeamColors( tricode, location, swap=False ):
     core.changeColor('{}_TERTIARY'.format(location.upper()), color_vectors['tertiary'], exact=False)
 
     return True
+
+
+def sortTagObject( name=None ):
+    if not (name):
+        name = c4d.RenameDialog('')
+    if not (name == ''):
+        tags = core.tag(typ=c4d.Tannotation, name=name)
+    core.visibility(tags, v=False, r=False)

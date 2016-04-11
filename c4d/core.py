@@ -125,7 +125,7 @@ def tag( obj_=None, typ=None, name=None ):
         tags.append(tag)
         # Name the tag
         if name:
-            tag[c4d.ID_BASELIST_NAME] = name
+            tag.SetName(name)
         doc.AddUndo(c4d.UNDOTYPE_NEW, tag)
 
     c4d.EventAdd()

@@ -7,14 +7,17 @@ import os
 from c4d import gui, bitmaps, plugins
 # custom libraries
 #from pipeline.c4d import scene
+from pipeline.c4d import core
 from pipeline.c4d import scene
 from pipeline.c4d import error
 from pipeline.c4d import database
+reload(core)
 reload(scene)
 reload(error)
 reload(database)
 
 PLUGIN_ID = 1037160
+BUTTON_ID = 1037183
 
 ID_STATIC            = 99999
 ESPNPipelineMenu     = 10000
@@ -47,15 +50,38 @@ BTN_HELP_EXEC        = 10024
 #LBL_NEWPROJ_EXEC     = 10026
 #LBL_MIGPROJ_EXEC     = 10027
 #LBL_RENAME_EXEC      = 10028
-TAB1_HELP_IMAGE      = 10029
+HELP_IMAGE           = 10029
 
 SECOND_TAB           = 20000
-SECOND_TAB_TEXT      = 20001
-SECOND_TAB_TEXTBOX   = 20002
+BTN_SETOUTPUT        = 20001
+BTN_MAKETAG          = 20002
+BTN_SORT             = 20003
+BTN_NEWTAKE          = 20004
+BTN_VERSIONUP        = 20005
+BTN_SUBMIT           = 20006
+LBL_OUTPUT_PATHS     = 20007
+LBL_TAKE_UTILS       = 20008
 
 THIRD_TAB            = 30000
-THIRD_TAB_TEXT       = 30001
-THIRD_TAB_TEXTBOX    = 30002
+LBL_HOME_TRICODE     = 30001
+TXT_HOME_TRICODE     = 30002
+VEC_HOME_COLOR_P     = 30003
+VEC_HOME_COLOR_S     = 30004
+VEC_HOME_COLOR_T     = 30005
+LBL_AWAY_TRICODE     = 30006
+TXT_AWAY_TRICODE     = 30007
+VEC_AWAY_COLOR_P     = 30008
+VEC_AWAY_COLOR_S     = 30009
+VEC_AWAY_COLOR_T     = 30010
+THIRD_TAB_INSTRUCTION= 30011
+IS_MATCHUP           = 30012
+TEAM_SWITCH_EXEC     = 30013
+HOME_PRIMARY_EXEC    = 30014
+HOME_SECONDARY_EXEC  = 30015
+HOME_TERTIARY_EXEC   = 30016
+AWAY_PRIMARY_EXEC    = 30017
+AWAY_SECONDARY_EXEC  = 30018
+AWAY_TERTIARY_EXEC   = 30019
 
 FOURTH_TAB           = 40000
 FOURTH_TAB_TEXT      = 40001
@@ -106,6 +132,22 @@ class ESPNMenu(gui.GeDialog):
             self.tab1_create()
         elif (id == BTN_HELP_EXEC):
             self.tab1_help()
+        # tab 2 buttons
+        elif (id == BTN_SETOUTPUT):
+            self.tab2_setOutput()
+        elif (id == BTN_VERSIONUP):
+            self.tab2_versionUp()
+        elif (id == BTN_SUBMIT):
+            self.tab2_submit()
+        elif (id == BTN_NEWTAKE):
+            self.tab2_newTake()
+        elif (id == BTN_MAKETAG):
+            self.tab2_addTag()
+        elif (id == BTN_SORT):
+            self.tab2_sortScene()
+        elif (id == TXT_HOME_TRICODE or
+              id == TXT_AWAY_TRICODE):
+            self.tab3_updateSwatches()
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################
@@ -248,11 +290,82 @@ class ESPNMenu(gui.GeDialog):
         self.tab1_help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
         return True
 
+    ### TAB 02 FUNCTIONS #########################################################################
+    def tab2_setOutput(self):
+        chk = scene.Scene.isPipelined()
+        if (chk):
+            scn = scene.Scene()
+            scn.setOutput()
+        else:
+            scene.Scene.setOutput()
+        return True
+
+    def tab2_versionUp(self):
+        chk = scene.Scene.isPipelined()
+        if (chk):
+            scn = scene.Scene()
+            scn.versionUp()
+        else: raise error.PipelineError(0)
+        return True
+
+    def tab2_submit(self):
+        pass
+
+    def tab2_newTake(self):
+        name = gui.RenameDialog('')
+        if not (name == ''):
+            core.take(name, set_active=False)
+        else: pass
+        return True
+
+    def tab2_addTag(self):
+        pass
+
+    def tab2_sortScene(self):
+        pass
+
+    ### TAB 03 FUNCTIONS #########################################################################
+    def tab3_updateSwatches(self):
+        chk = scene.Scene.isPipelined()
+        if (chk):
+            self.this_scene = scene.Scene()
+        else: return
+        home_tricode = self.GetString(TXT_HOME_TRICODE)
+        away_tricode = self.GetString(TXT_AWAY_TRICODE)
+
+        try:
+            home_colors = database.getTeamColors(self.this_scene.production, home_tricode)
+            home_team = True
+        except:
+            home_team = None
+        try:
+            away_colors = database.getTeamColors(self.this_scene.production, away_tricode)
+            away_team = True
+        except:
+            away_team = None
+
+        if (home_team):
+            self.SetColorField(VEC_HOME_COLOR_P, home_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_S, home_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_T, home_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        else:
+            self.SetColorField(VEC_HOME_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+
+        if (away_team):
+            self.SetColorField(VEC_AWAY_COLOR_P, away_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_S, away_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_T, away_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        else:
+            self.SetColorField(VEC_AWAY_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        return True       
 
 class ESPNHelp(gui.GeDialog):
     def __init__(self, panel):
         self.panel = panel
-        self.BUTTON_ID = 1037183
 
     def CreateLayout(self):
         self.LoadDialogResource(ESPNHelpMenu)
@@ -263,10 +376,8 @@ class ESPNHelp(gui.GeDialog):
             dir, file = os.path.split(__file__)
             fn = os.path.join(dir, "res", "icons", "tab1_help.tif")
             bmp.InitWith(fn)
-            gui.RegisterIcon(self.BUTTON_ID, bmp)
-            #btn.SetImage(bmp)
+            gui.RegisterIcon(BUTTON_ID, bmp)
         return True
-
 
 class ESPNPipelinePlugin(plugins.CommandData):
     dialog = None
@@ -287,7 +398,7 @@ if __name__ == "__main__":
     bmp = bitmaps.BaseBitmap()
 
     dir, file = os.path.split(__file__)
-    fn = os.path.join(dir, "res", "icon.tif")
+    fn = os.path.join(dir, "res", "icons", "icon.png")
     bmp.InitWith(fn)
 
     #desc = plugins.GeLoadString(ESPNPipelineMenu)
