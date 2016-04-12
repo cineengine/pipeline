@@ -1,12 +1,22 @@
-# !/usr/bin/python
+# !/usr/bin/env python
 # coding: UTF-8
+
+""" ESPNPipelineMenu.pyp: A Python plugin for Cinema 4D housing various pipeline utilities. """
+
+__author__     = "Mark Rohrer"
+__copyright__  = "Copyright 2016, ESPN Productions"
+__credits__    = ["Mark Rohrer", "Martin Weber"]
+__license__    = "GPL"
+__version__    = "0.8"
+__maintainer__ = "Mark Rohrer"
+__email__      = "mark.rohrer@espn.com"
+__status__     = "Beta testing"
 
 # internal libraries
 import c4d
 import os
 from c4d import gui, bitmaps, plugins
 # custom libraries
-#from pipeline.c4d import scene
 from pipeline.c4d import core
 from pipeline.c4d import scene
 from pipeline.c4d import error
