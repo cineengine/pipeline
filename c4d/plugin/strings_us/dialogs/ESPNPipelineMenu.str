@@ -17,12 +17,12 @@ DIALOGSTRINGS ESPNPipelineMenu
 	BTN_NEWPROJ_EXEC      "Create Pipeline Scene";
 	BTN_MIGPROJ_EXEC      "Migrate Scene";
 	BTN_RENAME_EXEC       "Rename Scene";
-	BTN_HELP_EXEC         "Help & Instructions";
+	BTN_HELP_EXEC         "Instructions / help";
 	LBL_NEWPROJ_EXEC      "Sets the name of the project and the scene, and saves a backup >> ";
 	LBL_MIGPROJ_EXEC      "Migrates a pipelined scene into a new or existing project >>";
 	LBL_RENAME_EXEC       "Renames an existing scene in its current project >>";
 
-	SECOND_TAB_NAME       "Rendering";
+	SECOND_TAB_NAME       "Render layers & output";
 	LBL_OUTPUT_PATHS      "Setup render output";
 	LBL_TAKE_UTILS        "Take / Render Layer utilities";
 	BTN_SETOUTPUT         "Default settings & output paths";
@@ -45,7 +45,11 @@ DIALOGSTRINGS ESPNPipelineMenu
 	AWAY_PRIMARY_EXEC     "Away primary";
 	AWAY_SECONDARY_EXEC   "Away secondary";
 	AWAY_TERTIARY_EXEC    "Away tertiary";
+	AUTOMATION_HELP_EXEC  "Instructions / help";
 
-	FOURTH_TAB_NAME       "Utilities";
-	FOURTH_TAB_TEXT       "FOURTH TAB";
+	SAVE_RENAME_TAB       "Save / Rename Scene";
+	SAVE_BACKUP_EXEC      "Save Scene & Backup";
+	RENAME_EXEC           "Rename Scene";
+	SAVE_RENAME_HELP_EXEC "Instructions / help";
+
 }

@@ -11,10 +11,12 @@ from pipeline.c4d import core
 from pipeline.c4d import scene
 from pipeline.c4d import error
 from pipeline.c4d import database
+from pipeline.c4d import submit
 reload(core)
 reload(scene)
 reload(error)
 reload(database)
+reload(submit)
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -22,6 +24,7 @@ BUTTON_ID = 1037183
 ID_STATIC            = 99999
 ESPNPipelineMenu     = 10000
 ESPNHelpMenu         = 99998
+CLOSE                = 99997
 MAIN_DIALOG          = 10001
 
 FIRST_TAB            = 10002
@@ -46,10 +49,6 @@ LBL_PREVIEW_FILE     = 10021
 TXT_PREVIEW_FILE     = 10022
 BTN_NEWPROJ_EXEC     = 10023
 BTN_HELP_EXEC        = 10024
-#BTN_RENAME_EXEC      = 10025
-#LBL_NEWPROJ_EXEC     = 10026
-#LBL_MIGPROJ_EXEC     = 10027
-#LBL_RENAME_EXEC      = 10028
 HELP_IMAGE           = 10029
 
 SECOND_TAB           = 20000
@@ -82,13 +81,15 @@ HOME_TERTIARY_EXEC   = 30016
 AWAY_PRIMARY_EXEC    = 30017
 AWAY_SECONDARY_EXEC  = 30018
 AWAY_TERTIARY_EXEC   = 30019
+AUTOMATION_HELP_EXEC = 30020
 
-FOURTH_TAB           = 40000
-FOURTH_TAB_TEXT      = 40001
-FOURTH_TAB_TEXTBOX   = 40002
+SAVE_RENAME_TAB      = 40000
+SAVE_BACKUP_EXEC     = 40001
+RENAME_EXEC          = 40002
+SAVE_RENAME_HELP_EXEC= 40003
 
-DRP_PROJ_NAME_START_ID = 80000
-DRP_PROD_NAME_START_ID = 90000
+DRP_PROJ_NAME_START_ID=80000
+DRP_PROD_NAME_START_ID=90000
 
 class ESPNMenu(gui.GeDialog):
     def __init__(self):
@@ -110,6 +111,9 @@ class ESPNMenu(gui.GeDialog):
             self.tab1_populate(existing=True)
         else: 
             self.tab1_populate(existing=False)
+
+        self.tab3_matchupEnabled()
+
         return True
 
     def Command(self, id, msg):
@@ -131,12 +135,10 @@ class ESPNMenu(gui.GeDialog):
         elif (id == BTN_NEWPROJ_EXEC):
             self.tab1_create()
         elif (id == BTN_HELP_EXEC):
-            self.tab1_help()
+            self.help('tab1')
         # tab 2 buttons
         elif (id == BTN_SETOUTPUT):
             self.tab2_setOutput()
-        elif (id == BTN_VERSIONUP):
-            self.tab2_versionUp()
         elif (id == BTN_SUBMIT):
             self.tab2_submit()
         elif (id == BTN_NEWTAKE):
@@ -145,9 +147,36 @@ class ESPNMenu(gui.GeDialog):
             self.tab2_addTag()
         elif (id == BTN_SORT):
             self.tab2_sortScene()
+        # tab 3
+        elif (id == IS_MATCHUP):
+            self.tab3_matchupEnabled()
         elif (id == TXT_HOME_TRICODE or
               id == TXT_AWAY_TRICODE):
             self.tab3_updateSwatches()
+        elif (id == HOME_PRIMARY_EXEC):
+            self.tab3_createTeamColorMat('home', 'primary')
+        elif (id == HOME_SECONDARY_EXEC):
+            self.tab3_createTeamColorMat('home', 'secondary')
+        elif (id == HOME_TERTIARY_EXEC):
+            self.tab3_createTeamColorMat('home', 'tertiary')
+        elif (id == AWAY_PRIMARY_EXEC):
+            self.tab3_createTeamColorMat('away', 'primary')
+        elif (id == AWAY_SECONDARY_EXEC):
+            self.tab3_createTeamColorMat('away', 'secondary')
+        elif (id == AWAY_TERTIARY_EXEC):
+            self.tab3_createTeamColorMat('away', 'tertiary')
+        elif (id == TEAM_SWITCH_EXEC):
+            self.tab3_switchTeam()
+        elif (id == AUTOMATION_HELP_EXEC):
+            self.help('tab3')
+        elif (id == SAVE_BACKUP_EXEC):
+            self.tab4_saveWithBackup()
+        elif (id == RENAME_EXEC):
+            self.tab4_rename()
+        elif (id == BTN_VERSIONUP):
+            self.tab4_versionUp()
+        elif (id == SAVE_RENAME_HELP_EXEC):
+            self.help('save_rename')
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################
@@ -172,6 +201,7 @@ class ESPNMenu(gui.GeDialog):
             self.tab1_refresh(preview=False, projects=True)
             self.SetBool(CHK_EXISTING, True)
             # get id of current project from the dict value
+            proj_id = DRP_PROJ_NAME_START_ID
             for k,v in self.project_enum.iteritems():
                 if (v == self.this_scene.project_name):
                     proj_id = k
@@ -235,7 +265,7 @@ class ESPNMenu(gui.GeDialog):
         if (bool_ == True):
             chk = self.GetBool(CHK_EXISTING)
             self.Enable(DRP_PROJ_NAME, chk)
-            self.Enable(TXT_PROJ_NAME, 1-chk)
+            self.Enable(TXT_PROJ_NAME, 1-chk) 
 
     def tab1_pullProductionList(self):
         # generate a dictionary with gui ID as key and name as value
@@ -285,10 +315,11 @@ class ESPNMenu(gui.GeDialog):
         scn.saveWithBackup()
         return True
 
-    def tab1_help(self):
-        self.tab1_help_diag = ESPNHelp(panel='tab1')
-        self.tab1_help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
+    def help(self, tab):
+        help_diag = ESPNHelp(panel=tab)
+        help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
         return True
+
 
     ### TAB 02 FUNCTIONS #########################################################################
     def tab2_setOutput(self):
@@ -300,16 +331,9 @@ class ESPNMenu(gui.GeDialog):
             scene.Scene.setOutput()
         return True
 
-    def tab2_versionUp(self):
-        chk = scene.Scene.isPipelined()
-        if (chk):
-            scn = scene.Scene()
-            scn.versionUp()
-        else: raise error.PipelineError(0)
-        return True
-
     def tab2_submit(self):
-        pass
+        dlg = submit.SubmissionDialog()
+        dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
 
     def tab2_newTake(self):
         name = gui.RenameDialog('')
@@ -325,6 +349,22 @@ class ESPNMenu(gui.GeDialog):
         pass
 
     ### TAB 03 FUNCTIONS #########################################################################
+    def tab3_switchTeam(self):
+        chk = self.GetBool(IS_MATCHUP)
+        values = {}
+
+        values['home_primary'] = self.GetColorField(VEC_HOME_COLOR_P)
+        values['home_secondary'] = self.GetColorField(VEC_HOME_COLOR_S)
+        values['home_tertiary'] = self.GetColorField(VEC_HOME_COLOR_T)
+
+        if (chk):
+            values['away_primary'] = self.GetColorField(VEC_AWAY_COLOR_P)
+            values['away_secondary'] = self.GetColorField(VEC_AWAY_COLOR_S)
+            values['away_tertiary'] = self.GetColorField(VEC_AWAY_COLOR_T)
+
+        for k,v in values.iteritems():
+            core.changeColor(k.upper(), v['color'], exact=False)
+
     def tab3_updateSwatches(self):
         chk = scene.Scene.isPipelined()
         if (chk):
@@ -361,7 +401,50 @@ class ESPNMenu(gui.GeDialog):
             self.SetColorField(VEC_AWAY_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
             self.SetColorField(VEC_AWAY_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
             self.SetColorField(VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        return True       
+        return True
+
+    def tab3_matchupEnabled(self):
+        chk = self.GetBool(IS_MATCHUP)
+        if (chk):
+            self.Enable(TXT_AWAY_TRICODE, True)
+            self.Enable(VEC_AWAY_COLOR_P, True)
+            self.Enable(VEC_AWAY_COLOR_S, True)
+            self.Enable(VEC_AWAY_COLOR_T, True)
+        else:
+            self.Enable(TXT_AWAY_TRICODE, False)
+            self.Enable(VEC_AWAY_COLOR_P, False)
+            self.Enable(VEC_AWAY_COLOR_S, False)
+            self.Enable(VEC_AWAY_COLOR_T, False)
+
+    def tab3_createTeamColorMat(self, location, swatch):
+        location = location.upper()
+        swatch   = swatch.upper()
+        name     = '{}_{}'.format(location, swatch)
+
+        core.createMaterial(name)
+
+    ### SAVE / RENAME SCENE TAB ##################################################################
+    def tab4_saveWithBackup(self):
+        chk = scene.Scene.isPipelined()
+        if (chk):
+            self.this_scene = scene.Scene()
+            self.this_scene.saveWithBackup()
+        else: raise error.PipelineError(0)
+
+    def tab4_rename(self):
+        chk = scene.Scene.isPipelined()
+        if (chk):
+            self.this_scene = scene.Scene()
+            self.this_scene.rename()
+        else: raise error.PipelineError(0)
+
+    def tab4_versionUp(self):
+        chk = scene.Scene.isPipelined()
+        if (chk):
+            scn = scene.Scene()
+            scn.versionUp()
+        else: raise error.PipelineError(0)
+        return True
 
 class ESPNHelp(gui.GeDialog):
     def __init__(self, panel):
@@ -369,14 +452,20 @@ class ESPNHelp(gui.GeDialog):
 
     def CreateLayout(self):
         self.LoadDialogResource(ESPNHelpMenu)
-
-        bmp = bitmaps.BaseBitmap()
-
+        try: 
+            gui.GetIcon(BUTTON_ID)["bmp"].FlushAll()
+            gui.UnregisterIcon(BUTTON_ID)
+        except: pass
+        dir, file = os.path.split(__file__)
         if (self.panel=='tab1'):
-            dir, file = os.path.split(__file__)
             fn = os.path.join(dir, "res", "icons", "tab1_help.tif")
-            bmp.InitWith(fn)
-            gui.RegisterIcon(BUTTON_ID, bmp)
+        elif (self.panel=='tab3'):
+            fn = os.path.join(dir, "res", "icons", "tab3_help.tif")
+        elif (self.panel=='save_rename'):
+            fn = os.path.join(dir, "res", "icons", "save_rename_help.tif")
+        bmp = bitmaps.BaseBitmap()
+        bmp.InitWith(fn)
+        gui.RegisterIcon(BUTTON_ID, bmp)
         return True
 
 class ESPNPipelinePlugin(plugins.CommandData):

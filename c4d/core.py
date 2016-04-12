@@ -281,7 +281,6 @@ def setCompositingTag( tag, preset, reset=False ):
     c4d.EventAdd()
     return
 
-
 def createRenderData( rd, name ):
     ''' Inserts a RenderData document into the scene, overwriting any other document with the same
     name.  Seriously, fuck C4D sometimes. '''
@@ -300,6 +299,17 @@ def createRenderData( rd, name ):
     doc.EndUndo()
     return
 
+def createMaterial(name=None, color=None):
+    ''' Create a new material. '''
+    doc = c4d.documents.GetActiveDocument()
+    mat = c4d.Material()
+    doc.InsertMaterial(mat)
+    if (name):
+        mat.SetName(name)
+    if (color):
+        changeColor(mat, color)
+    c4d.EventAdd()
+    return True
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
 def ls( obj=None, typ=c4d.BaseObject, name=None ):
