@@ -1,7 +1,7 @@
 """
 Submit Scene to Qube
 
-Copyright: 2015 ESPN Productions
+Copyright: 2016 ESPN Productions
 Compatible with Cinema4D R14, R15, R17
 Author: Mark Rohrer (mark.rohrer@espn.com)
 
@@ -291,6 +291,14 @@ class SubmissionDialog(gui.GeDialog):
           )
         self.Close()
 
+    # 4. Are there unsaved changes in the scene?
+    unsaved_changes = c4d.documents.GetActiveDocument().GetChanged()
+    if (unsaved_changes):
+      chk = gui.QuestionDialog(
+        "Your scene has unsaved changes. Proceed anyway?"
+        )
+      if (chk): pass
+      else: self.Close()
 
     # The Qube submission dictionary
     submit_dict = {
