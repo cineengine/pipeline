@@ -17,7 +17,7 @@ import os.path
 from pipeline.c4d import error
 reload(error)
 
-DATABASE_PATH = "Y:\\Workspace\\SCRIPTS\\pipeline\\database"
+DATABASE_PATH = "Y:\\Workspace\\SCRIPTS\\pipeline\\database\\"
 
 # GETTERS ##########################################################################################
 def getProduction(prod_):
