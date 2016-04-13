@@ -15,15 +15,14 @@ import json
 import os.path
 #
 from pipeline.c4d import error
+reload(error)
 
-
-PRODUCTION_TEAM_DB_DIR = "Y:\\Workspace\\SCRIPTS\\pipeline\\database"
-PRODUCTION_GLOBALS_DB  = "Y:\\Workspace\\SCRIPTS\\pipeline\\database\\productions_db.json"
-
+DATABASE_PATH = "Y:\\Workspace\\SCRIPTS\\pipeline\\database"
 
 # GETTERS ##########################################################################################
 def getProduction(prod_):
     ''' Gets a production's global variables from the database. '''
+    PRODUCTION_GLOBALS_DB = os.path.join(DATABASE_PATH, "productions_db.json")
     merged_prod = {}
     with open(PRODUCTION_GLOBALS_DB, 'r') as stream:
         full_db = json.load(stream)
@@ -32,12 +31,12 @@ def getProduction(prod_):
                 default_prod = full_db[k]
             elif (k == prod_):
                 request_prod = full_db[k]
-            else: request_prod = {}
+                request_prod['is_default'] = False
+            else: request_prod = {'is_default': True}
 
     merged_prod = default_prod.copy()
     merged_prod.update(request_prod)
     return merged_prod
-
 
 def getProductionDirty():
     ''' Infers the project based on where the current scene is located. '''
@@ -51,9 +50,9 @@ def getProductionDirty():
     except KeyError:
         raise error.PipelineError(3)
 
-
 def getAllProductions():
     ''' Gets a list of all available / valid productions from the database. '''
+    PRODUCTION_GLOBALS_DB = os.path.join(DATABASE_PATH, "productions_db.json")
     productions = []
     with open(PRODUCTION_GLOBALS_DB, 'r') as stream:
         full_db = json.load(stream)
@@ -64,24 +63,24 @@ def getAllProductions():
                 productions.append(k)
     return sorted(productions)
 
-
 def getAllProjects(prod_):
     ''' Gets all projects associated with a production.'''
     prod = getProduction(prod_)
     return [p for p in os.listdir(prod['project']) if os.path.isdir(os.path.join(prod['project'], p))]
 
-
 def getTeamDatabase(prod_):
     ''' Gets the team database for a production. '''
     prod_db  = getProduction(prod_)
+    if (prod_db['is_default'] == True):
+        raise error.DatabaseError(1)
+
     team_db_ = prod_db['team_db']
-    db_path  = os.path.join(PRODUCTION_TEAM_DB_DIR, '{}.json'.format(team_db_))
+    db_path  = os.path.join(DATABASE_PATH, '{}.json'.format(team_db_))
 
     with open(db_path, 'r') as stream:
         full_db = json.load(stream)
 
     return full_db
-
 
 def getTeam(prod_, tricode):
     ''' Gets a team from a production, based on tricode or full name.'''
@@ -91,7 +90,8 @@ def getTeam(prod_, tricode):
             return team_db[k]
         elif ('{} {}'.format(team_db[k]['city'], team_db[k]['nick']) == tricode):
             return team_db[k]
-
+    # if it gets this far, the team wasn't found in the database.
+    raise error.DatabaseError(2)
 
 def getAllTeams(prod_, name='tricode'):
     ''' Gets a list of all teams for a given production. '''

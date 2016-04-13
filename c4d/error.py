@@ -38,3 +38,12 @@ class PipelineError(BaseError):
             3: 'Could not load project data from database.  Is this scene saved on the network in a project folder?'
         }
         gui.MessageDialog(notification[self.message])
+
+
+class DatabaseError(BaseError):
+    def _alert(self):
+        notification = {
+            0: 'Master project database not found.',
+            1: 'Production not found in database.',
+            2: 'Team not found in production database.'
+        }

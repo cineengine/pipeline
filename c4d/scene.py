@@ -179,13 +179,13 @@ class Scene(object):
 
     def rename(self, name=None, verbose=True):
         ''' Rename the scene (with optional dialog) '''
+        old_name = self.scene_name
         if (name == None):
-            dlg = c4d.gui.RenameDialog('New scene name')
-            if (dlg==False):
+            dlg = c4d.gui.RenameDialog(old_name)
+            if (dlg==old_name) or (dlg==None) or (dlg==False):
                 return
             else: name = dlg
         # store the old name and update self
-        old_name = self.scene_name
         self.scene_name = name
         self.updateFilePath()
         # check that the new file doesn't already exist
