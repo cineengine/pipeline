@@ -14,9 +14,9 @@ def assignTeamColors( tricode, location, swap=False ):
     scene_data    = scene.getSceneData()
     color_vectors = database.getTeamColors(scene_data['Production'], tricode)
 
-    core.changeColor('{}_PRIMARY'.format(location.upper()), color_vectors['primary'], exact=False)
-    core.changeColor('{}_SECONDARY'.format(location.upper()), color_vectors['secondary'], exact=False)
-    core.changeColor('{}_TERTIARY'.format(location.upper()), color_vectors['tertiary'], exact=False)
+    core.changeColor('{0}_PRIMARY'.format(location.upper()), color_vectors['primary'], exact=False)
+    core.changeColor('{0}_SECONDARY'.format(location.upper()), color_vectors['secondary'], exact=False)
+    core.changeColor('{0}_TERTIARY'.format(location.upper()), color_vectors['tertiary'], exact=False)
 
     return True
 

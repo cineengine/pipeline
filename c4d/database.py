@@ -17,7 +17,7 @@ import os.path
 from pipeline.c4d import error
 reload(error)
 
-DATABASE_PATH = "Y:\\Workspace\\SCRIPTS\\pipeline\\database\\"
+DATABASE_PATH = "F:\\dev\\pipeline\\c4d\\"
 
 # GETTERS ##########################################################################################
 def getProduction(prod_):
@@ -75,7 +75,7 @@ def getTeamDatabase(prod_):
         raise error.DatabaseError(1)
 
     team_db_ = prod_db['team_db']
-    db_path  = os.path.join(DATABASE_PATH, '{}.json'.format(team_db_))
+    db_path  = os.path.join(DATABASE_PATH, '{0}.json'.format(team_db_))
 
     with open(db_path, 'r') as stream:
         full_db = json.load(stream)
@@ -88,7 +88,7 @@ def getTeam(prod_, tricode):
     for k,v in team_db.iteritems():
         if k == tricode:
             return team_db[k]
-        elif ('{} {}'.format(team_db[k]['city'], team_db[k]['nick']) == tricode):
+        elif ('{0} {1}'.format(team_db[k]['city'], team_db[k]['nick']) == tricode):
             return team_db[k]
     # if it gets this far, the team wasn't found in the database.
     raise error.DatabaseError(2)
@@ -103,15 +103,15 @@ def getAllTeams(prod_, name='tricode'):
         return sorted(team_ls)
     elif name == 'full':
         for k,v in team_db.iteritems():
-            team_ls.append('{} {}'.format(team_db[k]['city'], team_db[k]['nick']))
+            team_ls.append('{0} {1}'.format(team_db[k]['city'], team_db[k]['nick']))
         return sorted(team_ls)
     elif name == 'city':
         for k,v in team_db.iteritems():
-            team_ls.append('{}'.format(team_db[k]['city']))
+            team_ls.append('{0}'.format(team_db[k]['city']))
         return sorted(team_ls)
     elif name == 'nick':
         for k,v in team_db.iteritems():
-            team_ls.append('{}'.format(team_db[k]['nick']))
+            team_ls.append('{0}'.format(team_db[k]['nick']))
         return sorted(team_ls)
 
 

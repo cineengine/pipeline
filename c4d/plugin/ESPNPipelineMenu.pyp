@@ -247,10 +247,10 @@ class ESPNMenu(gui.GeDialog):
             self.SetString(TXT_PROJ_NAME, proj_name)
             self.SetString(TXT_SCENE_NAME, scene_name)
             # Generate preview paths
-            scene_prev = '{}_{}.c4d'.format(proj_name, scene_name)
+            scene_prev = '{0}_{1}.c4d'.format(proj_name, scene_name)
             proj_prev  = os.path.relpath(
-                "{}\\{}\\c4d\\".format(prod_folder, proj_name),
-                "\\\\cagenas\\workspace\\MASTER_PROJECTS\\"
+                "{0}\\{1}\\c4d\\".format(prod_folder, proj_name),
+                "F:\\"
                 )
             self.SetString(TXT_PREVIEW_PROJ, proj_prev)
             self.SetString(TXT_PREVIEW_FILE, scene_prev)
@@ -314,7 +314,7 @@ class ESPNMenu(gui.GeDialog):
             scene_ctrl.Remove()
         # create new scene controller
         scene_ctrl, scene_tag = scene.Scene.makeSceneCtrl()
-        annotation = "Production: {}\nProject: {}\nScene: {}\nFramerate: {}\nVersion: {}"
+        annotation = "Production: {0}\nProject: {1}\nScene: {2}\nFramerate: {3}\nVersion: {4}"
         annotation = annotation.format(prod_name, proj_name, scene_name, str(framerate), str(1))
         scene_tag[c4d.ANNOTATIONTAG_TEXT] = annotation
         # setup project and save
@@ -429,7 +429,7 @@ class ESPNMenu(gui.GeDialog):
     def tab3_createTeamColorMat(self, location, swatch):
         location = location.upper()
         swatch   = swatch.upper()
-        name     = '{}_{}'.format(location, swatch)
+        name     = '{0}_{1}'.format(location, swatch)
 
         core.createMaterial(name)
 

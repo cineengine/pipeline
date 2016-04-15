@@ -214,12 +214,14 @@ def take( name=None, set_active=False ):
     # Add the default override groups to the take
     doc.AddUndo(c4d.UNDOTYPE_NEW, take)
     for og_ in OVERRIDE_GROUPS:
+        mat = createMaterial()
         og = override(take, og_)
         # Add the compositing tag for overriding
-        tag = og.AddTag(td, c4d.Tcompositing, mat=None)
+        tag = og.AddTag(td, c4d.Tcompositing, mat=mat)
         tag.SetName('VISIBILITY_OVERRIDE')
         # ... and set the default values
         setCompositingTag( tag, og_ )
+        mat.Remove()
     # If flagged, set the current take as active
     doc.AddUndo(c4d.UNDOTYPE_CHANGE, take)
     if (set_active): td.SetCurrentTake(take)
@@ -302,13 +304,16 @@ def createRenderData( rd, name ):
 def createMaterial(name=None, color=None):
     ''' Create a new material. '''
     doc = c4d.documents.GetActiveDocument()
-    mat = c4d.Material()
+    mat = c4d.BaseMaterial(c4d.Mmaterial)
+    doc.StartUndo()
     doc.InsertMaterial(mat)
     if (name):
         mat.SetName(name)
     if (color):
         changeColor(mat, color)
+    doc.AddUndo(c4d.UNDOTYPE_NEW, mat)
     c4d.EventAdd()
+    doc.EndUndo()
     return True
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################

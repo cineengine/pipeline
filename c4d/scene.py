@@ -104,7 +104,7 @@ class Scene(object):
         self.prod_data = database.getProduction(self.production)
 
     def updateFilePath(self):
-        self.file_name     = '{}_{}.c4d'.format(self.project_name, self.scene_name)
+        self.file_name     = '{0}_{1}.c4d'.format(self.project_name, self.scene_name)
         self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
         self.backup_folder = os.path.join(self.file_folder, 'backup')
         self.file_path     = os.path.join(self.file_folder, self.file_name)
@@ -116,11 +116,11 @@ class Scene(object):
         ''' Does the opposite of getSceneData() '''
         def _sceneToAnno():
             out_str = ''
-            out_str += 'Production: {}\n'.format(self.production)
-            out_str += 'Project: {}\n'.format(self.project_name)
-            out_str += 'Scene: {}\n'.format(self.scene_name)
-            out_str += 'Framerate: {}\n'.format(self.framerate)
-            out_str += 'Version: {}'.format(self.version)
+            out_str += 'Production: {0}\n'.format(self.production)
+            out_str += 'Project: {0}\n'.format(self.project_name)
+            out_str += 'Scene: {0}\n'.format(self.scene_name)
+            out_str += 'Framerate: {0}\n'.format(self.framerate)
+            out_str += 'Version: {0}'.format(self.version)
             return out_str
         #
         scene_ctrl, scene_tag, status = self.getSceneStatus()
@@ -137,18 +137,18 @@ class Scene(object):
             self.project_name,
             'render_3d',
             self.scene_name,
-            'v{}'.format(str(self.version).zfill(3)),
+            'v{0}'.format(str(self.version).zfill(3)),
             '$take',
-            '{}_{}'.format(self.scene_name, '$take')
+            '{0}_{1}'.format(self.scene_name, '$take')
             )
         multi_path = os.path.join(
             self.prod_data['project'],
             self.project_name,
             'render_3d',
             self.scene_name,
-            'v{}'.format(str(self.version).zfill(3)),
+            'v{0}'.format(str(self.version).zfill(3)),
             '$take_passes',
-            '{}_{}'.format(self.scene_name, '$take')
+            '{0}_{1}'.format(self.scene_name, '$take')
             )
         setOutput(
             default_override=False,
@@ -166,7 +166,7 @@ class Scene(object):
         td = core.doc().GetTakeData()
         for take_ in self.prod_data['layers']:
             take = core.take(take_, set_active=True)
-            take.SetChecked(True)
+            #take.SetChecked(True)
             # Add the default override groups to the take
             for og_ in core.OVERRIDE_GROUPS:
                 og = core.override(take, og_)
@@ -266,7 +266,7 @@ class Scene(object):
             else:
                 raise error.FileError(2)
 
-            incr_name = "{}.{}.{}".format(name, str(cur_vers).zfill(4), ext)
+            incr_name = "{0}.{1}.{2}".format(name, str(cur_vers).zfill(4), ext)
             incr_file = os.path.join(file_path, incr_name)
 
             if os.path.exists(incr_file):
