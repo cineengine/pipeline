@@ -18,9 +18,9 @@
     },
 
     "NBA_2016": {
-        "project"   : "F:\\NBA_2016\\001_PROJECTS\\000_Animation",
-        "assets"    : "F:\\NBA_2016\\004_TOOLBOX\\001_3D_ASSETS",
-        "teams"     : "F:\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
+        "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\001_PROJECTS\\000_Animation",
+        "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\001_3D_ASSETS",
+        "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
         "team_db"   : "teams_nba",
         "xres"      : 1920,
         "yres"      : 1080,

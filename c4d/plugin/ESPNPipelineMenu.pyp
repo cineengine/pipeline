@@ -122,6 +122,7 @@ class ESPNMenu(gui.GeDialog):
         else: 
             self.tab1_populate(existing=False)
 
+        self.SetInt32(RDO_FRAMERATE, RDO_FRAMERATE_30)
         self.tab3_matchupEnabled()
 
         return True
@@ -250,7 +251,7 @@ class ESPNMenu(gui.GeDialog):
             scene_prev = '{0}_{1}.c4d'.format(proj_name, scene_name)
             proj_prev  = os.path.relpath(
                 "{0}\\{1}\\c4d\\".format(prod_folder, proj_name),
-                "F:\\"
+                "Y:\\Workspace\\MASTER_PROJECTS\\"
                 )
             self.SetString(TXT_PREVIEW_PROJ, proj_prev)
             self.SetString(TXT_PREVIEW_FILE, scene_prev)
@@ -308,6 +309,12 @@ class ESPNMenu(gui.GeDialog):
             proj_name = self.GetString(TXT_PROJ_NAME)
         scene_name = self.GetString(TXT_SCENE_NAME)
         framerate  = self.GetInt32(RDO_FRAMERATE)-10000
+        # cancel if any required fields are empty
+        if (scene_name == '' or
+            proj_name  == ''):
+            msg = 'Project or Scene name has not been set. Both are required to proceed.'
+            gui.MessageDialog(msg, c4d.GEMB_OK)
+            return False
         # check for existing scene controller
         scene_ctrl, scene_tag, status = scene.Scene.getSceneStatus()
         if (status == error.SCENE_OK):

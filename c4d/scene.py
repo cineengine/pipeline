@@ -103,6 +103,10 @@ class Scene(object):
         ''' Attaches the production database dictionary to the scene object. '''
         self.prod_data = database.getProduction(self.production)
 
+    def getRenderVersion(self):
+        ''' Placeholder until needed.'''
+        pass
+
     def updateFilePath(self):
         self.file_name     = '{0}_{1}.c4d'.format(self.project_name, self.scene_name)
         self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
@@ -130,9 +134,9 @@ class Scene(object):
         else:
             return False
 
-    def setOutput(self):
+    def setOutput(self, set_=True):
         ''' Set render output settings (based on production) '''
-        output_path = os.path.join(
+        self.output_path = os.path.join(
             self.prod_data['project'],
             self.project_name,
             'render_3d',
@@ -141,7 +145,7 @@ class Scene(object):
             '$take',
             '{0}_{1}'.format(self.scene_name, '$take')
             )
-        multi_path = os.path.join(
+        self.multi_path = os.path.join(
             self.prod_data['project'],
             self.project_name,
             'render_3d',
@@ -150,16 +154,17 @@ class Scene(object):
             '$take_passes',
             '{0}_{1}'.format(self.scene_name, '$take')
             )
-        setOutput(
-            default_override=False,
-            xres        = self.prod_data['xres'],
-            yres        = self.prod_data['yres'],
-            frate       = self.prod_data['frate'],
-            passes      = self.prod_data['passes'],
-            version     = self.version,
-            output_path = output_path,
-            multi_path  = multi_path
-            )
+        if (set_):
+            setOutput(
+                default_override=False,
+                xres        = self.prod_data['xres'],
+                yres        = self.prod_data['yres'],
+                frate       = self.prod_data['frate'],
+                passes      = self.prod_data['passes'],
+                version     = self.version,
+                output_path = self.output_path,
+                multi_path  = self.multi_path
+                )
 
     def setTakes(self):
         ''' Makes the default takes (render layers) and overrides for the specified production. '''
@@ -190,7 +195,7 @@ class Scene(object):
         self.updateFilePath()
         # check that the new file doesn't already exist
         if os.path.isfile(self.file_path) and (verbose):
-            msg = 'Warning! A scene with this name already exists -- proceed anyway? (A backup will be saved regardless.)'
+            msg = 'Warning: A scene with this name already exists -- proceed anyway? (Existing renders may be overwritten -- check your output version before rendering!)'
             prompt = c4d.gui.MessageDialog(msg, c4d.GEMB_OKCANCEL)
             if (prompt == c4d.GEMB_R_OK):
                 pass
@@ -202,6 +207,7 @@ class Scene(object):
         # set clean version, update scene_ctrl with new data, and save
         self.version = 1
         self.setSceneData()
+        self.setOutput()
         self.saveWithBackup()
 
     def versionUp(self):

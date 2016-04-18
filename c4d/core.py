@@ -314,7 +314,7 @@ def createMaterial(name=None, color=None):
     doc.AddUndo(c4d.UNDOTYPE_NEW, mat)
     c4d.EventAdd()
     doc.EndUndo()
-    return True
+    return mat
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
 def ls( obj=None, typ=c4d.BaseObject, name=None ):
