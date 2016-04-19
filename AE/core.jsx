@@ -113,7 +113,16 @@ function createTeamSwatches(){
     // Creates team swatches for an entire production's worth of teams
     var prod_ = getProduction();
     var teams = getTeamDatabase(prod_);
+    var colors = ['primary', 'secondary', 'tertiary'];
     var all = '';
+    // Comp defaults 
+    var name  = "{0}_COLORS".format(tricode);
+    var xres  = 1920;
+    var yres  = 1080;
+    var par   = 1.0; // pixel aspect ratio
+    var dur   = 60; // duration
+    var frate = 59.94; // frame rate
+
     // Check for an existing TEAM_COLORS folder in the project window
     var team_folder = getItem('TEAM_COLORS', ItemCollection);
     if (team_folder === undefined){
@@ -121,32 +130,24 @@ function createTeamSwatches(){
     }
     // Iterate over all teams
     for (var key in teams){
-        // Tricode & colors
-        tricode   = key;
-        primary   = teams[key]['primary'];
-        secondary = teams[key]['secondary'];
-        tertiary  = teams[key]['tertiary'];
-        // Comp defaults 
-        name  = "{0}_COLORS".format(tricode);
-        xres  = 1920;
-        yres  = 1080;
-        par   = 1.0; // pixel aspect ratio
-        dur   = 60; // duration
-        frate = 59.94; // frame rate
-        // Create comp
-        team_comp = app.project.items.addComp(name, xres, yres, par, dur, frate);
-        // Create 3 solids
-        pri_solid = team_comp.layers.addSolid([0,0,0], "{0}_PRIMARY".format(tricode), xres/3, yres, par);
-        sec_solid = team_comp.layers.addSolid([0,0,0], "{0}_SECONDARY".format(tricode), xres/3, yres, par);
-        tri_solid = team_comp.layers.addSolid([0,0,0], "{0}_TERTIARY".format(tricode), xres/3, yres, par);
-        // Move the two outer solids to the side of the frame
-        pri_solid.property("Position").setValue([320, 540]);
-        tri_solid.property("Position").setValue([1600, 540]);
-        // Move the comp into the TEAM_COLORS folder
+        var tricode   = key;
+        var team_data = getTeam(getProduction(), tricode);
+        var team_comp = app.project.items.addComp("{0}_COLORS".format(tricode), xres, yres, par, dur, frate);
+        var team_null = team_comp.layers.addNull();
+
+        //team_comp.name = "{0}_COLORS".format(tricode);
+        //team_comp.source.name = "{0}_COLORS".format(tricode);
+        team_null.name = "{0}_COLORS".format(tricode);
+        team_null.source.name = "{0}_COLORS".format(tricode);
+
+        for (var color in colors){
+            color_ctrl = team_null.property("Effects").addProperty("Color Control");
+            color_ctrl.name = colors[color];
+            color_ctrl.property("Color").setValue(convertColor(team_data[colors[color]]));
+        }
+
         team_comp.parentFolder = team_folder;
-        setTeamColors(tricode);
     }
-    
 }
 
 function setTeamColors(team_){
@@ -188,6 +189,15 @@ function convertColor(color){
     g = (1.0/255) * g;
     b = (1.0/255) * b;
     return [r, g, b];
+}
+
+function nullTeam(){
+    var team_data;
+    team_data['primary'] = [0,0,0];
+    team_data['secondary'] = [0,0,0];
+    team_data['tertiary'] = [0,0,0];
+    team_data['tricode'] = 'NULL';
+    return team_data;
 }
 
 String.prototype.format = function() {
