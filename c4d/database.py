@@ -125,6 +125,14 @@ def getTeamColors(prod_, tricode):
     return ret_colors
 
 
+def isTricode(prod_, tricode):
+    try:
+        team = getTeam(prod_, tricode)
+        return True
+    except:
+        return False
+
+
 def convertColor(colorvec, to='float'):
     ''' Converts a color vector from 0-255 (int) to 0-1 (float) or back again. '''
     def _clamp(value):

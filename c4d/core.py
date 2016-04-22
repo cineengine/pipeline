@@ -19,13 +19,26 @@ import os.path
 import c4d
 from c4d.modules import render
 
-
 OVERRIDE_GROUPS = [
     'bty',
     'pv_off',
     'black_hole',
     'disable'
     ]
+
+SHADERS = {
+    'color': c4d.MATERIAL_COLOR_SHADER,
+    'diff':  c4d.MATERIAL_DIFFUSION_SHADER,
+    'lumi':  c4d.MATERIAL_LUMINANCE_SHADER,
+    'trans': c4d.MATERIAL_TRANSPARENCY_SHADER,
+    'refl':  None,
+    'envi':  c4d.MATERIAL_ENVIRONMENT_SHADER,
+    'bump':  c4d.MATERIAL_BUMP_SHADER,
+    'alpha': c4d.MATERIAL_ALPHA_SHADER,
+    'spec':  None,
+    'disp':  c4d.MATERIAL_DISPLACEMENT_SHADER,
+    'nrml':  c4d.MATERIAL_NORMAL_SHADER
+    }
 
 
 # SIMPLE OPERATIONS ###############################################################################
@@ -34,7 +47,6 @@ def new():
     c4d.CallCommand(12094, 12094)
     return
 
-
 def open( file_=None ):
     ''' Open the specified scene.  If no file is specified, open a dialog. '''
     if (file_):
@@ -42,12 +54,10 @@ def open( file_=None ):
     else:
         c4d.CallCommand(12095, 12095)
 
-
 def save( file_=None ):
     ''' Saves the current scene. '''
     c4d.CallCommand(12098, 12098)
     return
-
 
 def saveAs( file_ ):
     ''' Saves the current scene with a new name. '''
@@ -65,17 +75,14 @@ def saveAs( file_ ):
     else: pass
     return
 
-
 def close():
     ''' Closes the current scene. '''
     c4d.CallCommand(12664, 12664)
     return
 
-
 def doc():
     ''' Returns the active document. '''
     return c4d.documents.GetActiveDocument()
-
 
 def merge( file_=None ):
     ''' Imports a file into the scene. '''
@@ -85,7 +92,6 @@ def merge( file_=None ):
     else:
         c4d.CallCommand(12096, 12096)
     return
-
 
 # FLAGS & TAGS ####################################################################################
 def visibility( obj_=None, v=None, r=None ):
@@ -107,7 +113,6 @@ def visibility( obj_=None, v=None, r=None ):
         o.SetRenderMode(vis[r])
     doc.EndUndo()
     return
-
 
 def tag( obj_=None, typ=None, name=None ):
     ''' Creates a tag on the selected (or specified) object. For tag types, see:
@@ -132,7 +137,6 @@ def tag( obj_=None, typ=None, name=None ):
     doc.EndUndo()
     return tags
 
-
 # MATERIALS & TEXTURES ############################################################################
 def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
     ''' Changes the texture on a material's specified channel.  Defaults to the color channel.
@@ -154,7 +158,7 @@ def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
         tex[c4d.BITMAPSHADER_FILENAME] = tex_path
         mat[channel] = tex
         mat.InsertShader(tex)
-    elif channel == ('reflect' or 'reflection'):
+    elif channel == ('refl' or 'reflection'):
         refl_shd = mat.GetAllReflectionShaders()
         for rs in refl_shd:
             doc.AddUndo(c4d.UNDOTYPE_CHANGE, rs)
@@ -165,7 +169,6 @@ def changeTexture( mat, tex_path, channel=c4d.MATERIAL_COLOR_SHADER ):
     c4d.EventAdd()
     c4d.EndUndo()
     return True
-
 
 def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
     ''' Changes the color on a material's specified channel.  Defaults to the diffuse color channel.'''
@@ -194,6 +197,44 @@ def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
     doc.EndUndo()
     return True
 
+def getSceneTextures():
+    ''' An object-based version of doc.GetAllTextures() -- i.e., returns an array of BaseList2D
+        instead of a useless string tuple. '''
+    shaders = [
+        c4d.MATERIAL_COLOR_SHADER,
+        c4d.MATERIAL_DIFFUSION_SHADER,
+        c4d.MATERIAL_LUMINANCE_SHADER,
+        c4d.MATERIAL_TRANSPARENCY_SHADER,
+        c4d.MATERIAL_REFLECTION_SHADER,
+        c4d.MATERIAL_ENVIRONMENT_SHADER,
+        c4d.MATERIAL_BUMP_SHADER,
+        c4d.MATERIAL_ALPHA_SHADER,
+        c4d.MATERIAL_SPECULAR_SHADER,
+        c4d.MATERIAL_DISPLACEMENT_SHADER,
+        c4d.MATERIAL_NORMAL_SHADER
+        ]
+
+    output = []
+
+    for mat in MaterialIterator(doc()):
+        for shd in shaders:
+            shd = mat[shd]
+            if (shd):
+                tex_path = shd[c4d.BITMAPSHADER_FILENAME]
+                if (tex_path):
+                    tex_path = c4d.GenerateTexturePath(doc().GetDocumentPath(), tex_path, '')
+                    output.append([shd, tex_path])
+
+    return output
+
+def getGlobalTexturePaths():
+    ''' Generates a list of all the user's global texture paths locations. '''
+    paths = []
+    for i in range(10):
+        path = c4d.GetGlobalTexturePath(i)
+        if path is not '':
+            paths.append(path)
+    return paths
 
 # TAKE / RENDER LAYER UTILITIES ###################################################################
 def take( name=None, set_active=False ):
@@ -231,7 +272,6 @@ def take( name=None, set_active=False ):
     doc.EndUndo()
     return take
 
-
 def override( take, name=None ):
     ''' Adds an override group to a specified take. '''
     og = take.AddOverrideGroup()
@@ -239,7 +279,6 @@ def override( take, name=None ):
 
     c4d.EventAdd()
     return og
-
 
 def setCompositingTag( tag, preset, reset=False ):
     ''' Sets a compositing tag with preset values for primary visibility, etc.'''
@@ -348,7 +387,6 @@ def ls( obj=None, typ=c4d.BaseObject, name=None ):
         obj = None
     return obj
 
-
 def lsTags( obj=None, name=None, typ=None ):
     ''' Returns a list of tags in the scene.  Search parameters based on tag type or tag name.  At
     least one must be included in the command. '''
@@ -370,8 +408,6 @@ def lsTags( obj=None, name=None, typ=None ):
                 return_tags.append(tag)
 
     return return_tags
-
-
 
 ### The following iterators were borrowed directly from Martin Weber via cgrebel.com.
 ### All credit goes to him -- thank you Martin! -- I could not find any license usage for this code.
@@ -407,7 +443,6 @@ class ObjectIterator:
                 self.nextDepth = self.nextDepth - 1
         return obj
 
-
 class TagIterator:
     ''' Iterates over all tags on a given object. '''
     def __init__(self, obj):
@@ -425,7 +460,6 @@ class TagIterator:
 
         self.currentTag = tag.GetNext()
         return tag
-
 
 class MaterialIterator:
     ''' Iterates over all materials in a given document. '''
@@ -445,3 +479,4 @@ class MaterialIterator:
         mat = self.currentMaterial
         self.currentMaterial = self.currentMaterial.GetNext()
         return mat
+
