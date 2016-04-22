@@ -52,7 +52,11 @@ function getProduction(){
             break;
         }
     }
-    return production;
+    if (production !=== undefined){
+        return production;
+    } else {
+        return false;
+    }
 }
 
 function getProductionDatabase(production_){
@@ -135,8 +139,6 @@ function createTeamSwatches(){
         var team_comp = app.project.items.addComp("{0}_COLORS".format(tricode), xres, yres, par, dur, frate);
         var team_null = team_comp.layers.addNull();
 
-        //team_comp.name = "{0}_COLORS".format(tricode);
-        //team_comp.source.name = "{0}_COLORS".format(tricode);
         team_null.name = "{0}_COLORS".format(tricode);
         team_null.source.name = "{0}_COLORS".format(tricode);
 
