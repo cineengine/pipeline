@@ -46,8 +46,7 @@ class Scene(object):
         elif (self.status == error.SCENE_NEW) and (delay):
             raise error.PipelineError(self.status)
         elif (self.status == error.SCENE_NEW):
-            dlg = ProjectInitWindow()
-            dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
+            raise error.PipelineError(self.status)
 
     # GETTERS
     @classmethod
@@ -134,7 +133,7 @@ class Scene(object):
         else:
             return False
 
-    def setOutput(self, set_=True):
+    def setOutput(self, set_=True, paths_only=False):
         ''' Set render output settings (based on production) '''
         self.output_path = os.path.join(
             self.prod_data['project'],
@@ -157,6 +156,7 @@ class Scene(object):
         if (set_):
             setOutput(
                 default_override=False,
+                paths_only  = paths_only,
                 xres        = self.prod_data['xres'],
                 yres        = self.prod_data['yres'],
                 frate       = self.prod_data['frate'],
@@ -215,7 +215,7 @@ class Scene(object):
         if not self.isPipelined(): return False
         self.version += 1
         self.setSceneData()
-        self.setOutput()
+        self.setOutput(paths_only=True)
         self.saveWithBackup()
 
     # BUILDERS / OPERATIONS
@@ -336,25 +336,32 @@ class Scene(object):
                         og.AddToGroup(td, obj)
             doc.EndUndo()
 
-def setOutput( default_override=True, **render_data ):
+def setOutput( default_override=True, paths_only=False, **render_data ):
     ''' Sets up basic parameters for rendering. Specifics are pulled from 'project' global 
     parameters module.'''
+    doc    = core.doc()
+    rd     = c4d.documents.RenderData()
+
     if (default_override):
         render_data = database.getProduction('DEFAULT')
         render_data['output_path'] = ''
         render_data['multi_path'] = ''
 
+    # Output paths
+    rd[c4d.RDATA_PATH] = str(render_data['output_path'])
+    if not (render_data['output_path'] == ''):
+        rd[c4d.RDATA_MULTIPASS_FILENAME] = str(render_data['multi_path'])
+    # the 'paths_only' flag is for the Version Up utility, so that any custom render settings are
+    # not reset by versioning up.  this branch will return immediately after setting output paths
+    if (paths_only):
+        core.createRenderData(rd, 'DEFAULT')
+        return
+
+    # RAYTRACING & DOCUMENT SETTINGS
     res    = (render_data['xres'], render_data['yres'])
     frate  = int(render_data['frate'])
     aspect = 1.7777
-
-    doc    = core.doc()
-    rd     = c4d.documents.RenderData()
-
-    # GLOBAL SETTINGS
     doc.SetFps(frate)
-    # Output paths
-    rd[c4d.RDATA_PATH]            = str(render_data['output_path'])
     # Resolution & frame rate
     rd[c4d.RDATA_XRES]            = res[0]
     rd[c4d.RDATA_YRES]            = res[1]
@@ -378,9 +385,6 @@ def setOutput( default_override=True, **render_data ):
     rd[c4d.RDATA_AAMAXLEVEL]      = c4d.RDATA_AAMAXLEVEL_8
 
     # MULTIPASS
-    # Output paths
-    if not (render_data['output_path'] == ''):
-        rd[c4d.RDATA_MULTIPASS_FILENAME] = str(render_data['multi_path'])
     # Format options
     rd[c4d.RDATA_MULTIPASS_SAVEFORMAT] = c4d.FILTER_PNG
     rd[c4d.RDATA_MULTIPASS_SAVEDEPTH]  = c4d.RDATA_FORMATDEPTH_16

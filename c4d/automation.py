@@ -1,5 +1,6 @@
 import c4d
 import os.path
+import shutil
 from c4d import gui
 
 from pipeline.c4d import core
@@ -36,42 +37,61 @@ def relinkTextures( migrate=False ):
         production's main texture repository, it changes the link to the production version instead.
         Optional migrate flag will prompt the user to select which remaining textures they would like
         moved & relinked to production folders.'''
-    prod_ = 'NBA_2016'
-    prod_tex_dir= os.path.join(database.getProduction(prod_)['assets'], 'TEXTURES')
+    prod_        = 'NBA_2016'
+    prod_tex_dir = os.path.join(database.getProduction(prod_)['assets'], 'TEXTURES')
+    doc          = c4d.documents.GetActiveDocument()
+    doc_tex_dir  = os.path.join(doc.GetDocumentPath(), 'tex')
+    # container dictionary of textures that have been relinked
+    '''relinked_tex = {}'''
+    # container dictionary of textures that haven't been found in project folders
+    # new_tex['v:\example.png']: [(None, Shader/Channel), (Tricode, Shader/Channel)]
+    new_tex      = []
     # Build an array with all textured channels in the scene
-    textures    = core.getSceneTextures()
-    doc         = c4d.documents.GetActiveDocument()
-    doc_tex_dir = os.path.join(doc.GetDocumentPath(), 'tex')
-    relinked_tex= []
-    new_tex     = []
+    textures     = core.getSceneTextures()
+
     for tex in textures:
         # Extrapolating texture information
         shd, tex_path = tex
+        if tex_path == None: continue
         tex_dir       = os.path.dirname(tex_path)
         tex_name      = os.path.basename(tex_path)
+
         # split the texture name and see if it contains a team tricode prefix
         tricode_      = tex_name.split('_')[0]
         is_team_tex   = database.isTricode(prod_, tricode_)
-        if (is_team_tex): team_tex_dir = os.path.join(database.getProduction(prod_)['teams'], tricode_, 'tex')
-        else: tricode_ = None
-        # Check for an existing texture with the same name
+        # if it does contain a tricode prefix, we search for the texture in an asset folder instead
+        if (is_team_tex): 
+            team_tex_dir = os.path.join(database.getProduction(prod_)['teams'], tricode_, 'tex')
+        else: 
+            tricode_ = None
+
+        # Build a texture search path for an existing texture
         if not (is_team_tex):
             existing_tex = os.path.join(prod_tex_dir, tex_name)
         elif (is_team_tex):
             existing_tex = os.path.join(team_tex_dir, tex_name)
-        # If an existing texture is found:
+
+        # If an existing texture is found in the project folders:
         if (os.path.isfile(existing_tex)):
             # RELINK THE TEXTURE
             shd[c4d.BITMAPSHADER_FILENAME] = str(existing_tex)
             # Tag the original for possible deletion
-            relinked_tex.append((tex_path, tricode_, shd))
-        # If it's a texture not found in the database
-        else: new_tex.append((tex_path, tricode_, shd))
+            '''
+            if not (tex_path in relinked_tex):
+                relinked_tex[tex_path] = []
+            relinked_tex[tex_path].append((tricode_, shd))
+            '''
+        # Otherwise it must be a new (or possibly scene-unique) texture
+        # "new_tex" is a list of new textures that have not yet been migrated into project folders.
+        # tuple[0] is the current path of the texture on the server
+        # tuple[1] is the tricode of the team the texture belongs to (otherwise None for generic)
+        else:
+            new_tex.append((tex_path, tricode_))
 
     if (migrate):
-        # List of 'new' team and generic textures (these textures were not found in production folders)
-        # Sort the 'new' textures into the empty lists by type (team and generic)
-        test = TextureMigrateWindow(new_tex)
+        # We pass the list of "new" textures to a UI for users to select which to migrate
+        # This UI will copy the textures into project folders, and re-run this func to link them
+        test = TextureMigrateWindow(set(new_tex))
         test.Open(dlgtype=c4d.DLG_TYPE_MODAL, defaultw=800, defaulth=50)
 
 ### UI OBJECTS ###################################################################################
@@ -84,9 +104,12 @@ class TextureMigrateWindow(gui.GeDialog):
         self.BUTTON_OK    = 20000
         self.BUTTON_CANCEL= 20001
 
+        self.TEX_DATA = texture_list
+
         i = self.CHKBOX_START
-        for tex_path, tricode, shd in texture_list:
-            self.CHKBOX_DATA[i] = [tex_path, tricode, shd]
+        for texture_path in texture_list:
+            # keys of this dictionary are texture paths
+            self.CHKBOX_DATA[i] = texture_path
             i+=1
 
         self.left   = c4d.BFH_LEFT
@@ -133,14 +156,20 @@ NOTE: Team textures (identified by TRICODE_ prefix) will be moved to the team's 
         return True
 
     def run(self):
+        ''' Iterates over all selected checkboxes in the UI, copying the checked textures into the correct
+            folder for that production.'''
+        scn = scene.Scene()
+        global_texture_path = os.path.join(scn.prod_data['assets'], 'TEXTURES')
+        team_texture_path   = scn.prod_data['teams']
+
         for i in range(len(self.CHKBOX_DATA)):
             i += self.CHKBOX_START
             chk = self.GetBool(i)
             if (chk):
-                tex_path, tricode, shd = self.CHKBOX_DATA[i]
+                tex_path, tricode = self.CHKBOX_DATA[i]
                 if not (tricode):
-                    print 'copying', tex_path, 'to TEXTURES'
-                    #os.rename(tex_path, os.path.join(database.getProduction('NBA_2016')['assets'], 'TEXTURES'))
+                    #print 'copying', tex_path, 'to ', global_texture_path
+                    shutil.copy2(tex_path, global_texture_path)
                 elif (tricode):
-                    print 'copying', tex_path, 'to TEAM FOLDER'
-                    #os.rename(tex_path, os.path.join(database.getProduction('NBA_2016')['teams'], tricode, 'tex'))
+                    #print 'copying', tex_path, 'to TEAM FOLDER'
+                    shutil.copy2(tex_path, os.path.join(team_texture_path, tricode, 'tex'))
