@@ -22,11 +22,13 @@ from pipeline.c4d import scene
 from pipeline.c4d import error
 from pipeline.c4d import database
 from pipeline.c4d import submit
+import pipeline.c4d.automation as auto
 reload(core)
 reload(scene)
 reload(error)
 reload(database)
 reload(submit)
+reload(auto)
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -97,6 +99,7 @@ SAVE_RENAME_TAB      = 40000
 SAVE_BACKUP_EXEC     = 40001
 RENAME_EXEC          = 40002
 SAVE_RENAME_HELP_EXEC= 40003
+RELINK_TEXTURES_EXEC = 40004
 
 DRP_PROJ_NAME_START_ID=80000
 DRP_PROD_NAME_START_ID=90000
@@ -188,6 +191,8 @@ class ESPNMenu(gui.GeDialog):
             self.tab4_versionUp()
         elif (id == SAVE_RENAME_HELP_EXEC):
             self.help('save_rename')
+        elif (id == RELINK_TEXTURES_EXEC):
+            auto.relinkTextures(migrate=True)
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################
@@ -327,8 +332,9 @@ class ESPNMenu(gui.GeDialog):
         # setup project and save
         scn = scene.Scene()
         scn.makeFolders()
-        scn.setTakes()
+        #scn.setTakes()
         scn.setOutput()
+        auto.relinkTextures(migrate=True)
         scn.saveWithBackup()
         return True
 

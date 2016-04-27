@@ -32,7 +32,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	BTN_VERSIONUP         "Version Up";
 	BTN_SUBMIT            "Submit Scene to Farm";
 
-	THIRD_TAB_NAME        "Automation";
+	THIRD_TAB_NAME        "Team Switching";
 	LBL_HOME_TRICODE      "Home Team";
 	LBL_AWAY_TRICODE      "Away Team";
 	IS_MATCHUP            "Matchup";
@@ -47,9 +47,9 @@ DIALOGSTRINGS ESPNPipelineMenu
 	AWAY_TERTIARY_EXEC    "Away tertiary";
 	AUTOMATION_HELP_EXEC  "Instructions / help";
 
-	SAVE_RENAME_TAB       "Save / Rename Scene";
+	SAVE_RENAME_TAB       "Scene Utilities";
 	SAVE_BACKUP_EXEC      "Save Scene & Backup";
 	RENAME_EXEC           "Rename Scene";
 	SAVE_RENAME_HELP_EXEC "Instructions / help";
-
+	RELINK_TEXTURES_EXEC  "Relink Textures";
 }

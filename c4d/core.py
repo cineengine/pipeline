@@ -26,21 +26,6 @@ OVERRIDE_GROUPS = [
     'disable'
     ]
 
-SHADERS = {
-    'color': c4d.MATERIAL_COLOR_SHADER,
-    'diff':  c4d.MATERIAL_DIFFUSION_SHADER,
-    'lumi':  c4d.MATERIAL_LUMINANCE_SHADER,
-    'trans': c4d.MATERIAL_TRANSPARENCY_SHADER,
-    'refl':  None,
-    'envi':  c4d.MATERIAL_ENVIRONMENT_SHADER,
-    'bump':  c4d.MATERIAL_BUMP_SHADER,
-    'alpha': c4d.MATERIAL_ALPHA_SHADER,
-    'spec':  None,
-    'disp':  c4d.MATERIAL_DISPLACEMENT_SHADER,
-    'nrml':  c4d.MATERIAL_NORMAL_SHADER
-    }
-
-
 # SIMPLE OPERATIONS ###############################################################################
 def new():
     ''' Create a new empty document. '''
@@ -199,7 +184,9 @@ def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
 
 def getSceneTextures():
     ''' An object-based version of doc.GetAllTextures() -- i.e., returns an array of BaseList2D
-        instead of a useless string tuple. '''
+        instead of a useless string tuple. 
+        returns: Shader/channel (as BaseShader), path to bitmap (as str)'''
+    # A list of shaders (channels) where textures may be found
     shaders = [
         c4d.MATERIAL_COLOR_SHADER,
         c4d.MATERIAL_DIFFUSION_SHADER,
@@ -213,18 +200,27 @@ def getSceneTextures():
         c4d.MATERIAL_DISPLACEMENT_SHADER,
         c4d.MATERIAL_NORMAL_SHADER
         ]
-
+    # output container
     output = []
-
+    # iterate over all materials in the scene
     for mat in MaterialIterator(doc()):
+        # the standard list of channels / shaders (including legacy reflection/specular)
         for shd in shaders:
+            # test material for active shader
             shd = mat[shd]
             if (shd):
+                # test that active shader for a bitmap 
                 tex_path = shd[c4d.BITMAPSHADER_FILENAME]
                 if (tex_path):
+                    # get the path and add it to the list
                     tex_path = c4d.GenerateTexturePath(doc().GetDocumentPath(), tex_path, '')
                     output.append([shd, tex_path])
-
+        # the new-style of reflection/specular channels
+        for shd in mat.GetAllReflectionShaders():
+            tex_path = shd[c4d.BITMAPSHADER_FILENAME]
+            if (tex_path):
+                tex_path = c4d.GenerateTexturePath(doc().GetDocumentPath(), tex_path, '')
+                output.append([shd, tex_path])
     return output
 
 def getGlobalTexturePaths():

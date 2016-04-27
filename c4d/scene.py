@@ -339,9 +339,14 @@ class Scene(object):
 def setOutput( default_override=True, paths_only=False, **render_data ):
     ''' Sets up basic parameters for rendering. Specifics are pulled from 'project' global 
     parameters module.'''
-    doc    = core.doc()
-    rd     = c4d.documents.RenderData()
+    doc = core.doc()
+    if (paths_only):
+        rd = doc.GetActiveRenderData()
+    else:
+        rd = c4d.documents.RenderData()
 
+    # default_override will set default raytracing & resolution settings, but has no information
+    # on which to base output paths.  Therefore it will leave them blank.
     if (default_override):
         render_data = database.getProduction('DEFAULT')
         render_data['output_path'] = ''
@@ -351,11 +356,10 @@ def setOutput( default_override=True, paths_only=False, **render_data ):
     rd[c4d.RDATA_PATH] = str(render_data['output_path'])
     if not (render_data['output_path'] == ''):
         rd[c4d.RDATA_MULTIPASS_FILENAME] = str(render_data['multi_path'])
+    
     # the 'paths_only' flag is for the Version Up utility, so that any custom render settings are
     # not reset by versioning up.  this branch will return immediately after setting output paths
-    if (paths_only):
-        core.createRenderData(rd, 'DEFAULT')
-        return
+    if (paths_only): return True
 
     # RAYTRACING & DOCUMENT SETTINGS
     res    = (render_data['xres'], render_data['yres'])

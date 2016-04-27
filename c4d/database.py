@@ -114,7 +114,6 @@ def getAllTeams(prod_, name='tricode'):
             team_ls.append('{0}'.format(team_db[k]['nick']))
         return sorted(team_ls)
 
-
 def getTeamColors(prod_, tricode):
     team = getTeam(prod_, tricode)
     ret_colors = {
@@ -124,6 +123,115 @@ def getTeamColors(prod_, tricode):
         }
     return ret_colors
 
+def exportRenderData():
+    ''' Placeholder until i figure out how this might work. '''
+    doc = c4d.documents.GetActiveDocument()
+    rd  = doc.GetActiveRenderData()
+
+    rdata = {
+        c4d.RDATA_ANTIALIASING: rd[c4d.RDATA_ANTIALIASING],
+        c4d.RDATA_AAFILTER: rd[c4d.RDATA_AAFILTER],
+        c4d.RDATA_AATHRESHOLD: rd[c4d.RDATA_AATHRESHOLD],
+        c4d.RDATA_AAMINLEVEL: rd[c4d.RDATA_AAMINLEVEL],
+        c4d.RDATA_AAMAXLEVEL: rd[c4d.RDATA_AAMAXLEVEL],
+        c4d.RDATA_AAOBJECTPROPERTIES: rd[c4d.RDATA_AAOBJECTPROPERTIES],
+        c4d.RDATA_AAMIPGLOBAL: rd[c4d.RDATA_AAMIPGLOBAL],
+        #c4d.RDATA_AASOFTNESS: rd[c4d.RDATA_AASOFTNESS],
+        c4d.RDATA_RENDERENGINE: rd[c4d.RDATA_RENDERENGINE],
+        c4d.RDATA_ACTIVEOBJECTONLY: rd[c4d.RDATA_ACTIVEOBJECTONLY],
+        c4d.RDATA_AUTOLIGHT: rd[c4d.RDATA_AUTOLIGHT],
+        c4d.RDATA_TEXTURES: rd[c4d.RDATA_TEXTURES],
+        c4d.RDATA_TEXTUREERROR: rd[c4d.RDATA_TEXTUREERROR],
+        c4d.RDATA_ENABLEBLURRY: rd[c4d.RDATA_ENABLEBLURRY],
+        c4d.RDATA_VOLUMETRICLIGHTING: rd[c4d.RDATA_VOLUMETRICLIGHTING],
+        c4d.RDATA_USELOD: rd[c4d.RDATA_USELOD],
+        c4d.RDATA_SHOWHUD: rd[c4d.RDATA_SHOWHUD],
+        c4d.RDATA_CACHESHADOWMAPS: rd[c4d.RDATA_CACHESHADOWMAPS],
+        c4d.RDATA_ENABLESPD: rd[c4d.RDATA_ENABLESPD],
+        c4d.RDATA_POSTEFFECTS_ENABLE: rd[c4d.RDATA_POSTEFFECTS_ENABLE],
+        c4d.RDATA_RAYDEPTH: rd[c4d.RDATA_RAYDEPTH],
+        c4d.RDATA_REFLECTIONDEPTH: rd[c4d.RDATA_REFLECTIONDEPTH],
+        c4d.RDATA_SHADOWDEPTH: rd[c4d.RDATA_SHADOWDEPTH],
+        c4d.RDATA_THRESHOLD: rd[c4d.RDATA_THRESHOLD],
+        c4d.RDATA_LOD: rd[c4d.RDATA_LOD],
+        c4d.RDATA_GLOBALBRIGHTNESS: rd[c4d.RDATA_GLOBALBRIGHTNESS],
+        #c4d.RDATA_RENDERGAMMA: rd[c4d.RDATA_RENDERGAMMA],
+        c4d.RDATA_MOTIONLENGTH: rd[c4d.RDATA_MOTIONLENGTH],
+        c4d.RDATA_SAVEIMAGE: rd[c4d.RDATA_SAVEIMAGE],
+        c4d.RDATA_PATH: rd[c4d.RDATA_PATH],
+        c4d.RDATA_FORMAT: rd[c4d.RDATA_FORMAT],
+        c4d.RDATA_SAVEOPTIONS: rd[c4d.RDATA_SAVEOPTIONS],
+        c4d.RDATA_FORMATDEPTH: rd[c4d.RDATA_FORMATDEPTH],
+        c4d.RDATA_NAMEFORMAT: rd[c4d.RDATA_NAMEFORMAT],
+        c4d.RDATA_TRUECOLORDITHERING: rd[c4d.RDATA_TRUECOLORDITHERING],
+        c4d.RDATA_ALPHACHANNEL: rd[c4d.RDATA_ALPHACHANNEL],
+        c4d.RDATA_STRAIGHTALPHA: rd[c4d.RDATA_STRAIGHTALPHA],
+        c4d.RDATA_SEPARATEALPHA: rd[c4d.RDATA_SEPARATEALPHA],
+        c4d.RDATA_VRGENERATE: rd[c4d.RDATA_VRGENERATE],
+        c4d.RDATA_HSTEPS: rd[c4d.RDATA_HSTEPS],
+        c4d.RDATA_HSTART: rd[c4d.RDATA_HSTART],
+        c4d.RDATA_HEND: rd[c4d.RDATA_HEND],
+        c4d.RDATA_VSTEPS: rd[c4d.RDATA_VSTEPS],
+        c4d.RDATA_VSTART: rd[c4d.RDATA_VSTART],
+        c4d.RDATA_VEND: rd[c4d.RDATA_VEND],
+        c4d.RDATA_VRDEFAULTX: rd[c4d.RDATA_VRDEFAULTX],
+        c4d.RDATA_VRDEFAULTY: rd[c4d.RDATA_VRDEFAULTY],
+        c4d.RDATA_PROJECTFILE: rd[c4d.RDATA_PROJECTFILE],
+        c4d.RDATA_PROJECTFILETYPE: rd[c4d.RDATA_PROJECTFILETYPE],
+        c4d.RDATA_PROJECTFILELOCAL: rd[c4d.RDATA_PROJECTFILELOCAL],
+        c4d.RDATA_PROJECTFILEDATA: rd[c4d.RDATA_PROJECTFILEDATA],
+        c4d.RDATA_XRES_VIRTUAL: rd[c4d.RDATA_XRES_VIRTUAL],
+        c4d.RDATA_YRES_VIRTUAL: rd[c4d.RDATA_YRES_VIRTUAL],
+        c4d.RDATA_PIXELRESOLUTION_VIRTUAL: rd[c4d.RDATA_PIXELRESOLUTION_VIRTUAL],
+        c4d.RDATA_PROJECTFILESAVE: rd[c4d.RDATA_PROJECTFILESAVE],
+        c4d.RDATA_XRES: rd[c4d.RDATA_XRES],
+        c4d.RDATA_YRES: rd[c4d.RDATA_YRES],
+        c4d.RDATA_FRAMESEQUENCE: rd[c4d.RDATA_FRAMESEQUENCE],
+        c4d.RDATA_FRAMEFROM: rd[c4d.RDATA_FRAMEFROM],
+        c4d.RDATA_FRAMETO: rd[c4d.RDATA_FRAMETO],
+        c4d.RDATA_FRAMESTEP: rd[c4d.RDATA_FRAMESTEP],
+        c4d.RDATA_FIELD: rd[c4d.RDATA_FIELD],
+        c4d.RDATA_FRAMERATE: rd[c4d.RDATA_FRAMERATE],
+        c4d.RDATA_LOCKRATIO: rd[c4d.RDATA_LOCKRATIO],
+        c4d.RDATA_SIZEUNIT: rd[c4d.RDATA_SIZEUNIT],
+        c4d.RDATA_PIXELRESOLUTION: rd[c4d.RDATA_PIXELRESOLUTION],
+        c4d.RDATA_PIXELRESOLUTIONUNIT: rd[c4d.RDATA_PIXELRESOLUTIONUNIT],
+        c4d.RDATA_FILMASPECT: rd[c4d.RDATA_FILMASPECT],
+        c4d.RDATA_FILMPRESET: rd[c4d.RDATA_FILMPRESET],
+        c4d.RDATA_PIXELASPECT: rd[c4d.RDATA_PIXELASPECT],
+        c4d.RDATA_PRESET: rd[c4d.RDATA_PRESET],
+        c4d.RDATA_MULTIPASS_SAVEIMAGE: rd[c4d.RDATA_MULTIPASS_SAVEIMAGE],
+        c4d.RDATA_MULTIPASS_SAVEONEFILE: rd[c4d.RDATA_MULTIPASS_SAVEONEFILE],
+        c4d.RDATA_MULTIPASS_ENABLE: rd[c4d.RDATA_MULTIPASS_ENABLE],
+        c4d.RDATA_MULTIPASS_SAVEFORMAT: rd[c4d.RDATA_MULTIPASS_SAVEFORMAT],
+        c4d.RDATA_MULTIPASS_SAVEOPTIONS: rd[c4d.RDATA_MULTIPASS_SAVEOPTIONS],
+        c4d.RDATA_MULTIPASS_LIGHTS: rd[c4d.RDATA_MULTIPASS_LIGHTS],
+        c4d.RDATA_MULTIPASS_FILENAME: rd[c4d.RDATA_MULTIPASS_FILENAME],
+        c4d.RDATA_MULTIPASS_SAVEDEPTH: rd[c4d.RDATA_MULTIPASS_SAVEDEPTH],
+        c4d.RDATA_MULTIPASS_LIGHTMODE: rd[c4d.RDATA_MULTIPASS_LIGHTMODE],
+        c4d.RDATA_MULTIPASS_SUFFIX: rd[c4d.RDATA_MULTIPASS_SUFFIX],
+        c4d.RDATA_MULTIPASS_SHADOWCORRECTION: rd[c4d.RDATA_MULTIPASS_SHADOWCORRECTION],
+        c4d.RDATA_MULTIPASS_STRAIGHTALPHA: rd[c4d.RDATA_MULTIPASS_STRAIGHTALPHA],
+        c4d.RDATA_RENDERDOODLE: rd[c4d.RDATA_RENDERDOODLE],
+        c4d.RDATA_INCLUDESOUND: rd[c4d.RDATA_INCLUDESOUND],
+        c4d.RDATA_GLOBALSAVE: rd[c4d.RDATA_GLOBALSAVE],
+        c4d.RDATA_HELPTEXT: rd[c4d.RDATA_HELPTEXT],
+        c4d.RDATA_SAVECALLBACK_FUNC: rd[c4d.RDATA_SAVECALLBACK_FUNC],
+        c4d.RDATA_SAVECALLBACK_USERDATA: rd[c4d.RDATA_SAVECALLBACK_USERDATA],
+        c4d.RDATA_OPTION_TRANSPARENCY: rd[c4d.RDATA_OPTION_TRANSPARENCY],
+        c4d.RDATA_OPTION_REFRACTION: rd[c4d.RDATA_OPTION_REFRACTION],
+        c4d.RDATA_OPTION_REFLECTION: rd[c4d.RDATA_OPTION_REFLECTION],
+        c4d.RDATA_OPTION_SHADOW: rd[c4d.RDATA_OPTION_SHADOW],
+        c4d.RDATA_LIMITREFLECTION: rd[c4d.RDATA_LIMITREFLECTION],
+        c4d.RDATA_LIMITSHADOW: rd[c4d.RDATA_LIMITSHADOW],
+    }
+
+    for k in rdata:
+        if not (type(rdata[k]) == int or\
+                type(rdata[k]) == float or\
+                (rdata[k])     == None or\
+                type(rdata[k]) == bool):
+            print k, rdata[k].GetName()
 
 def isTricode(prod_, tricode):
     try:
@@ -132,6 +240,16 @@ def isTricode(prod_, tricode):
     except:
         return False
 
+def makeTeamFolders(prod_):
+    team_folder = getProduction(prod_)['teams']
+    for t in getAllTeams(prod_):
+        tri_folder = os.path.join(team_folder, t)
+        tex_folder = os.path.join(tri_folder, 'tex')
+        if not os.path.isdir(tri_folder):
+            os.makedirs(tri_folder)
+        if not os.path.isdir(tex_folder):
+            os.makedirs(tex_folder)
+    return True
 
 def convertColor(colorvec, to='float'):
     ''' Converts a color vector from 0-255 (int) to 0-1 (float) or back again. '''
