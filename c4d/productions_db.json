@@ -1,30 +1,80 @@
 {
     "DEFAULT":  {
-        "xres"      : 1280,
-        "yres"      : 720,
-        "frate"     : 60,
+        "frate"     : 30,
         "layers"    : ["main"],
-        "passes"    : [3,4,6,7,109,113,114,115,116,100],
+        "renderer"  : 0,
+        "passes"    : [
+            "c4d.VPBUFFER_DEPTH",
+            "c4d.VPBUFFER_MOTIONVECTOR",
+            "c4d.VPBUFFER_MAT_UV",
+            "c4d.VPBUFFER_MAT_NORMAL",
+            "c4d.VPBUFFER_AMBIENTOCCLUSION",
+            "c4d.VPBUFFER_ILLUMINATION",
+            "c4d.VPBUFFER_TRANSPARENCY",
+            "c4d.VPBUFFER_REFLECTION",
+            "c4d.VPBUFFER_SPECULAR",
+            "c4d.VPBUFFER_DIFFUSE"
+            ],
+        "output"    : {
+            "c4d.RDATA_XRES"                 : 1920,
+            "c4d.RDATA_YRES"                 : 1080,
+            "c4d.RDATA_TEXTUREERROR"         : 0,
+            "c4d.RDATA_ALPHACHANNEL"         : 1,
+            "c4d.RDATA_SEPARATEALPHA"        : 0,
+            "c4d.RDATA_STRAIGHTALPHA"        : 1,
+            "c4d.RDATA_FORMAT"               : 1023671,
+            "c4d.RDATA_FORMATDEPTH"          : 1,
+            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1023671,
+            "c4d.RDATA_MULTIPASS_SAVEDEPTH"  : 1,
+            "c4d.RDATA_NAMEFORMAT"           : 6,
+            "c4d.RDATA_LOCKRATIO"            : 1,
+            "c4d.RDATA_FILMASPECT"           : 1.77,
+            "c4d.RDATA_FILMPRESET"           : 3
+        },
+        "standard"  : {
+            "c4d.RDATA_RAYDEPTH"             : 5,
+            "c4d.RDATA_REFLECTIONDEPTH"      : 1,
+            "c4d.RDATA_SHADOWDEPTH"          : 1,
+            "c4d.RDATA_ANTIALIASING"         : 2,
+            "c4d.RDATA_AAFILTER"             : 1,
+            "c4d.RDATA_AAMINLEVEL"           : 1,
+            "c4d.RDATA_AAMAXLEVEL"           : 3,
+            "c4d.RDATA_AATHRESHOLD"          : 0.01
+        },
         "folders"   : {
-            "ae"    : [],
-            "c4d"   : ["tex", "export", "backup"],
-            "cam"   : [],
-            "maya"  : [],
-            "nuke"  : [],
-            "qt"    : [],
+            "ae"       : [],
+            "c4d"      : ["tex", "export", "backup"],
+            "cam"      : [],
+            "maya"     : ["includes"],
+            "nuke"     : [],
+            "qt"       : [],
             "render_2d": ["prerenders"],
             "render_3d": []
-            }
+        }
     },
-
     "NBA_2016": {
         "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\001_PROJECTS\\000_Animation",
         "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\001_3D_ASSETS",
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
         "team_db"   : "teams_nba",
-        "xres"      : 1920,
-        "yres"      : 1080,
-        "frate"     : 30
+        "renderer"  : 1023342,
+        "physical"  : {
+            "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,      
+            "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,      
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.1,    
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,   
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 2.0,    
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 2.0,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SSS"     : 4.0
+        },
+        "effects"   : {
+            "c4d.VPambientocclusion" : {
+                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    15.0,
+                "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE": 1
+            },
+            "c4d.VPsharpenfilter" : {
+                "c4d.VP_SHARPENFILTERSTRENGTH": 0.1
+            }
+        }
     }
-    
 }

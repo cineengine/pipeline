@@ -27,13 +27,25 @@ def getProduction(prod_):
     with open(PRODUCTION_GLOBALS_DB, 'r') as stream:
         full_db = json.load(stream)
         for k,v in full_db.iteritems():
+            # default project is stored
             if (k == 'DEFAULT'):
                 default_prod = full_db[k]
+            # a specific project is requested
             elif (k == prod_):
                 request_prod = full_db[k]
                 request_prod['is_default'] = False
-            else: request_prod = {'is_default': True}
+                # This block is for merging sub-dictionaries within the project entry
+                # For now, it is hard-coded and must be updated with every sub-dictionary
+                """
+                raytrace = full_db['DEFAULT']['raytracing'].copy()
+                raytrace.update(request_prod['raytracing'])
+                request_prod['raytracing'] = raytrace
+                """
 
+            else: request_prod = {'is_default': True}
+    # The project dictionaries only store the delta of data in the default dictionary
+    # Therefore we merge the requested project dictionary over top of the default to create
+    # a complete data set.
     merged_prod = default_prod.copy()
     merged_prod.update(request_prod)
     return merged_prod

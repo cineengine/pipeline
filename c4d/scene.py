@@ -157,10 +157,8 @@ class Scene(object):
             setOutput(
                 default_override=False,
                 paths_only  = paths_only,
-                xres        = self.prod_data['xres'],
-                yres        = self.prod_data['yres'],
-                frate       = self.prod_data['frate'],
-                passes      = self.prod_data['passes'],
+                prod        = self.production,
+                frate       = self.framerate,
                 version     = self.version,
                 output_path = self.output_path,
                 multi_path  = self.multi_path
@@ -336,209 +334,84 @@ class Scene(object):
                         og.AddToGroup(td, obj)
             doc.EndUndo()
 
-def setOutput( default_override=True, paths_only=False, **render_data ):
+def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_data ):
     ''' Sets up basic parameters for rendering. Specifics are pulled from 'project' global 
-    parameters module.'''
+    parameters module.
+
+    scene_data: data unique to the scene being set up (paths, version, etc)
+    render_data: production-specific data (raytracing globals, resolution, etc). '''
     doc = core.doc()
     if (paths_only):
         rd = doc.GetActiveRenderData()
     else:
         rd = c4d.documents.RenderData()
 
+    # OUTPUT PATHS
     # default_override will set default raytracing & resolution settings, but has no information
     # on which to base output paths.  Therefore it will leave them blank.
     if (default_override):
         render_data = database.getProduction('DEFAULT')
         render_data['output_path'] = ''
         render_data['multi_path'] = ''
-
-    # Output paths
-    rd[c4d.RDATA_PATH] = str(render_data['output_path'])
-    if not (render_data['output_path'] == ''):
-        rd[c4d.RDATA_MULTIPASS_FILENAME] = str(render_data['multi_path'])
-    
-    # the 'paths_only' flag is for the Version Up utility, so that any custom render settings are
+    else:
+        render_data = database.getProduction(prod)
+    # Set the values
+    rd[c4d.RDATA_PATH] = str(scene_data['output_path'])
+    if not (scene_data['output_path'] == ''):
+        rd[c4d.RDATA_MULTIPASS_FILENAME] = str(scene_data['multi_path'])
+    # The 'paths_only' flag is for the Version Up utility, so that any custom render settings are
     # not reset by versioning up.  this branch will return immediately after setting output paths
     if (paths_only): return True
 
-    # RAYTRACING & DOCUMENT SETTINGS
-    res    = (render_data['xres'], render_data['yres'])
-    frate  = int(render_data['frate'])
-    aspect = 1.7777
-    doc.SetFps(frate)
-    # Resolution & frame rate
-    rd[c4d.RDATA_XRES]            = res[0]
-    rd[c4d.RDATA_YRES]            = res[1]
-    rd[c4d.RDATA_LOCKRATIO]       = True
-    rd[c4d.RDATA_FILMASPECT]      = aspect
-    rd[c4d.RDATA_FILMPRESET]      = c4d.RDATA_FILMPRESET_HDTV
-    rd[c4d.RDATA_FRAMERATE]       = float(frate)
-    # Alpha channel
-    rd[c4d.RDATA_ALPHACHANNEL]    = True
-    rd[c4d.RDATA_SEPARATEALPHA]   = False
-    rd[c4d.RDATA_STRAIGHTALPHA]   = True
-    # Format options    
-    rd[c4d.RDATA_FORMAT]          = c4d.FILTER_PNG
-    rd[c4d.RDATA_FORMATDEPTH]     = c4d.RDATA_FORMATDEPTH_16
-    # Frame padding & extension
-    rd[c4d.RDATA_NAMEFORMAT]      = c4d.RDATA_NAMEFORMAT_6    
+    # STANDARD OUTPUT SETTINGS
+    # Resolution / naming convention / bit depth & channels
+    rd[c4d.RDATA_FRAMERATE] = int(scene_data['frate'])
+    for attribute in render_data['output']:
+        rd[eval(attribute)] = render_data['output'][attribute]
+
+    # SAMPLER SETTINGS --
+    # Universal(?) settings
     # AA Sampling overrides
-    rd[c4d.RDATA_ANTIALIASING]    = c4d.RDATA_ANTIALIASING_BEST
-    rd[c4d.RDATA_AAFILTER]        = c4d.RDATA_AAFILTER_ANIMATION
-    rd[c4d.RDATA_AAMINLEVEL]      = c4d.RDATA_AAMINLEVEL_2
-    rd[c4d.RDATA_AAMAXLEVEL]      = c4d.RDATA_AAMAXLEVEL_8
+    for attribute in render_data['standard']:
+        rd[eval(attribute)] = render_data['standard'][attribute]
 
-    # MULTIPASS
-    # Format options
-    rd[c4d.RDATA_MULTIPASS_SAVEFORMAT] = c4d.FILTER_PNG
-    rd[c4d.RDATA_MULTIPASS_SAVEDEPTH]  = c4d.RDATA_FORMATDEPTH_16
-    # Raytracing overrides
-    rd[c4d.RDATA_RAYDEPTH]        = 5
-    rd[c4d.RDATA_REFLECTIONDEPTH] = 2
-    rd[c4d.RDATA_SHADOWDEPTH]     = 2
-    # Miscellaneous
-    rd[c4d.RDATA_TEXTUREERROR]    = True
+    # RENDERER-SPECIFIC SETTINGS
+    # Standard renderer -- >
+    if (render_data['renderer'] == c4d.RDATA_RENDERENGINE_STANDARD):
+        rd[c4d.RDATA_RENDERENGINE] = c4d.RDATA_RENDERENGINE_STANDARD
 
-    for mp in render_data['passes']:
+    # Physical renderer -- >
+    elif (render_data['renderer'] == c4d.RDATA_RENDERENGINE_PHYSICAL):
+        rd[c4d.RDATA_RENDERENGINE] = c4d.RDATA_RENDERENGINE_PHYSICAL
+        vpost = rd.GetFirstVideoPost()
+        # Check for existing Physical renderer effect
+        while vpost:
+            if vpost.CheckType(c4d.VPxmbsampler): break
+            vpost = vpost.GetNext()
+        # Make one if it doesn't exist
+        if not vpost:
+            vpost = c4d.BaseList2D(c4d.VPxmbsampler)
+            rd.InsertVideoPost(vpost)
+        # Set the attrs from the DB
+        for attribute in render_data['physical']:
+            vpost[eval(attribute)] = render_data['physical'][attribute]
+
+    # MULTI-PASS TOGGLES
+    for multipass_id in render_data['passes']:
         mp_obj = c4d.BaseList2D(c4d.Zmultipass)
-        mp_obj.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = mp
+        mp_obj.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = eval(multipass_id)
         rd.InsertMultipass(mp_obj)
 
-    core.createRenderData(rd, 'DEFAULT')
+    # ADDITIONAL VIDEO POST EFFECTS
+    if 'effects' in render_data:
+        for effect_id in render_data['effects']:
+            vpost = c4d.BaseList2D(eval(effect_id))
+            rd.InsertVideoPost(vpost)
+            for attribute in render_data['effects'][effect_id]:
+                vpost[eval(attribute)] = render_data['effects'][effect_id][attribute]
+
+    core.createRenderData(rd, 'My Render Setting')
+
+    c4d.EventAdd()
+
     return
-
-
-# UI OBJECTS ######################################################################################
-class TeamColorWindow(gui.GeDialog):
-    def __init__(self):
-        self.LBL_HOME_TRICODE = 1000
-        self.LBL_AWAY_TRICODE = 1001
-        self.LBL_HOME_COLORF  = 2000
-        self.LBL_AWAY_COLORF  = 2001
-
-        self.TXT_HOME_TRICODE = 3000
-        self.TXT_AWAY_TRICODE = 3001
-
-        self.VEC_HOME_COLOR_P = 4000
-        self.VEC_HOME_COLOR_S = 4001
-        self.VEC_HOME_COLOR_T = 4002
-        self.VEC_AWAY_COLOR_P = 4003
-        self.VEC_AWAY_COLOR_S = 4004
-        self.VEC_AWAY_COLOR_T = 4005
-
-
-        self.BOOL_SWAP_PRISEC = 4050
-
-        self.BTN_EXECUTE      = 5000
-        self.BTN_CANCEL       = 5001
-
-        self.GROUP_MAIN       = 9000
-        self.GROUP_ROW1       = 9001
-        self.GROUP_ROW2       = 9002
-        self.GROUP_BTNS       = 9003
-
-        self.left             = c4d.BFH_LEFT
-        self.center           = c4d.BFH_CENTER
-        self.right            = c4d.BFH_RIGHT
-
-        scn = Scene()
-
-        self.prod = scn.production
-
-
-    def CreateLayout(self):
-        self.SetTitle('Team Color Picker')
-        self.GroupBegin(self.GROUP_MAIN, self.left, 1, 2)
-
-        self.GroupBegin(self.GROUP_ROW1, self.left, 5, 1)
-        self.AddStaticText(self.LBL_HOME_TRICODE, self.left, initw=110, name='Home Team:')
-        self.AddEditText(self.TXT_HOME_TRICODE, self.left, 100)
-        self.AddColorField(self.VEC_HOME_COLOR_P, self.left)
-        self.AddColorField(self.VEC_HOME_COLOR_S, self.left)
-        self.AddColorField(self.VEC_HOME_COLOR_T, self.left)
-        self.GroupEnd()
-
-        self.GroupBegin(self.GROUP_ROW2, self.left, 5, 1)
-        self.AddStaticText(self.LBL_AWAY_TRICODE, self.left, initw=110, name='Away Team:')
-        self.AddEditText(self.TXT_AWAY_TRICODE, self.left, 100)
-        self.AddColorField(self.VEC_AWAY_COLOR_P, self.left)
-        self.AddColorField(self.VEC_AWAY_COLOR_S, self.left)
-        self.AddColorField(self.VEC_AWAY_COLOR_T, self.left)
-        self.GroupEnd()
-
-        self.GroupBegin(self.GROUP_BTNS, self.right, 2, 1)
-        self.AddButton(self.BTN_CANCEL, c4d.BFH_SCALE, name="Cancel")
-        self.AddButton(self.BTN_EXECUTE, c4d.BFH_SCALE, name="Assign Colors")
-        self.GroupEnd()
-
-        self.GroupEnd()
-        self.ok=False
-        return True
-
-
-    def Command(self, id, msg):
-        if (id == self.TXT_HOME_TRICODE or id == self.TXT_AWAY_TRICODE):
-            self.updateSwatches()
-        elif (id == self.BTN_EXECUTE):
-            self.updateMaterials()
-            self.Close()
-        elif (id == self.BTN_CANCEL):
-            self.Close()
-        return True
-
-
-    def updateSwatches(self):
-        home_tricode = self.GetString(self.TXT_HOME_TRICODE)
-        away_tricode = self.GetString(self.TXT_AWAY_TRICODE)
-
-        home_tricode
-
-        try: 
-            home_colors = database.getTeamColors(self.prod, home_tricode)
-            home_team = True
-        except: 
-            home_team = None
-        
-        try: 
-            away_colors = database.getTeamColors(self.prod, away_tricode)
-            away_team = True
-        except: 
-            away_team = None
-
-        if (home_team):
-            self.SetColorField(self.VEC_HOME_COLOR_P, home_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_HOME_COLOR_S, home_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_HOME_COLOR_T, home_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        else:
-            self.SetColorField(self.VEC_HOME_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_HOME_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_HOME_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-
-        if (away_team):
-            self.SetColorField(self.VEC_AWAY_COLOR_P, away_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_AWAY_COLOR_S, away_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_AWAY_COLOR_T, away_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        else:
-            self.SetColorField(self.VEC_AWAY_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_AWAY_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(self.VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        return True
-
-
-    def updateMaterials(self):
-        home_pri = self.GetColorField(self.VEC_HOME_COLOR_P)['color']
-        home_sec = self.GetColorField(self.VEC_HOME_COLOR_S)['color']
-        home_tri = self.GetColorField(self.VEC_HOME_COLOR_T)['color']
-
-        away_pri = self.GetColorField(self.VEC_AWAY_COLOR_P)['color']
-        away_sec = self.GetColorField(self.VEC_AWAY_COLOR_S)['color']
-        away_tri = self.GetColorField(self.VEC_AWAY_COLOR_T)['color']
-
-        core.changeColor('HOME_PRIMARY', home_pri, exact=False)
-        core.changeColor('HOME_SECONDARY', home_sec, exact=False)
-        core.changeColor('HOME_TERTIARY', home_tri, exact=False)
-
-        core.changeColor('AWAY_PRIMARY', away_pri, exact=False)
-        core.changeColor('AWAY_SECONDARY', away_sec, exact=False)
-        core.changeColor('AWAY_TERTIARY', away_tri, exact=False)
-        return True
