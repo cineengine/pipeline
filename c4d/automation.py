@@ -83,6 +83,7 @@ def relinkTextures( migrate=False ):
         #    "new_tex" is a list of new textures that have not yet been migrated into project folders.
         #    tuple[0] is the current path of the texture on the server
         #    tuple[1] is the tricode of the team the texture belongs to (otherwise None for generic)
+        # This list then gets passed to the UI function (the if-statement below) for the user to control
         else:
             new_tex.append((tex_path, tricode_))
     doc.EndUndo()
@@ -175,3 +176,5 @@ NOTE: Team textures (identified by TRICODE_ prefix) will be moved to the team's 
                 elif (tricode):
                     print 'copying', tex_path, 'to ', tricode, ' folder'
                     shutil.copy2(tex_path, os.path.join(team_texture_path, tricode, 'tex'))
+
+
