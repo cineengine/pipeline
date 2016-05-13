@@ -122,10 +122,11 @@ class TextureMigrateWindow(gui.GeDialog):
         self.GroupBorder(c4d.BORDER_THIN_IN)
         self.GroupBorderSpace(5,5,5,5)
         msg = """Select the textures you would like to move into production global folders.
-All moved textures will be relinked in your scene.  Textures left unchecked will 
-remain where they are.
+All moved textures will be relinked in your scene.  Textures left unchecked
+will remain where they are.
 
-NOTE: Team textures (identified by TRICODE_ prefix) will be moved to the team's asset /tex/ folder.
+NOTE: Team textures (identified by TRICODE_ prefix) will be moved to the 
+team's asset /tex/ folder.
 """
         self.AddMultiLineEditText(self.INSTRUCTIONS, c4d.BFH_SCALEFIT, c4d.BFV_SCALEFIT, inith=60, style=c4d.DR_MULTILINE_READONLY)
         #self.Enable(self.INSTRUCTIONS, False)

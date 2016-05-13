@@ -59,7 +59,6 @@ CITY_LOGO_READS = [
     'READ_{}_UTIL'
     ]
 
-
 #############################################################################
 ## LOAD TEAM FUNCTIONS ######################################################
 #############################################################################
@@ -93,8 +92,6 @@ def loadTeam(location, tricode=None, renders=False, multi=False):
 
     if (renders):
         selectLogoRender(location, team)
-
-
 
 def renameSave(matchup=False, multi=False):
     m_ctrl         = nuke.toNode(MASTER_CTRL)
@@ -132,14 +129,11 @@ def renameSave(matchup=False, multi=False):
 
     nuke.scriptSaveAs(out_path)
 
-
-
 def quickSubmit(*a):
     nuke.scriptSave()
     frame_range = '{0}-{1}'.format(nuke.root().firstFrame(), nuke.root().lastFrame())
     scene_name  = basename(nuke.root().name())
     submit.singleNode(scene_name, nuke.root().name(), frame_range, '5000', '8', 'MASTER_WRITE') 
-
 
 def selectColors(location, team):    
     primary = convertColor(team.primary, toFloat=True)
@@ -152,7 +146,6 @@ def selectColors(location, team):
         m_ctrl.knob('{}_secondary'.format(location)).setValue(secondary)
     except: pass
 
-
 def selectColorVariants(location, team):
     m_ctrl = nuke.toNode(MASTER_CTRL)
 
@@ -161,13 +154,11 @@ def selectColorVariants(location, team):
     m_ctrl.knob('{}_neon_color'.format(location)).setValue(team.neon)
     #except: pass
 
-
 def selectRegions(location, team):    
     m_ctrl = nuke.toNode(MASTER_CTRL)
     try:
         m_ctrl.knob('{}_region'.format(location)).setValue( team.matteNum )
     except: pass
-
 
 def selectSkies(location, team):    
     m_ctrl = nuke.toNode(MASTER_CTRL)
@@ -175,13 +166,11 @@ def selectSkies(location, team):
         m_ctrl.knob('sky').setValue( team.skyNum )
     except: pass
 
-
 def selectSigns(location, team):    
     m_ctrl = nuke.toNode(MASTER_CTRL)
     try:
         m_ctrl.knob('{}_sign'.format(location)).setValue( team.signNum )
     except: pass
-
 
 def selectTeamLogo(location, team):
     try:
@@ -189,13 +178,11 @@ def selectTeamLogo(location, team):
         logoReadNode.knob('file').setValue(team2DAssetString(team.tricode, 1))
     except: pass
 
-
 def selectTeamPodTwo(location, team):
     try:
         podTwoReadNode = nuke.toNode(SECONDARY_LOGO_READ.format(location.upper()))
         podTwoReadNode.knob('file').setValue(team2DAssetString(team.tricode, 2))
     except: pass
-
 
 def selectTeamPodThree(location, team):
     try:
@@ -203,13 +190,11 @@ def selectTeamPodThree(location, team):
         podThreeReadNode.knob('file').setValue(team2DAssetString(team.tricode, 3))
     except: pass
 
-
 def selectTeamBanner(location, team):
     try:
         bannerReadNode = nuke.toNode(BANNER_LOGO_READ.format(location.upper()))
         bannerReadNode.knob('file').setValue(team2DAssetString(team.tricode, 4))
     except: pass
-
 
 def selectLogoRender(location, team):
     m_ctrl  = nuke.toNode(MASTER_CTRL)
@@ -235,7 +220,6 @@ def selectLogoRender(location, team):
 
         rn.knob('file').setValue(new_path)
 
-
 def selectBowlRender():
     m_ctrl = nuke.toNode(MASTER_CTRL)
 
@@ -259,7 +243,6 @@ def selectBowlRender():
 
         rn.knob('file').setValue(new_path)
 
-
 #############################################################################
 ## HELPER FUNCTIONS #########################################################
 #############################################################################
@@ -280,15 +263,12 @@ def convertColor( rgb_tuple, toFloat=True, toInt=False ):
         out_b = __clamp(int(255 * rgb_tuple[2]))
         return (out_r, out_g, out_b)
 
-
 def writeThread(write_node, start_frame, end_frame):
     nuke.executeInMainThread(nuke.execute, args=(write_node, start_frame, end_frame, 1), kwargs={'continueOnError':True})
-
 
 def team2DAssetString(tricode, num):
     asset = '{0}{1}/includes/{2}_0{3}.png'.format(TEAMS_ASSET_DIR, tricode, tricode, str(num))
     return asset
-
 
 def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
@@ -369,7 +349,6 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
 
         return
 
-
 def setOutputPathMulti(create_dirs=False):
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
@@ -423,7 +402,6 @@ def getBowlEventFromScene():
 
     elif event_idx == 2:
         return (event, None)
-
 
 #############################################################################
 ## GENERAL AUTOMATION #######################################################
@@ -489,7 +467,6 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                         str(DEFAULT_CPUS),
                         'WRITE_HOME_MATTE')
 
-
 def teamLogoUpdate(team_list):
     report = ''
 
@@ -535,7 +512,6 @@ def teamLogoUpdate(team_list):
                 report += '\nERROR: Could not find toolkit nuke scene for {}_PRIMETIME'.format(deliverable)
 
     print report
-
 
 def nysBuild(team_list):
     report = ''
@@ -583,7 +559,6 @@ def nysBuild(team_list):
 
     print report
 
-
 #############################################################################
 ## WEDGE RENDER FUNCTIONS ###################################################
 #############################################################################
@@ -599,7 +574,6 @@ def preRender(matchup=False, jumbo=False):
         loadTeam('away', team_list[0], renders=True)
     
     setOutputPath(create_dirs=True, matchup=True, jumbo=False)
-
 
 def postRender():
     m_ctrl = nuke.toNode(MASTER_CTRL)
@@ -623,7 +597,6 @@ def postRender():
         while render_thread.isAlive():
             time.sleep(0.1)
 
-
 def preRenderQuad():
     m_ctrl = nuke.toNode(MASTER_CTRL)
     m_write = nuke.toNode(MASTER_WRITE)
@@ -639,8 +612,6 @@ def preRenderQuad():
     m_write.knob('file').setValue(out_str)
 
     return
-
-    
 
 def postRenderQuad():
     m_ctrl = nuke.toNode(MASTER_CTRL)
@@ -664,10 +635,8 @@ def postRenderQuad():
         while render_thread.isAlive():
             time.sleep(0.1)
 
-
 def preFrame():
     pass
-
 
 def postFrame():
     pass
