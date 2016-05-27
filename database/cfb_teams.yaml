@@ -55,6 +55,20 @@ sky        : 03
 sign       : A
 ...
 ---
+team       : Alabama Birmingham
+os_safe    : Alabama_Birmingham
+tricode    : UAB
+mascot     : Blazers
+primary    : [0,117,80]
+secondary  : [255,200,69]
+billboard  : 0
+neon       : 1
+conference : C-USA
+matte      : 11
+sky        : 03
+sign       : C
+...
+---
 team       : Appalachian State
 os_safe    : Appalachian_State
 tricode    : APP
