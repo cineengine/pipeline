@@ -31,7 +31,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	BTN_NEWTAKE           "Make New Take";
 	BTN_VERSIONUP         "Version Up";
 	BTN_SUBMIT            "Submit Scene to Farm";
-
+	BTN_CREATE_OBJBUFFERS "Create Object Buffers";
 	THIRD_TAB_NAME        "Team Switching";
 	LBL_HOME_TRICODE      "Home Team";
 	LBL_AWAY_TRICODE      "Away Team";

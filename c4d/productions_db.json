@@ -59,11 +59,11 @@
         "team_db"   : "teams_nba",
         "renderer"  : 1023342,
         "physical"  : {
-            "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,      
-            "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,      
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.1,    
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,   
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 2.0,    
+            "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,
+            "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.1,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 2.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 2.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SSS"     : 4.0
         },

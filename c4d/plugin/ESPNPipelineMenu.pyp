@@ -72,6 +72,7 @@ BTN_VERSIONUP        = 20005
 BTN_SUBMIT           = 20006
 LBL_OUTPUT_PATHS     = 20007
 LBL_TAKE_UTILS       = 20008
+BTN_CREATE_OBJBUFFERS= 20009
 
 THIRD_TAB            = 30000
 LBL_HOME_TRICODE     = 30001
@@ -193,6 +194,8 @@ class ESPNMenu(gui.GeDialog):
             self.help('save_rename')
         elif (id == RELINK_TEXTURES_EXEC):
             auto.relinkTextures(migrate=True)
+        elif (id == BTN_CREATE_OBJBUFFERS):
+            core.createObjectBuffers()
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################

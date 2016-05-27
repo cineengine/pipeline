@@ -78,6 +78,11 @@ def merge( file_=None ):
         c4d.CallCommand(12096, 12096)
     return
 
+def lookupID( id ):
+    for k in c4d.__dict__.keys():
+        if c4d.__dict__[k] == id:
+            print k
+
 # FLAGS & TAGS ####################################################################################
 def visibility( obj_=None, v=None, r=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
@@ -350,6 +355,34 @@ def createMaterial(name=None, color=None):
     c4d.EventAdd()
     doc.EndUndo()
     return mat
+
+def enableObjectBuffer(id):
+    '''Inserts an object buffer into the active render data, with the passed id'''
+    doc = c4d.documents.GetActiveDocument()
+    rd = doc.GetActiveRenderData()
+    ob = c4d.BaseList2D(c4d.Zmultipass)
+    ob.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = c4d.VPBUFFER_OBJECTBUFFER
+    ob[c4d.MULTIPASSOBJECT_OBJECTBUFFER] = id
+    rd.InsertMultipass(ob)
+
+def createObjectBuffers():
+    '''Parses the scene for all compositing tags with object buffers enabled, then creates them'''
+    doc = c4d.documents.GetActiveDocument()
+    ids = []
+    channel_enable = 'c4d.COMPOSITINGTAG_ENABLECHN{}'
+    channel_id     = 'c4d.COMPOSITINGTAG_IDCHN{}'
+    
+    for obj in ObjectIterator(doc.GetFirstObject()):
+        for tag in TagIterator(obj):
+            if tag.GetType() == c4d.Tcompositing:
+                for i in range(12):
+                    if tag[eval(channel_enable.format(i))] == 1:
+                        id_ = tag[eval(channel_id.format(i))]
+                        ids.append(id_)
+    ids = list(set(ids))
+    
+    for id_ in ids:
+        enableObjectBuffer(id_)
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
 def ls( obj=None, typ=c4d.BaseObject, name=None ):
