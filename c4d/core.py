@@ -381,7 +381,7 @@ def createObjectBuffers():
                         ids.append(id_)
     ids = list(set(ids))
     
-    for id_ in ids:
+    for id_ in sorted(ids, reverse=True):
         enableObjectBuffer(id_)
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
