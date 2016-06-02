@@ -317,9 +317,10 @@ class Scene(object):
             # Add the sorted objects to their respective render layers / takes
             for og in core.ObjectIterator(start):
                 if og.GetName() == 'bty':
-                    for obj in rgba_obj:
-                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
-                        og.AddToGroup(td, obj)
+                    pass
+                    #for obj in rgba_obj:
+                    #    doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
+                    #    og.AddToGroup(td, obj)
                 elif og.GetName() == 'pv_off':
                     for obj in pvo_obj:
                         doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
