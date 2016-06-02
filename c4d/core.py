@@ -20,7 +20,7 @@ import c4d
 from c4d.modules import render
 
 OVERRIDE_GROUPS = [
-    'bty',
+    #'bty',
     'pv_off',
     'black_hole',
     'disable'
@@ -103,6 +103,31 @@ def visibility( obj_=None, v=None, r=None ):
         o.SetRenderMode(vis[r])
     doc.EndUndo()
     return
+
+def isVisible( obj_=None ):
+    ''' Check an object (and its parents) for visibility. '''
+    # get the selected object if none is passed
+    if not obj_:
+        obj_ = ls()[0]
+    # first, check if the object is simply turned off
+    if obj_.GetRenderMode() == 1.0:
+        return False
+    # second, check it for a compositing tag that might do so
+    for tag in TagIterator(obj_):
+        if tag.GetType() == c4d.Tcompositing:
+            if tag[c4d.COMPOSITINGTAG_MATTEOBJECT] == 1:
+                return False
+            elif tag[c4d.COMPOSITINGTAG_SEENBYCAMERA] == 0:
+                return False
+    # we must also iterate over the parents of the object
+    parent = obj_.GetUp()
+    while parent:
+        if not isVisible(parent):
+            return False
+        else:
+            parent = parent.GetUp()
+    # all the parents must be visible
+    return True
 
 def tag( obj_=None, typ=None, name=None ):
     ''' Creates a tag on the selected (or specified) object. For tag types, see:
@@ -187,6 +212,21 @@ def changeColor( mat, vector, channel=c4d.MATERIAL_COLOR_COLOR, exact=True ):
     doc.EndUndo()
     return True
 
+def createMaterial(name=None, color=None):
+    ''' Create a new material. '''
+    doc = c4d.documents.GetActiveDocument()
+    mat = c4d.BaseMaterial(c4d.Mmaterial)
+    doc.StartUndo()
+    doc.InsertMaterial(mat)
+    if (name):
+        mat.SetName(name)
+    if (color):
+        changeColor(mat, color)
+    doc.AddUndo(c4d.UNDOTYPE_NEW, mat)
+    c4d.EventAdd()
+    doc.EndUndo()
+    return mat
+
 def getSceneTextures():
     ''' An object-based version of doc.GetAllTextures() -- i.e., returns an array of BaseList2D
         instead of a useless string tuple. 
@@ -237,7 +277,7 @@ def getGlobalTexturePaths():
             paths.append(path)
     return paths
 
-# TAKE / RENDER LAYER UTILITIES ###################################################################
+# TAKE / RENDER LAYER / RENDERDATA UTILITIES ######################################################
 def take( name=None, set_active=False ):
     ''' Create a new take / render layer. '''
     # TakeData is a singleton container for all the takes in the scene
@@ -353,20 +393,54 @@ def createRenderData( rd, name ):
     doc.EndUndo()
     return
 
-def createMaterial(name=None, color=None):
-    ''' Create a new material. '''
+def createChildRenderData( rd, suffix=False, set_active=False ):
+    ''' Inserts a new RenderData as a child to an existing one, including a name suffix.'''
     doc = c4d.documents.GetActiveDocument()
-    mat = c4d.BaseMaterial(c4d.Mmaterial)
     doc.StartUndo()
-    doc.InsertMaterial(mat)
-    if (name):
-        mat.SetName(name)
-    if (color):
-        changeColor(mat, color)
-    doc.AddUndo(c4d.UNDOTYPE_NEW, mat)
+    child_rdata = c4d.documents.RenderData()
+    child_rdata.SetData(rd.GetData())
+    doc.InsertRenderData(child_rdata, pred=rd)
+    doc.AddUndo(c4d.UNDOTYPE_NEW, rd)
+    child_rdata.InsertUnder(rd)
+
+    if (type(suffix) == str):
+        name = '{} {}'.format(child_rdata.GetName(), suffix)
+        child_rdata.SetName(name)
+    if (set_active): doc.SetActiveRenderData(child_rdata)
+
     c4d.EventAdd()
     doc.EndUndo()
-    return mat
+    return child_rdata
+
+def clearObjectBuffers():
+    doc = c4d.documents.GetActiveDocument()
+    rdata = doc.GetActiveRenderData()
+    doc.StartUndo()
+    for mpass in ObjectIterator(rdata.GetFirstMultipass()):
+        if (mpass.GetTypeName() == 'Object Buffer'):
+            doc.AddUndo(c4d.UNDOTYPE_DELETE, mpass)
+            mpass.Remove()
+    c4d.EventAdd()
+    doc.EndUndo()
+    return True
+
+def getObjectBufferIDs():
+    ''' Gets a set of all unique Object Buffer ids set in compositing tags in the scene. '''
+    ids = []
+    channel_enable = 'c4d.COMPOSITINGTAG_ENABLECHN{}'
+    channel_id     = 'c4d.COMPOSITINGTAG_IDCHN{}'
+    doc = c4d.documents.GetActiveDocument()
+    td = doc.GetTakeData()
+
+    for obj in ObjectIterator(doc.GetFirstObject()):
+        if isVisible(obj):
+            for tag in TagIterator(obj):
+                if tag.GetType() == c4d.Tcompositing:
+                    for i in range(12):
+                        if tag[eval(channel_enable.format(i))] == 1:
+                            id_ = tag[eval(channel_id.format(i))]
+                            ids.append(id_)
+    return sorted(list(set(ids)), reverse=True)
 
 def enableObjectBuffer(id):
     '''Inserts an object buffer into the active render data, with the passed id'''
@@ -376,25 +450,41 @@ def enableObjectBuffer(id):
     ob.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = c4d.VPBUFFER_OBJECTBUFFER
     ob[c4d.MULTIPASSOBJECT_OBJECTBUFFER] = id
     rd.InsertMultipass(ob)
+    c4d.EventAdd()
 
-def createObjectBuffers():
+def createObjectBuffers(consider_takes=False):
     '''Parses the scene for all compositing tags with object buffers enabled, then creates them'''
+    def _setBuffers():
+        ids = getObjectBufferIDs()
+        for id_ in ids:
+            enableObjectBuffer(id_)
+
     doc = c4d.documents.GetActiveDocument()
-    ids = []
-    channel_enable = 'c4d.COMPOSITINGTAG_ENABLECHN{}'
-    channel_id     = 'c4d.COMPOSITINGTAG_IDCHN{}'
-    
-    for obj in ObjectIterator(doc.GetFirstObject()):
-        for tag in TagIterator(obj):
-            if tag.GetType() == c4d.Tcompositing:
-                for i in range(12):
-                    if tag[eval(channel_enable.format(i))] == 1:
-                        id_ = tag[eval(channel_id.format(i))]
-                        ids.append(id_)
-    ids = list(set(ids))
-    
-    for id_ in sorted(ids, reverse=True):
-        enableObjectBuffer(id_)
+    td = doc.GetTakeData()
+
+    # clear all existing object buffers
+    clearObjectBuffers()
+
+    # "simple" mode -- takes are not considered, existing render data is modified
+    if not (consider_takes):
+        _setBuffers()
+
+    # "complicated" mode -- creates child RenderData for each take, enabling only object buffers
+    # belonging to visible objects in the take
+    elif (consider_takes):
+        # get checked takes
+        take_list = getCheckedTakes()
+        if len(take_list) == 0:
+            return
+        # get active render data
+        parent_rdata = doc.GetActiveRenderData()
+        for take in take_list:
+            td.SetCurrentTake(take)
+            child_rdata = createChildRenderData(parent_rdata, suffix=take.GetName(), set_active=True)
+            _setBuffers()
+            take.SetRenderData(td, child_rdata)
+            c4d.EventAdd()
+            
 
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
 def ls( obj=None, typ=c4d.BaseObject, name=None ):
