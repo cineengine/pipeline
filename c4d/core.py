@@ -403,6 +403,16 @@ def createChildRenderData( rd, suffix=False, set_active=False ):
     doc.AddUndo(c4d.UNDOTYPE_NEW, rd)
     child_rdata.InsertUnder(rd)
 
+    for multipass in ObjectIterator(rd.GetFirstMultipass()):
+        new_mpass = c4d.BaseList2D(c4d.Zmultipass)
+        new_mpass.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = multipass.GetType()
+        new_mpass.SetData(multipass.GetData())
+        child_rdata.InsertMultipass(new_mpass)
+    for videopost in ObjectIterator(rd.GetFirstVideoPost()):
+        new_vpost = c4d.BaseList2D(videopost.GetType())
+        new_vpost.SetData(videopost.GetData())
+        child_rdata.InsertVideoPost(new_vpost)
+
     if (type(suffix) == str):
         name = '{} {}'.format(child_rdata.GetName(), suffix)
         child_rdata.SetName(name)
@@ -485,7 +495,6 @@ def createObjectBuffers(consider_takes=False):
             take.SetRenderData(td, child_rdata)
             c4d.EventAdd()
             
-
 # OBJECT-PARSING / SELECTION UTILITIES ############################################################
 def ls( obj=None, typ=c4d.BaseObject, name=None ):
     ''' Returns a list of BaseObjects of specified type that are either currently selected,
