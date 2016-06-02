@@ -16,6 +16,8 @@ import datetime
 from random import uniform
 from c4d import gui
 
+from pipeline.c4d import core
+
 # Default submission settings
 default_priority = 5000
 cpu_limit = 183
@@ -144,7 +146,6 @@ class SubmissionDialog(gui.GeDialog):
     
     return True
 
- 
   # React to user's input:
   def Command(self, id, msg):
     # Enable/disable text field if 'all threads' is checked
@@ -160,14 +161,28 @@ class SubmissionDialog(gui.GeDialog):
     # Submit the scene on OK
     elif id==BTN_SUBMIT:
       self.ok = True
-      self.submit_dict = self.gather()
-      self.submit(self.submit_dict)
+      self.run()
       self.Close()
     return True
 
+  def run(self):
+    ''' New for R17: Iterate through checked takes to submit each individually. If no
+        checked takes are found, it will submit the old-fashioned way.'''
+    # Check for active takes in the scene
+    takes = core.getCheckedTakes()
+    # None found -- submit without specifying takes
+    if len(takes) == 0:
+      self.submit_dict = self.gather()
+      self.submit()
+    else:
+      # Iterate over all checked takes and flag them in the submission string
+      for take in takes:
+        self.submit_dict = self.gather()
+        self.submit_dict['package']['-take'] = take.GetName()
+        self.submit_dict['name'] += ' - {}'.format(take.GetName())
+        self.submit()
 
   def gather(self, init=False, *a):
-
     # INITIALIZATION
     # This branch pulls in raw data from the scene.  The user will have the option
     # to modify it in the UI, which is parsed in the "not init" branch below.
@@ -328,6 +343,6 @@ class SubmissionDialog(gui.GeDialog):
 
     return submit_dict
 
-  def submit(self, submit_dict, *a):
-    subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])
+  def submit(self, *a):
+    subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(self.submit_dict)])
 

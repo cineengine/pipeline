@@ -13,7 +13,8 @@
             "c4d.VPBUFFER_TRANSPARENCY",
             "c4d.VPBUFFER_REFLECTION",
             "c4d.VPBUFFER_SPECULAR",
-            "c4d.VPBUFFER_DIFFUSE"
+            "c4d.VPBUFFER_DIFFUSE",
+            "c4d.VPBUFFER_ALLPOSTEFFECTS"
             ],
         "output"    : {
             "c4d.RDATA_XRES"                 : 1920,
@@ -69,11 +70,14 @@
         },
         "effects"   : {
             "c4d.VPambientocclusion" : {
-                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    15.0,
+                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    150.0,
                 "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE": 1
             },
             "c4d.VPsharpenfilter" : {
                 "c4d.VP_SHARPENFILTERSTRENGTH": 0.1
+            },
+            "1028398" : {
+                "c4d.VP_NORMALPASS_SPACE" : 2
             }
         }
     }

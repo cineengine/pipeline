@@ -256,8 +256,10 @@ def take( name=None, set_active=False ):
     # Add the default override groups to the take
     doc.AddUndo(c4d.UNDOTYPE_NEW, take)
     for og_ in OVERRIDE_GROUPS:
-        mat = createMaterial()
+        if og_ == 'bty':
+            continue
         og = override(take, og_)
+        mat = createMaterial()
         # Add the compositing tag for overriding
         tag = og.AddTag(td, c4d.Tcompositing, mat=mat)
         tag.SetName('VISIBILITY_OVERRIDE')
@@ -280,6 +282,16 @@ def override( take, name=None ):
 
     c4d.EventAdd()
     return og
+
+def getCheckedTakes():
+    ''' Gets a list (BaseTake) of all checked takes in the scene.'''
+    checked_takes = []
+    doc = c4d.documents.GetActiveDocument()
+    td = doc.GetTakeData()
+    for take in ObjectIterator(td.GetMainTake()):
+        if take.IsChecked():
+            checked_takes.append(take)
+    return checked_takes
 
 def setCompositingTag( tag, preset, reset=False ):
     ''' Sets a compositing tag with preset values for primary visibility, etc.'''
