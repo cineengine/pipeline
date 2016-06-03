@@ -395,6 +395,10 @@ def createRenderData( rd, name ):
 
 def createChildRenderData( rd, suffix=False, set_active=False ):
     ''' Inserts a new RenderData as a child to an existing one, including a name suffix.'''
+    if rd.GetUp():
+        msg = 'Warning: This Render Data is already a child of an existing one. Canceling operation...'
+        gui.MessageDialog(msg)
+        return False
     doc = c4d.documents.GetActiveDocument()
     doc.StartUndo()
     child_rdata = c4d.documents.RenderData()

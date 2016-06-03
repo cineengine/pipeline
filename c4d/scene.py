@@ -277,44 +277,48 @@ class Scene(object):
         rd.InsertMultipass(ob)
         c4d.EventAdd()
 
+    @classmethod
+    def buildObjectBuffers(self):
+        # Get the object buffer IDs assigned to compositing tags in the scene
+        # this operation also checks for objects that are invisible (dots) or flagged as matted  |
+        # invisible to camera, and ignores them.
+        ids = self.getObjectBufferIDs()
+        for id_ in ids:
+            # enable the passed object buffers 
+            self.enableObjectBuffer(id_)
+
     @classmethod    
     def createObjectBuffers(self, consider_takes=False):
-        '''Parses the scene for all compositing tags with object buffers enabled, then creates them'''
-        def _build():
-            # Get the object buffer IDs assigned to compositing tags in the scene
-            # this operation also checks for objects that are invisible (dots) or flagged as matted  |
-            # invisible to camera, and ignores them.
-            ids = self.getObjectBufferIDs()
-            for id_ in ids:
-                # enable the passed object buffers 
-                self.enableObjectBuffer(id_)
-    
+        '''Parses the scene for all compositing tags with object buffers enabled, then creates them'''    
         doc = c4d.documents.GetActiveDocument()
         td = doc.GetTakeData()
         # clear all existing object buffers
         self.clearObjectBuffers()
         # "simple" mode -- takes are not considered, existing render data is modified
         if not (consider_takes):
-            self._build()
+            self.buildObjectBuffers()
         # "complicated" mode -- creates child RenderData for each take, enabling only object buffers
         # belonging to visible objects in the take
         elif (consider_takes):
             # Operates only on "checked" takes -- those flagged in the scene
-            take_list = self.getCheckedTakes()
+            take_list = core.getCheckedTakes()
             # if no takes are checked, escape
             if len(take_list) == 0:
                 return
             # Get the active render data -- this will be the primary RenderData from which the chilrden
             # will inherit
             parent_rdata = doc.GetActiveRenderData()
+            if parent_rdata.GetUp():
+                raise error.PipelineError(4)
+                return
             # Create a child renderdata for each take
             for take in take_list:
                 # Change the take -- this will affect all the necessary visibility flags
                 td.SetCurrentTake(take)
                 # Create the child data
-                child_rdata = self.createChildRenderData(parent_rdata, suffix=take.GetName(), set_active=True)
+                child_rdata = core.createChildRenderData(parent_rdata, suffix=take.GetName(), set_active=True)
                 # Set up Object Buffers for the objects visible in the current take
-                self._build_()
+                self.buildObjectBuffers()
                 # Assign the RenderData to the take
                 take.SetRenderData(td, child_rdata)
                 c4d.EventAdd()

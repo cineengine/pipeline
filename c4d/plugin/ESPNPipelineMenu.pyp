@@ -195,7 +195,7 @@ class ESPNMenu(gui.GeDialog):
         elif (id == RELINK_TEXTURES_EXEC):
             auto.relinkTextures(migrate=True)
         elif (id == BTN_CREATE_OBJBUFFERS):
-            core.createObjectBuffers()
+            self.createObjectBuffers()
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################
@@ -463,6 +463,12 @@ class ESPNMenu(gui.GeDialog):
             self.this_scene = scene.Scene()
             self.this_scene.rename()
         else: raise error.PipelineError(0)
+
+    def createObjectBuffers(self):
+        if len(core.getCheckedTakes()):
+            scene.Scene.createObjectBuffers(consider_takes=True)
+        else:
+            scene.Scene.createObjectBUffers(consider_takes=False)
 
     def tab4_versionUp(self):
         chk = scene.Scene.isPipelined()
