@@ -233,6 +233,92 @@ class Scene(object):
             for s in sub: 
                 mkFolder(os.path.join(main_folder, main, s))
 
+    @classmethod        
+    def clearObjectBuffers(self):
+        ''' Clears all object buffers from the current RenderData '''
+        doc = c4d.documents.GetActiveDocument()
+        rdata = doc.GetActiveRenderData()
+        doc.StartUndo()
+        for mpass in core.ObjectIterator(rdata.GetFirstMultipass()):
+            if (mpass.GetTypeName() == 'Object Buffer'):
+                doc.AddUndo(c4d.UNDOTYPE_DELETE, mpass)
+                mpass.Remove()
+        c4d.EventAdd()
+        doc.EndUndo()
+        return True
+
+    @classmethod
+    def getObjectBufferIDs(self):
+        ''' Gets a set of all unique Object Buffer ids set in compositing tags in the scene. '''
+        ids = []
+        channel_enable = 'c4d.COMPOSITINGTAG_ENABLECHN{}'
+        channel_id     = 'c4d.COMPOSITINGTAG_IDCHN{}'
+        doc = c4d.documents.GetActiveDocument()
+        td = doc.GetTakeData()
+    
+        for obj in core.ObjectIterator(doc.GetFirstObject()):
+            if core.isVisible(obj):
+                for tag in core.TagIterator(obj):
+                    if tag.GetType() == c4d.Tcompositing:
+                        for i in range(12):
+                            if tag[eval(channel_enable.format(i))] == 1:
+                                id_ = tag[eval(channel_id.format(i))]
+                                ids.append(id_)
+        return sorted(list(set(ids)), reverse=True)
+
+    @classmethod
+    def enableObjectBuffer(self, id):
+        '''Inserts an object buffer into the active render data, with the passed id'''
+        doc = c4d.documents.GetActiveDocument()
+        rd = doc.GetActiveRenderData()
+        ob = c4d.BaseList2D(c4d.Zmultipass)
+        ob.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = c4d.VPBUFFER_OBJECTBUFFER
+        ob[c4d.MULTIPASSOBJECT_OBJECTBUFFER] = id
+        rd.InsertMultipass(ob)
+        c4d.EventAdd()
+
+    @classmethod    
+    def createObjectBuffers(self, consider_takes=False):
+        '''Parses the scene for all compositing tags with object buffers enabled, then creates them'''
+        def _build():
+            # Get the object buffer IDs assigned to compositing tags in the scene
+            # this operation also checks for objects that are invisible (dots) or flagged as matted  |
+            # invisible to camera, and ignores them.
+            ids = self.getObjectBufferIDs()
+            for id_ in ids:
+                # enable the passed object buffers 
+                self.enableObjectBuffer(id_)
+    
+        doc = c4d.documents.GetActiveDocument()
+        td = doc.GetTakeData()
+        # clear all existing object buffers
+        self.clearObjectBuffers()
+        # "simple" mode -- takes are not considered, existing render data is modified
+        if not (consider_takes):
+            self._build()
+        # "complicated" mode -- creates child RenderData for each take, enabling only object buffers
+        # belonging to visible objects in the take
+        elif (consider_takes):
+            # Operates only on "checked" takes -- those flagged in the scene
+            take_list = self.getCheckedTakes()
+            # if no takes are checked, escape
+            if len(take_list) == 0:
+                return
+            # Get the active render data -- this will be the primary RenderData from which the chilrden
+            # will inherit
+            parent_rdata = doc.GetActiveRenderData()
+            # Create a child renderdata for each take
+            for take in take_list:
+                # Change the take -- this will affect all the necessary visibility flags
+                td.SetCurrentTake(take)
+                # Create the child data
+                child_rdata = self.createChildRenderData(parent_rdata, suffix=take.GetName(), set_active=True)
+                # Set up Object Buffers for the objects visible in the current take
+                self._build_()
+                # Assign the RenderData to the take
+                take.SetRenderData(td, child_rdata)
+                c4d.EventAdd()
+   
     @classmethod
     def makeSceneCtrl(self):
         ''' Makes a scene control node -- a null called '__SCENE__' '''
