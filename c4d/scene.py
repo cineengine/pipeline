@@ -5,12 +5,12 @@
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.4
-#    Date:    05/05/2016
+#    Version: 0.5
+#    Date:    06/03/2016
 #
 #    This version represents core functionality.    
 #
-#    Features to be added:  Checks for valid file inputs wherever files are passed.
+#    Features to be added: 
 
 # internal libraries
 import c4d
@@ -248,8 +248,8 @@ class Scene(object):
         return True
 
     @classmethod
-    def getObjectBufferIDs(self):
-        ''' Gets a set of all unique Object Buffer ids set in compositing tags in the scene. '''
+    def _getObjectBufferIDs(self):
+        ''' Private. Gets a set of all unique Object Buffer ids set in compositing tags in the scene. '''
         ids = []
         channel_enable = 'c4d.COMPOSITINGTAG_ENABLECHN{}'
         channel_id     = 'c4d.COMPOSITINGTAG_IDCHN{}'
@@ -278,11 +278,12 @@ class Scene(object):
         c4d.EventAdd()
 
     @classmethod
-    def buildObjectBuffers(self):
+    def _buildObjectBuffers(self):
+        ''' Private. '''
         # Get the object buffer IDs assigned to compositing tags in the scene
         # this operation also checks for objects that are invisible (dots) or flagged as matted  |
         # invisible to camera, and ignores them.
-        ids = self.getObjectBufferIDs()
+        ids = self._getObjectBufferIDs()
         for id_ in ids:
             # enable the passed object buffers 
             self.enableObjectBuffer(id_)
@@ -296,7 +297,7 @@ class Scene(object):
         self.clearObjectBuffers()
         # "simple" mode -- takes are not considered, existing render data is modified
         if not (consider_takes):
-            self.buildObjectBuffers()
+            self._buildObjectBuffers()
         # "complicated" mode -- creates child RenderData for each take, enabling only object buffers
         # belonging to visible objects in the take
         elif (consider_takes):
@@ -318,7 +319,7 @@ class Scene(object):
                 # Create the child data
                 child_rdata = core.createChildRenderData(parent_rdata, suffix=take.GetName(), set_active=True)
                 # Set up Object Buffers for the objects visible in the current take
-                self.buildObjectBuffers()
+                self._buildObjectBuffers()
                 # Assign the RenderData to the take
                 take.SetRenderData(td, child_rdata)
                 c4d.EventAdd()
