@@ -6,7 +6,10 @@ import sys
 
 #WRITE_NODE_NAME = "WriteScenes"
 #frame_range = "1-300"
-cpus = 8
+NUKE_EXE = "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe"
+VERSION = ['8','0','6',None]
+THREADS = 16
+CLUSTER = '/D'
 
 #cmdline version
 def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
@@ -25,38 +28,39 @@ def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
             'range'            : frange,
             '-m'               : str(cpus),
             'minOpenSlots'     : cpus,
-            'renderThreadCount': cpus
+            'renderThreadCount': cpus,
+            'nukeVersion'      : VERSION
             }
-           
         }
 
     return submit_dict
 
 # pyNuke version
 
-def generatePackagePY(job_name, script, frange, priority, cpus, write_node=''):
+def generatePackagePY(job_name, script, frange, priority, write_node=''):
     submit_dict = {
         'prototype': 'pyNuke',
         'name'     : job_name,
         'priority' : str(priority),
         'cpus'     : '95',
-        'specificThreadCount': str(cpus),
         'groups'   : 'Nuke',
-        'cluster'  : '/C',
+        'cluster'  : CLUSTER,
         'restrictions': '',
+        'reservations': 'host.processors={}'.format(THREADS),
         'package'  : {
-            'pyExecutable' : "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
-            'scriptPath'   : script,
+            'pyExecutable' : NUKE_EXE,
+            'scriptPath'   : script.replace('\\','/'),
             'executeNodes' : write_node,
-            'range'        : frange
-            }
+            'range'        : frange,
+            '-m'           : THREADS,
+            'specificThreadCount': THREADS            }
         }
 
     return submit_dict
 
 
-def singleNode(job_name, script, frange, priority, cpus, write_node):
-    submit_dict = generatePackagePY(job_name, script, frange, priority, cpus, write_node)
+def singleNode(job_name, script, frange, priority, write_node):
+    submit_dict = generatePackagePY(job_name, script, frange, priority, write_node)
     subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(submit_dict)])
     time.sleep(3)
 

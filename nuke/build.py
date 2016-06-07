@@ -438,7 +438,6 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                     scene_path,
                     range_,
                     '5000',
-                    str(DEFAULT_CPUS),
                     'MASTER_WRITE')
             
             elif matchup:
@@ -447,14 +446,12 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                     scene_path,
                     range_,
                     '5000',
-                    str(DEFAULT_CPUS),
                     'WRITE_HOME_FILL')
                 submit.singleNode(
                     (deliverable + ' - ' + team + ' AWAY'),
                     scene_path,
                     range_,
                     '5000',
-                    str(DEFAULT_CPUS),
                     'WRITE_AWAY_FILL') 
                 
                 test = nuke.toNode('WRITE_HOME_MATTE')
@@ -464,7 +461,6 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                         scene_path,
                         range_,
                         '5000',
-                        str(DEFAULT_CPUS),
                         'WRITE_HOME_MATTE')
 
 def teamLogoUpdate(team_list):
@@ -477,7 +473,8 @@ def teamLogoUpdate(team_list):
         ('CFB_S_MATCHUP_FE_01_ST', '1-83', True, False),
         ('CFB_E_TEAM_FE_01_ST', '1-75', False, True),
         ('CFB_E_TEAM_ENDSTAMP_01_ST', '1-300', False, True),
-        ('CFB_S_TEAM_FE_01', '1-90', False, False)
+        ('CFB_S_TEAM_FE_01', '1-90', False, False),
+        ('TEAM_LOGO_QUADS', '1-1', False, False)
         ]
 
     for scene in scenes:
