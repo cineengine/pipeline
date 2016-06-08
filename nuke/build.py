@@ -463,8 +463,13 @@ def createTeamScenes(team_list, range_, submit_to_farm=True, matchup=False, jumb
                         '5000',
                         'WRITE_HOME_MATTE')
 
-def teamLogoUpdate(team_list):
+def teamLogoUpdate(team_list=None):
     report = ''
+
+    if (team_list == None) or (team_list == ''):
+        team_list = nuke.getInput('Enter tricodes, separated by commas:', '')
+        if (team_list):
+            team_list = team_list.split(',')
 
     # Deliverable name, frame range, matchup?, primetime?
     scenes = [
