@@ -1,3 +1,5 @@
+import nuke
+import nukescripts
 from os import listdir, getcwd
 from os.path import isfile, join, basename, isdir
 import subprocess
@@ -9,7 +11,73 @@ import sys
 NUKE_EXE = "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe"
 VERSION = ['8','0','6',None]
 THREADS = 16
-CLUSTER = '/D'
+G_CLUSTER = '/C'
+
+class QubeSubmitWindow(nukescripts.PythonPanel):
+    def __init__(self):
+        nukescripts.PythonPanel.__init__(self, "Submit to Qube", "ID")
+        
+        self.name = nuke.String_Knob('job_name', 'Job Name', basename(nuke.root().name()))
+        self.addKnob(self.name)
+
+        self.path = nuke.Text_Knob('path', 'Scene Path:', nuke.root().name())
+        self.addKnob(self.path)
+
+        wn_ = []
+        wn = nuke.selectedNodes()
+        if wn == []:
+            wn_str = ''
+        else:
+            for n in wn:
+                if not n.Class() == 'Write':
+                    wn.remove(n)
+                else: wn_.append(n.name())
+            wn_str = ','.join(wn_)
+
+        self.frange = nuke.String_Knob('frange', 'Frame Range:', '{}-{}'.format(nuke.root().firstFrame(), nuke.root().lastFrame()))
+
+        self.writeNode = nuke.String_Knob('write_node', 'Write Node:', wn_str)
+        self.addKnob(self.writeNode)
+
+        self.cluster = nuke.String_Knob('cluster', 'Cluster:', '/')
+        self.addKnob(self.cluster)
+
+        self.restrictions = nuke.String_Knob('restrictions', 'Restrictions (optional):', '')
+        self.addKnob(self.restrictions)
+
+        self.priority = nuke.String_Knob('priority', 'Priority:', '5000')
+        self.addKnob(self.priority)
+
+    def showModalDialog(self):
+        ok = nukescripts.PythonPanel.showModalDialog(self)
+        if ok:
+            self.submit()
+
+    def submit(self):
+        if (self.frange.getValue() == '' or\
+            self.priority.getValue() == '' or\
+            self.writeNode.getValue() == ''):
+
+            nuke.message('Required fields were not filled out.')
+            self.showModalDialog()
+            return
+
+        write_nodes = self.writeNode.getValue().split(',')
+        
+        for wn in write_nodes:
+            self.package = generatePackagePY(
+                self.name.getValue(), 
+                nuke.root().name(), 
+                self.frange.getValue(), 
+                self.priority.getValue(), 
+                wn, 
+                cluster=self.cluster.getValue()
+                )
+            subprocess.Popen(['c:\\program files (x86)\\pfx\\qube\\bin\\qube-console.exe', '--nogui', '--submitDict', str(self.package)])
+
+def newSubmit():
+    QubeSubmitWindow().showModalDialog()
+
 
 #cmdline version
 def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
@@ -37,14 +105,14 @@ def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
 
 # pyNuke version
 
-def generatePackagePY(job_name, script, frange, priority, write_node=''):
+def generatePackagePY(job_name, script, frange, priority, write_node='', cluster=G_CLUSTER):
     submit_dict = {
         'prototype': 'pyNuke',
         'name'     : job_name,
         'priority' : str(priority),
         'cpus'     : '95',
         'groups'   : 'Nuke',
-        'cluster'  : CLUSTER,
+        'cluster'  : cluster,
         'restrictions': '',
         'reservations': 'host.processors={}'.format(THREADS),
         'package'  : {
