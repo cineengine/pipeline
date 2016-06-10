@@ -70,7 +70,7 @@
         },
         "effects"   : {
             "c4d.VPambientocclusion" : {
-                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    150.0,
+                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    15.0,
                 "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE": 1
             },
             "c4d.VPsharpenfilter" : {
