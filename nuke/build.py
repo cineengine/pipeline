@@ -292,7 +292,7 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
         5.0: 'NYS',
         6.0: 'CHAMP'
         }[package]
-    if not package == (0.0 or 5.0): version_tokens.append(show_str)
+    if not (package == 0.0) or (package == 5.0): version_tokens.append(show_str)
 
     # Get teams
     home_team   = m_ctrl.knob('home_team').getValue()
