@@ -23,7 +23,8 @@ OVERRIDE_GROUPS = [
     #'bty',
     'pv_off',
     'black_hole',
-    'disable'
+    'disable',
+    'enable'
     ]
 
 # SIMPLE OPERATIONS ###############################################################################
@@ -371,6 +372,9 @@ def setCompositingTag( tag, preset, reset=False ):
         tag[c4d.COMPOSITINGTAG_SEENBYRAYS] = False
         tag[c4d.COMPOSITINGTAG_SEENBYGI] = False
         tag[c4d.COMPOSITINGTAG_SEENBYTRANSPARENCY] = False
+    elif (preset) == 'enable':
+        og.SetEditorMode(c4d.MODE_ON)
+        og.SetEditorMode(c4d.MODE_ON)
 
     c4d.EventAdd()
     return

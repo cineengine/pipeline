@@ -468,7 +468,7 @@ class ESPNMenu(gui.GeDialog):
         if len(core.getCheckedTakes()):
             scene.Scene.createObjectBuffers(consider_takes=True)
         else:
-            scene.Scene.createObjectBUffers(consider_takes=False)
+            scene.Scene.createObjectBuffers(consider_takes=False)
 
     def tab4_versionUp(self):
         chk = scene.Scene.isPipelined()
