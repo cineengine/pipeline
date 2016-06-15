@@ -233,6 +233,18 @@ class Scene(object):
             for s in sub: 
                 mkFolder(os.path.join(main_folder, main, s))
 
+    @classmethod
+    def clearAllMultipasses(self):
+        ''' Clears all multipass objects from the current RenderData '''
+        doc = c4d.documents.GetActiveDocument()
+        rdata = doc.GetActiveRenderData()
+        doc.StartUndo()
+        for mpass in core.ObjectIterator(rdata.GetFirstMultipass()):
+            mpass.Remove()
+        c4d.EventAdd()
+        doc.EndUndo()
+        return True
+
     @classmethod        
     def clearObjectBuffers(self):
         ''' Clears all object buffers from the current RenderData '''
@@ -268,7 +280,7 @@ class Scene(object):
 
     @classmethod
     def enableObjectBuffer(self, id):
-        '''Inserts an object buffer into the active render data, with the passed id'''
+        ''' Inserts an object buffer into the active render data, with the passed id'''
         doc = c4d.documents.GetActiveDocument()
         rd = doc.GetActiveRenderData()
         ob = c4d.BaseList2D(c4d.Zmultipass)
@@ -290,7 +302,7 @@ class Scene(object):
 
     @classmethod    
     def createObjectBuffers(self, consider_takes=False):
-        '''Parses the scene for all compositing tags with object buffers enabled, then creates them'''    
+        ''' Parses the scene for all compositing tags with object buffers enabled, then creates them.'''    
         doc = c4d.documents.GetActiveDocument()
         td = doc.GetTakeData()
         # clear all existing object buffers
@@ -324,6 +336,35 @@ class Scene(object):
                 take.SetRenderData(td, child_rdata)
                 c4d.EventAdd()
    
+    @classmethod
+    def createUtilityPass(self, take=None):
+        ''' Creates a utility pass version of the passed take. If no take is passed, it will create one
+            for the main take.'''
+        doc = c4d.documents.GetActiveDocument()
+        td  = doc.GetTakeData()
+        parent_rdata = doc.GetActiveRenderData()
+        # use the main take if none is passed
+        if (take == None):
+            take = td.GetMainTake()
+
+        # make the take active and create a child render data to attach to it
+        new_take = core.take('{}_util'.format(take.GetName()), set_active=True)
+        child_rdata = core.createChildRenderData(parent_rdata, suffix='UTIL', set_active=True)
+        new_take.SetRenderData(td, child_rdata)
+        self.clearAllMultipasses()
+
+        # modify renderdata for 32-bit exr w/ data passes
+        render_data = database.getProduction('DEFAULT')
+
+        for multipass_id in render_data['passes_util']:
+            mp_obj = c4d.BaseList2D(c4d.Zmultipass)
+            mp_obj.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = eval(multipass_id)
+            child_rdata.InsertMultipass(mp_obj)
+        for attribute in render_data['image_settings_util']:
+            child_rdata[eval(attribute)] = render_data['image_settings_util'][attribute]
+
+        return (take, child_rdata)
+
     @classmethod
     def makeSceneCtrl(self):
         ''' Makes a scene control node -- a null called '__SCENE__' '''
@@ -458,14 +499,14 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
     # STANDARD OUTPUT SETTINGS
     # Resolution / naming convention / bit depth & channels
     rd[c4d.RDATA_FRAMERATE] = int(scene_data['frate'])
-    for attribute in render_data['output']:
-        rd[eval(attribute)] = render_data['output'][attribute]
+    for attribute in render_data['image_settings']:
+        rd[eval(attribute)] = render_data['image_settings'][attribute]
 
     # SAMPLER SETTINGS --
     # Universal(?) settings
     # AA Sampling overrides
-    for attribute in render_data['standard']:
-        rd[eval(attribute)] = render_data['standard'][attribute]
+    for attribute in render_data['raytrace_settings_std_ren']:
+        rd[eval(attribute)] = render_data['raytrace_settings_std_ren'][attribute]
 
     # RENDERER-SPECIFIC SETTINGS
     # Standard renderer -- >
@@ -485,8 +526,8 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
             vpost = c4d.BaseList2D(c4d.VPxmbsampler)
             rd.InsertVideoPost(vpost)
         # Set the attrs from the DB
-        for attribute in render_data['physical']:
-            vpost[eval(attribute)] = render_data['physical'][attribute]
+        for attribute in render_data['raytrace_settings_phys_ren']:
+            vpost[eval(attribute)] = render_data['raytrace_settings_phys_ren'][attribute]
 
     # MULTI-PASS TOGGLES
     for multipass_id in render_data['passes']:
@@ -496,11 +537,11 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
 
     # ADDITIONAL VIDEO POST EFFECTS
     if 'effects' in render_data:
-        for effect_id in render_data['effects']:
+        for effect_id in render_data['vpost_effects']:
             vpost = c4d.BaseList2D(eval(effect_id))
             rd.InsertVideoPost(vpost)
-            for attribute in render_data['effects'][effect_id]:
-                vpost[eval(attribute)] = render_data['effects'][effect_id][attribute]
+            for attribute in render_data['vpost_effects'][effect_id]:
+                vpost[eval(attribute)] = render_data['vpost_effects'][effect_id][attribute]
 
     core.createRenderData(rd, 'My Render Setting')
 

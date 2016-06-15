@@ -4,10 +4,6 @@
         "layers"    : ["main"],
         "renderer"  : 0,
         "passes"    : [
-            "c4d.VPBUFFER_DEPTH",
-            "c4d.VPBUFFER_MOTIONVECTOR",
-            "c4d.VPBUFFER_MAT_UV",
-            "c4d.VPBUFFER_MAT_NORMAL",
             "c4d.VPBUFFER_AMBIENTOCCLUSION",
             "c4d.VPBUFFER_ILLUMINATION",
             "c4d.VPBUFFER_TRANSPARENCY",
@@ -16,7 +12,14 @@
             "c4d.VPBUFFER_DIFFUSE",
             "c4d.VPBUFFER_ALLPOSTEFFECTS"
             ],
-        "output"    : {
+        "passes_util" : [
+            "c4d.VPBUFFER_DEPTH",
+            "c4d.VPBUFFER_MOTIONVECTOR",
+            "c4d.VPBUFFER_MAT_UV",
+            "c4d.VPBUFFER_MAT_NORMAL",
+            "c4d.VPBUFFER_ALLPOSTEFFECTS"
+            ],
+        "image_settings" : {
             "c4d.RDATA_XRES"                 : 1920,
             "c4d.RDATA_YRES"                 : 1080,
             "c4d.RDATA_TEXTUREERROR"         : 0,
@@ -32,7 +35,14 @@
             "c4d.RDATA_FILMASPECT"           : 1.77,
             "c4d.RDATA_FILMPRESET"           : 3
         },
-        "standard"  : {
+        "image_settings_util" : {
+            "c4d.RDATA_FORMAT"               : 1023671,
+            "c4d.RDATA_FORMATDEPTH"          : 1,
+            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1016606,
+            "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1,
+            "c4d.RDATA_SAVEIMAGE"            : 0
+        },
+        "raytrace_settings_std_ren" : {
             "c4d.RDATA_RAYDEPTH"             : 5,
             "c4d.RDATA_REFLECTIONDEPTH"      : 1,
             "c4d.RDATA_SHADOWDEPTH"          : 1,
@@ -59,7 +69,7 @@
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
         "team_db"   : "teams_nba",
         "renderer"  : 1023342,
-        "physical"  : {
+        "raytrace_settings_phys_ren"  : {
             "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,
             "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.1,
@@ -68,7 +78,7 @@
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 2.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SSS"     : 4.0
         },
-        "effects"   : {
+        "vpost_effects"   : {
             "c4d.VPambientocclusion" : {
                 "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    15.0,
                 "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE": 1

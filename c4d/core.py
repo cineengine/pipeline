@@ -17,6 +17,7 @@
 import os.path
 # internal libraries
 import c4d
+from c4d import gui
 from c4d.modules import render
 
 OVERRIDE_GROUPS = [
