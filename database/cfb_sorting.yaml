@@ -446,3 +446,71 @@ btyTeamLogosSunset:
     lights : 
         - !!str \ATEAM_\d{2,3}_LOGO:lg_sunset\Z
         - "HOME_ENV_LGT:lg_sunset"
+...
+---
+ELEMENT : New Stadium Shot
+btyLayout:
+    type: beauty
+    rgba:
+        - sg_layout
+    lights:
+        - lg_sunset
+        - lg_layout
+utilLayout:
+    type: utility
+    aov:
+        - sg_layout
+btyLogo:
+    type: beauty
+    rgba:
+        - sg_logo
+    occ:
+        - sg_layout
+    lights:
+        - lg_sunset
+        - lg_logo
+        - lg_layout
+utilLogo:
+    type: utility
+    aov:
+        - sg_logo
+btyLayoutNight:
+    type: beauty
+    rgba: 
+        - sg_layout
+    lights:
+        - lg_night
+        - lg_layout
+btyLogoNight:
+    type: beauty
+    rgba:
+        - sg_logo
+    occ:
+        - sg_layout
+    lights:
+        - lg_night
+        - lg_logo
+        - lg_layout
+btyFlags:
+    type: beauty
+    rgba:
+        - sg_flags
+    occ:
+        - sg_layout
+    lights:
+        - lg_sunset
+        - lg_layout
+btyFlagsNight:
+    type: beauty
+    rgba:
+        - sg_flags
+    occ:
+        - sg_layout
+    lights:
+        - lg_night
+        - lg_layout
+utilFlags:
+    type: utility
+    aov:
+        - sg_flags
+...

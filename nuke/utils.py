@@ -1,6 +1,51 @@
 import nuke
 from os import makedirs
 
+
+def getAllNodesByType(typ=''):
+    return_nodes = []
+
+    if typ == '':
+        return None
+
+    for n in nuke.allNodes():
+        if n.Class() == typ:
+            return_nodes.append(n)
+
+    return return_nodes
+
+
+def checkForQT():
+    read_nodes = getAllNodesByType('Read')
+    qt_found = []
+
+    for rn in read_nodes:
+        read_path = rn['file'].getValue()
+        if '.mov' in read_path:
+            qt_found.append(rn)
+
+    if len(qt_found):
+        for rn in qt_found:
+            print rn.name()
+            rn.setSelected(True)
+    else:
+        print 'No quicktimes found!'
+        return False
+
+
+def makeFolders():
+
+    wn = nuke.selectedNodes()[0]
+
+    path = wn.knob('file').getValue()
+
+    makedirs(path)
+
+
+##########################################
+# CFB-Specific crap
+##########################################
+
 SWAP_PATHS = {
     'R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_LK/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/001_3D_ASSETS/',
     'R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_ESPN/002_3D_Teams': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/002_3D_TEAMS',
@@ -36,36 +81,6 @@ SWAP_PATHS = {
     'R:/Projects/14_009_ESPN_CFB/04_Prod/packages/CFP/CFP_E_NYS_ROLLOUT_FE_MATCHUP_01/cmp/work/nuke/':  'Y:/Workspace/MASTER_PROJECTS/CFB_15/PROJECTS/000_Animation/CFP_E_NYS_MATCHUP_ROLLOUT_FE_01/nuke/',
     'R:/Projects/3013_ESPN_CFB_2015/04_Prod/ASSETS_LK/TEXTURES/MATTES/MP00-generic/': 'Y:/Workspace/MASTER_PROJECTS/CFB_15/TOOLKIT/001_3D_ASSETS/TEXTURES/MATTES/MP00-generic/'
     }
-
-def printReport():
-    report = ''
-
-    read_nodes = getAllNodesByType('Read')
-    for rn in read_nodes:
-        report += (rn['file'].getValue() + '\n')
-
-    abc_nodes = getAllNodesByType('ReadGeo2')
-    for an in abc_nodes:
-        report += (an['file'].getValue() + '\n')
-
-    cam_nodes = getAllNodesByType('Camera')
-    for cam in cam_nodes:
-        report += (cam['file'].getValue() + '\n')
-
-    print report
-
-
-def getAllNodesByType(typ=''):
-    return_nodes = []
-
-    if typ == '':
-        return None
-
-    for n in nuke.allNodes():
-        if n.Class() == typ:
-            return_nodes.append(n)
-
-    return return_nodes
 
 
 def remapReadNodes():
@@ -119,27 +134,20 @@ def remapAlembicNodes():
                 rg['file'].setValue(rg_path.replace(k,v))
 
 
-def checkForQT():
+
+def printReport():
+    report = ''
+
     read_nodes = getAllNodesByType('Read')
-    qt_found = []
-
     for rn in read_nodes:
-        read_path = rn['file'].getValue()
-        if '.mov' in read_path:
-            qt_found.append(rn)
+        report += (rn['file'].getValue() + '\n')
 
-    if len(qt_found):
-        for rn in qt_found:
-            print rn.name()
-            rn.setSelected(True)
-    else:
-        print 'No quicktimes found!'
+    abc_nodes = getAllNodesByType('ReadGeo2')
+    for an in abc_nodes:
+        report += (an['file'].getValue() + '\n')
 
+    cam_nodes = getAllNodesByType('Camera')
+    for cam in cam_nodes:
+        report += (cam['file'].getValue() + '\n')
 
-def makeFolders():
-
-    wn = nuke.selectedNodes()[0]
-
-    path = wn.knob('file').getValue()
-
-    makedirs(path)
+    print report

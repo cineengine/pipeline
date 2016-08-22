@@ -20,9 +20,6 @@ class QubeSubmitWindow(nukescripts.PythonPanel):
         self.name = nuke.String_Knob('job_name', 'Job Name', basename(nuke.root().name()))
         self.addKnob(self.name)
 
-        self.path = nuke.Text_Knob('path', 'Scene Path:', nuke.root().name())
-        self.addKnob(self.path)
-
         wn_ = []
         wn = nuke.selectedNodes()
         if wn == []:
@@ -34,10 +31,14 @@ class QubeSubmitWindow(nukescripts.PythonPanel):
                 else: wn_.append(n.name())
             wn_str = ','.join(wn_)
 
-        self.frange = nuke.String_Knob('frange', 'Frame Range:', '{}-{}'.format(nuke.root().firstFrame(), nuke.root().lastFrame()))
+        self.path = nuke.Text_Knob('path', 'Scene Path:', '{} {}'.format(nuke.root().name(), wn_str))
+        self.addKnob(self.path)
 
         self.writeNode = nuke.String_Knob('write_node', 'Write Node:', wn_str)
         self.addKnob(self.writeNode)
+
+        self.frange = nuke.String_Knob('frange', 'Frame Range:', '{}-{}'.format(nuke.root().firstFrame(), nuke.root().lastFrame()))
+        self.addKnob(self.frange)
 
         self.cluster = nuke.String_Knob('cluster', 'Cluster:', '/')
         self.addKnob(self.cluster)
@@ -66,7 +67,7 @@ class QubeSubmitWindow(nukescripts.PythonPanel):
         
         for wn in write_nodes:
             self.package = generatePackagePY(
-                self.name.getValue(), 
+                self.name.getValue() + ' ' + wn, 
                 nuke.root().name(), 
                 self.frange.getValue(), 
                 self.priority.getValue(), 

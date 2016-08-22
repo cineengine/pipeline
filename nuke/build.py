@@ -299,8 +299,10 @@ def setOutputPath(create_dirs=False, matchup=False, jumbo=False, quad=False):
     if (matchup): 
         away_team = m_ctrl.knob('away_team').getValue()
     else: away_team = ''
-    if (matchup):
+
+    if (matchup) and not (jumbo):
         version_tokens.append(away_team)
+
     version_tokens.append(home_team)
     version_str = '_'.join(version_tokens)
     version_str = version_str.lstrip('_')

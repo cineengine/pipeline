@@ -10,15 +10,22 @@
             "c4d.VPBUFFER_REFLECTION",
             "c4d.VPBUFFER_SPECULAR",
             "c4d.VPBUFFER_DIFFUSE",
-            "c4d.VPBUFFER_ALLPOSTEFFECTS"
-            ],
+            "c4d.VPBUFFER_ALLPOSTEFFECTS",
+            "c4d.VPBUFFER_DEPTH",
+            "c4d.VPBUFFER_MOTIONVECTOR",
+            "c4d.VPBUFFER_MAT_UV",
+            "c4d.VPBUFFER_MAT_NORMAL",
+            "c4d.VPBUFFER_ALLPOSTEFFECTS",
+            "c4d.VPBUFFER_MAT_COLOR",
+            "c4d.VPBUFFER_MAT_LUMINANCE"
+        ],
         "passes_util" : [
             "c4d.VPBUFFER_DEPTH",
             "c4d.VPBUFFER_MOTIONVECTOR",
             "c4d.VPBUFFER_MAT_UV",
             "c4d.VPBUFFER_MAT_NORMAL",
             "c4d.VPBUFFER_ALLPOSTEFFECTS"
-            ],
+        ],
         "image_settings" : {
             "c4d.RDATA_XRES"                 : 1920,
             "c4d.RDATA_YRES"                 : 1080,
@@ -26,26 +33,23 @@
             "c4d.RDATA_ALPHACHANNEL"         : 1,
             "c4d.RDATA_SEPARATEALPHA"        : 0,
             "c4d.RDATA_STRAIGHTALPHA"        : 1,
-            "c4d.RDATA_FORMAT"               : 1023671,
-            "c4d.RDATA_FORMATDEPTH"          : 1,
-            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1023671,
-            "c4d.RDATA_MULTIPASS_SAVEDEPTH"  : 1,
+            "c4d.RDATA_FORMAT"               : 1016606,
+            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1016606,
             "c4d.RDATA_NAMEFORMAT"           : 6,
             "c4d.RDATA_LOCKRATIO"            : 1,
             "c4d.RDATA_FILMASPECT"           : 1.77,
             "c4d.RDATA_FILMPRESET"           : 3
         },
         "image_settings_util" : {
-            "c4d.RDATA_FORMAT"               : 1023671,
-            "c4d.RDATA_FORMATDEPTH"          : 1,
+            "c4d.RDATA_FORMAT"               : 1016606,
             "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1016606,
             "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1,
             "c4d.RDATA_SAVEIMAGE"            : 0
         },
         "raytrace_settings_std_ren" : {
             "c4d.RDATA_RAYDEPTH"             : 5,
-            "c4d.RDATA_REFLECTIONDEPTH"      : 1,
-            "c4d.RDATA_SHADOWDEPTH"          : 1,
+            "c4d.RDATA_REFLECTIONDEPTH"      : 2,
+            "c4d.RDATA_SHADOWDEPTH"          : 2,
             "c4d.RDATA_ANTIALIASING"         : 2,
             "c4d.RDATA_AAFILTER"             : 1,
             "c4d.RDATA_AAMINLEVEL"           : 1,
@@ -72,7 +76,7 @@
         "raytrace_settings_phys_ren"  : {
             "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,
             "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.1,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.05,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 2.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 2.0,
@@ -80,7 +84,7 @@
         },
         "vpost_effects"   : {
             "c4d.VPambientocclusion" : {
-                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    15.0,
+                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    150.0,
                 "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE": 1
             },
             "c4d.VPsharpenfilter" : {

@@ -300,7 +300,7 @@ class Scene(object):
             # enable the passed object buffers 
             self.enableObjectBuffer(id_)
 
-    @classmethod    
+    @classmethod
     def createObjectBuffers(self, consider_takes=False):
         ''' Parses the scene for all compositing tags with object buffers enabled, then creates them.'''    
         doc = c4d.documents.GetActiveDocument()
@@ -536,7 +536,7 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
         rd.InsertMultipass(mp_obj)
 
     # ADDITIONAL VIDEO POST EFFECTS
-    if 'effects' in render_data:
+    if 'vpost_effects' in render_data:
         for effect_id in render_data['vpost_effects']:
             vpost = c4d.BaseList2D(eval(effect_id))
             rd.InsertVideoPost(vpost)
