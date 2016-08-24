@@ -19,10 +19,21 @@
 # - schedule:: (Schedule) placeholder
 # - deliverables:: ([id]) a list of ALL deliverables attached to the production
 # - projects:: ([id]) a list of ALL projects attached to the production
+# - asset_library:: (AssetLibrary) The production's main asset library
 #
 # Derived attributes (from GLOBAL_PARAMETERS):
 # - path:: (str/path) location of the production on the NAS
 # - publish_path:: (str/path) location of the production on PublishData
+
+
+# AssetLibrary (object)
+# 
+# An asset library consists of a dictionary of asset locations on a server.
+
+
+# Schedule (object)
+#
+# A table of deadlines and assignments pointing to database ids
 
 
 # Specs (object)
