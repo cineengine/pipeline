@@ -100,9 +100,10 @@
 #
 # Attributes:
 # - id:: (hex) the database id of the deliverable
+# - project:: (id) the parent project of the deliverable
 # - name:: (str) the name of the deliverable, which consists of the project name with a suffix.
 # - description:: (str) a plaintext description of the deliverable (optional)
-# - artist:: (str)
+# - artist:: (id)
 
 
 # Scene (Project)
@@ -113,8 +114,8 @@
 # needs of various apps.
 #
 # Initialization:
-# -> app:: (id) OPTIONAL -- when instanced within a platform environment, this flag will modify
-# the Scene methods to support various operations within that platform.
+# ->app:: (id) OPTIONAL -- when instanced within a platform environment, this flag will modify
+# 	the Scene methods to support various operations within that platform.
 #
 # Attributes:
 # - id:: (hex) the database id of the scene
@@ -123,15 +124,12 @@
 # - artist:: (id)
 #
 # Derived attributes: ->(project id)
-# - path:: (str/path) location on the server
-#
-# Once instanced, a scene derives more extensive data about itself based on production and project
 # - scene_path::
 # - render_output_paths:: 
 # - specs::
 #
 # Methods:
-# - get:: (proto modified by sub-modules) gets the scene data of the active scene
+# - get:: (*id) (proto modified by sub-modules) if no id is passed, gets the scene data of the active scene
 # - set:: ->(id) (proto modified by sub-modules) sets / conforms the active scene into an existing scene -- VERY DANGEROUS
 # - create:: ->(id, str) creates a new scene within an existing project
 # - archive:: archives a scene into the project's backup folder
@@ -141,6 +139,7 @@
 # - sort:: ->(id, **) sorts the scene for rendering
 # - sanityCheck:: (flags) TD-level scene checking
 # - build:: ->(id, **) builds a procedural scene based on some template
+# - open:: ->(id) opens the scene with the passed id
 # - save::
 # - rename::
 # - backup::
