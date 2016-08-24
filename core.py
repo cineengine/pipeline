@@ -45,7 +45,8 @@
 # ->project:: (id) populates the Specs of the passed project (as delta compression)
 #
 # Attributes:
-# - id:: (hex) the database id of the parameters
+# - id:: (hex) the database id of the parameter set
+# - name:: (str) colloquial name for the parameter set (ex. "720@60 / 32-bit RGBA")
 # - xres:: (int)
 # - yres:: (int)
 # - frate:: (float)
@@ -59,7 +60,7 @@
 # Methods:
 # (The Specs prototype will be modified based on API in their respective core sub-modules)
 # - translate:: translates the generic Specs dictionary into a platform-specific object, modifying the syntax
-# 	as necessary or providing direct API calls to these parameters if available
+#	as necessary or providing direct API calls to these parameters if available
 
 
 # Project (object)
