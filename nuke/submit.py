@@ -8,8 +8,6 @@ import sys
 
 #WRITE_NODE_NAME = "WriteScenes"
 #frame_range = "1-300"
-NUKE_EXE = "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe"
-VERSION = ['8','0','6',None]
 THREADS = 16
 G_CLUSTER = '/C'
 
@@ -98,7 +96,7 @@ def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
             '-m'               : str(cpus),
             'minOpenSlots'     : cpus,
             'renderThreadCount': cpus,
-            'nukeVersion'      : VERSION
+            'nukeVersion'      : [str(nuke.NUKE_VERSION_MAJOR), str(nuke.NUKE_VERSION_MINOR), str(nuke.NUKE_VERSION_RELEASE), None]
             }
         }
 
@@ -107,6 +105,11 @@ def generatePackage(job_name, script, frange, priority, cpus, write_node=''):
 # pyNuke version
 
 def generatePackagePY(job_name, script, frange, priority, write_node='', cluster=G_CLUSTER):
+    NUKE_EXE = {
+        8:  "R:\\Program Files\\Nuke8.0v6\\nuke8.0.exe",
+        10: "R:\\Program Files\\Nuke10.0v3\\Nuke10.0.exe"
+        }
+
     submit_dict = {
         'prototype': 'pyNuke',
         'name'     : job_name,
@@ -117,12 +120,14 @@ def generatePackagePY(job_name, script, frange, priority, write_node='', cluster
         'restrictions': '',
         'reservations': 'host.processors={}'.format(THREADS),
         'package'  : {
-            'pyExecutable' : NUKE_EXE,
+            'pyExecutable' : NUKE_EXE[nuke.NUKE_VERSION_MAJOR],
             'scriptPath'   : script.replace('\\','/'),
             'executeNodes' : write_node,
             'range'        : frange,
             '-m'           : THREADS,
-            'specificThreadCount': THREADS            }
+            'specificThreadCount': THREADS,
+            'nukeVersion'  : [str(nuke.NUKE_VERSION_MAJOR), str(nuke.NUKE_VERSION_MINOR), str(nuke.NUKE_VERSION_RELEASE), None]
+            }
         }
 
     return submit_dict
