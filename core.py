@@ -19,7 +19,7 @@
 # - schedule:: (Schedule) placeholder
 # - deliverables:: ([id]) a list of ALL deliverables attached to the production
 # - projects:: ([id]) a list of ALL projects attached to the production
-# - asset_library:: (AssetLibrary) The production's main asset library
+# - asset_library:: (id) The production's main asset library
 #
 # Derived attributes (from GLOBAL_PARAMETERS):
 # - path:: (str/path) location of the production on the NAS
@@ -29,6 +29,20 @@
 # AssetLibrary (object)
 # 
 # An asset library consists of a dictionary of asset locations on a server.
+#
+# Attributes:
+# [id]: (Asset)
+
+# Asset:
+# 
+# An asset is a metadata container about a file object of some kind.
+#
+# Attributes:
+# - name:: (str) name of the asset
+# - path:: (str/path) location of the asset relative to main asset folder
+# - type:: (str) file type of the asset
+# - tags:: ([str]) list of searchable tags for the asset
+# - production:: (id) production the asset belongs to (if applicable)
 
 
 # Schedule (object)
