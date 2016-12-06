@@ -356,6 +356,7 @@ def nysBuild(tricode_list):
                  #('CFP_E_NYS_MATCHUP_REJOIN_01', 'split', '1-150'),
                  ('CFP_E_NYS_MATCHUP_TRANS_01', 'split', '1-60'),
                  ('CFP_E_NYS_MATCHUP_TRANS_02', 'split', '1-120'),
+                 ('CFP_E_NYS_MATCHUP_TRANS_03', 'split', '1-75'),
                  ('CFP_E_NYS_MATCHUP_ENDSTAMP_01', 'split', '1-150'),
                  ('CFP_E_NYS_MATCHUP_ROLLOUT_FE_01', 'split', '1-150')
                  ]
