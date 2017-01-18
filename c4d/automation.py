@@ -7,9 +7,6 @@ from pipeline.c4d import core
 from pipeline.c4d import scene
 from pipeline.c4d import database
 
-reload(core)
-reload(scene)
-reload(database)
 
 # TEAM AUTOMATION #################################################################################
 def assignTeamColors( tricode, location, swap=False ):
