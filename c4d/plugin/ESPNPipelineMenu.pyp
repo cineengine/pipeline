@@ -67,8 +67,8 @@ HELP_IMAGE           = 10029
 
 SECOND_TAB           = 20000
 BTN_SETOUTPUT        = 20001
-BTN_MAKETAG          = 20002
-BTN_SORT             = 20003
+BTN_PNG_OUTPUT       = 20002
+BTN_EXR_OUTPUT       = 20003
 BTN_NEWTAKE          = 20004
 BTN_VERSIONUP        = 20005
 BTN_SUBMIT           = 20006
@@ -160,10 +160,10 @@ class ESPNMenu(gui.GeDialog):
             self.tab2_submit()
         elif (id == BTN_NEWTAKE):
             self.tab2_newTake()
-        elif (id == BTN_MAKETAG):
-            self.tab2_addTag()
-        elif (id == BTN_SORT):
-            self.tab2_sortScene()
+        elif (id == BTN_PNG_OUTPUT):
+            self.tab2_pngOutput()
+        elif (id == BTN_EXR_OUTPUT):
+            self.tab2_exrOutput()
         # tab 3
         elif (id == IS_MATCHUP):
             self.tab3_matchupEnabled()
@@ -370,11 +370,11 @@ class ESPNMenu(gui.GeDialog):
         else: pass
         return True
 
-    def tab2_addTag(self):
-        pass
+    def tab2_pngOutput(self):
+        core.setOutputFiletype('png', 16)
 
-    def tab2_sortScene(self):
-        pass
+    def tab2_exrOutput(self):
+        core.setOutputFiletype('exr')
 
     ### TAB 03 FUNCTIONS #########################################################################
     def tab3_switchTeam(self):

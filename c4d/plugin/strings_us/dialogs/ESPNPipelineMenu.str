@@ -25,9 +25,9 @@ DIALOGSTRINGS ESPNPipelineMenu
 	SECOND_TAB_NAME       "Render layers & output";
 	LBL_OUTPUT_PATHS      "Setup render output";
 	LBL_TAKE_UTILS        "Take / Render Layer utilities";
-	BTN_SETOUTPUT         "Default settings & output paths";
-	BTN_MAKETAG           "Add Sorting Tag to Selection";
-	BTN_SORT              "Sort Scene into Takes";
+	BTN_SETOUTPUT         "Project default settings";
+	BTN_PNG_OUTPUT        "PNG output";
+	BTN_EXR_OUTPUT        "EXR output";
 	BTN_NEWTAKE           "Make New Take";
 	BTN_VERSIONUP         "Version Up";
 	BTN_SUBMIT            "Submit Scene to Farm";
