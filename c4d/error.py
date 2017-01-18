@@ -46,5 +46,14 @@ class DatabaseError(BaseError):
         notification = {
             0: 'Master project database not found.',
             1: 'Production not found in database.',
-            2: 'Team not found in production database.'
+            2: 'Team not found in production database.',
+            3: 'Invalid parameter in settings database.'
         }
+        gui.MessageDialog(notification[self.message])
+
+def warning(message, info=''):
+    print "WARNING :: {0} : {1}".format(message, info)
+
+def info(message, info=''):
+    print "INFO :: {0} : {1}".format(message, info)
+
