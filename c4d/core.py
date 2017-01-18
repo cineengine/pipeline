@@ -318,8 +318,8 @@ def take( name=None, set_active=False ):
     return take
 
 def setOutputFiletype( filetype, depth=None, primary=True, multipass=True, rd=None ):
+    doc = c4d.documents.GetActiveDocument()
     if (rd == None):
-        doc = c4d.documents.GetActiveDocument()
         rd = doc.GetActiveRenderData()
 
     filetype = filetype.lower()
@@ -328,13 +328,12 @@ def setOutputFiletype( filetype, depth=None, primary=True, multipass=True, rd=No
         'png': 1023671,
         'exr': 1016606
     }
-
     depth_lookup = {
         8: 0,
         16: 1,
         32: 2
     }
-
+    doc.StartUndo()
     if (primary == True):
         rd[c4d.RDATA_FORMAT] = format_lookup[filetype]
         if ((depth != None) and (filetype != 'exr')):
@@ -345,6 +344,8 @@ def setOutputFiletype( filetype, depth=None, primary=True, multipass=True, rd=No
         if ((depth != None) and (filetype != 'exr')):
             rd[c4d.RDATA_MULTIPASS_SAVEDEPTH] = depth_lookup[depth]
 
+    c4d.EventAdd()
+    doc.EndUndo()
     return True
 
 def override( take, name=None ):
