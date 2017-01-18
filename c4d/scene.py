@@ -22,10 +22,6 @@ from pipeline.c4d import core
 from pipeline.c4d import database
 from pipeline.c4d import error
 
-reload(core)
-reload(database)
-reload(error)
-
 class Scene(object):
     def __init__(self, delay=False):
         self.project_name = ''
@@ -541,7 +537,10 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
             vpost = c4d.BaseList2D(eval(effect_id))
             rd.InsertVideoPost(vpost)
             for attribute in render_data['vpost_effects'][effect_id]:
-                vpost[eval(attribute)] = render_data['vpost_effects'][effect_id][attribute]
+                try: 
+                    vpost[eval(attribute)] = render_data['vpost_effects'][effect_id][attribute]
+                except AttributeError:
+                    error.warning("Invalid attribute in render settings database", (effect_id, attribute))
 
     core.createRenderData(rd, 'My Render Setting')
 
