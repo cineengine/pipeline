@@ -1,5 +1,6 @@
 {
     "DEFAULT":  {
+        "is_default": 1,
         "frate"     : 30,
         "layers"    : ["main"],
         "renderer"  : 0,
@@ -116,13 +117,19 @@
         "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\WBC_2017\\004_TOOLBOX\\001_3D_ASSETS",
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\WBC_2017\\004_TOOLBOX\\002_3D_TEAMS",
         "renderer"  : 1023342,
+        "raytrace_settings_std_ren" : {
+            "c4d.RDATA_RAYDEPTH"             : 7,
+            "c4d.RDATA_REFLECTIONDEPTH"      : 3,
+            "c4d.RDATA_SHADOWDEPTH"          : 7,
+            "c4d.RDATA_AUTOLIGHT"            : 0
+        },
         "raytrace_settings_phys_ren" : {
             "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,
             "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.065,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 4.0,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.085,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 3.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 4.0,
+            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 3.0,
             "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SSS"     : 0.0
         },
         "vpost_effects" : {
@@ -134,7 +141,8 @@
                 "c4d.GI_SETUP_DATA_PRIMARY_METHOD"         : 6040,
                 "c4d.GI_SETUP_DATA_SECONDARY_METHOD"       : 6040,
                 "c4d.GI_SETUP_DATA_QMC_COUNT_METHOD"       : 6060,
-                "c4d.GI_SETUP_DATA_QMC_AREA_ENABLED"       : 0
+                "c4d.GI_SETUP_DATA_QMC_AREA_ENABLED"       : 0,
+                "c4d.GI_SETUP_DATA_QMC_COUNT"              : 20
 
             }
         }
