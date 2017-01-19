@@ -402,12 +402,12 @@ class ESPNMenu(gui.GeDialog):
         away_tricode = self.GetString(TXT_AWAY_TRICODE)
 
         try:
-            home_colors = database.getTeamColors(self.this_scene.production, home_tricode)
+            home_colors = database.getTeamColors(self.this_scene.production, home_tricode, squelch=True)
             home_team = True
         except:
             home_team = None
         try:
-            away_colors = database.getTeamColors(self.this_scene.production, away_tricode)
+            away_colors = database.getTeamColors(self.this_scene.production, away_tricode, squelch=True)
             away_team = True
         except:
             away_team = None
