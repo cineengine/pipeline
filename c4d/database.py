@@ -29,29 +29,20 @@ def getProduction(prod_):
     merged_prod = {}
     with open(PRODUCTION_GLOBALS_DB, 'r') as stream:
         full_db = json.load(stream)
-        for k,v in full_db.iteritems():
-            # default project is stored
-            if (k == 'DEFAULT'):
-                default_prod = full_db[k]
-            # a specific project is requested
-            elif (k == prod_):
-                request_prod = full_db[k]
-                request_prod['is_default'] = False
-                # This block is for merging sub-dictionaries within the project entry
-                # For now, it is hard-coded and must be updated with every sub-dictionary
-                """
-                raytrace = full_db['DEFAULT']['raytracing'].copy()
-                raytrace.update(request_prod['raytracing'])
-                request_prod['raytracing'] = raytrace
-                """
+        base_db = full_db['DEFAULT']
 
-            else: request_prod = {'is_default': True}
-    # The project dictionaries only store the delta of data in the default dictionary
-    # Therefore we merge the requested project dictionary over top of the default to create
-    # a complete data set.
-    merged_prod = default_prod.copy()
-    merged_prod.update(request_prod)
-    return merged_prod
+        try:
+            prod_db = full_db[prod_]
+            prod_db['is_default'] = False
+        except KeyError:
+            raise error.DatabaseError(1)
+        # The project dictionaries only store the delta of data in the default dictionary
+        # Therefore we merge the requested project dictionary over top of the default to create
+        # a complete data set.
+        base_db.update(prod_db)
+
+        return base_db
+
 
 def getProductionDirty():
     ''' Infers the project based on where the current scene is located. '''
@@ -97,7 +88,7 @@ def getTeamDatabase(prod_):
 
     return full_db
 
-def getTeam(prod_, tricode):
+def getTeam(prod_, tricode, squelch=False):
     ''' Gets a team from a production, based on tricode or full name.'''
     team_db = getTeamDatabase(prod_)
     for k,v in team_db.iteritems():
@@ -106,7 +97,7 @@ def getTeam(prod_, tricode):
         elif ('{0} {1}'.format(team_db[k]['city'], team_db[k]['nick']) == tricode):
             return team_db[k]
     # if it gets this far, the team wasn't found in the database.
-    raise error.DatabaseError(2)
+    raise error.DatabaseError(2, alert=1-squelch)
 
 def getAllTeams(prod_, name='tricode'):
     ''' Gets a list of all teams for a given production. '''
@@ -129,8 +120,8 @@ def getAllTeams(prod_, name='tricode'):
             team_ls.append('{0}'.format(team_db[k]['nick']))
         return sorted(team_ls)
 
-def getTeamColors(prod_, tricode):
-    team = getTeam(prod_, tricode)
+def getTeamColors(prod_, tricode, squelch=False):
+    team = getTeam(prod_, tricode, squelch=squelch)
     ret_colors = {
         'primary': c4d.Vector(*convertColor(team['primary'])),
         'secondary': c4d.Vector(*convertColor(team['secondary'])),
