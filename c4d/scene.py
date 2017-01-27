@@ -20,7 +20,7 @@ import os.path
 # custom libraries
 from pipeline.c4d import core
 from pipeline.c4d import database
-from pipeline.c4d import error
+from pipeline.c4d import status
 
 class Scene(object):
     def __init__(self, delay=False):
@@ -33,16 +33,16 @@ class Scene(object):
 
         self.scene_ctrl, self.scene_tag, self.status = self.getSceneStatus()
 
-        if (self.status == error.SCENE_OK):
+        if (self.status == status.SCENE_OK):
             self.getSceneData()
             self.getProductionData()
             self.updateFilePath()
-        elif (self.status == error.SCENE_BROKEN):
-            raise error.PipelineError(self.status)
-        elif (self.status == error.SCENE_NEW) and (delay):
-            raise error.PipelineError(self.status)
-        elif (self.status == error.SCENE_NEW):
-            raise error.PipelineError(self.status)
+        elif (self.status == status.SCENE_BROKEN):
+            raise status.PipelineError(self.status)
+        elif (self.status == status.SCENE_NEW) and (delay):
+            raise status.PipelineError(self.status)
+        elif (self.status == status.SCENE_NEW):
+            raise status.PipelineError(self.status)
 
     # GETTERS
     @classmethod
@@ -53,25 +53,25 @@ class Scene(object):
         scene_ctrl = core.ls(name='__SCENE__')
         # No scene_ctrl found -- must be new scene
         if (scene_ctrl == None or scene_ctrl == []):
-            _status = (None, None, error.SCENE_NEW)
+            _status = (None, None, status.SCENE_NEW)
         # One scene_ctrl found -- check it for a tag
         elif (len(scene_ctrl)==1):
             scene_ctrl = scene_ctrl[0]
             scene_tag  = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl)
             # tag found -- status is green
             if (scene_tag):
-                _status = (scene_ctrl, scene_tag[0], error.SCENE_OK)
+                _status = (scene_ctrl, scene_tag[0], status.SCENE_OK)
             # no tag found on scene_ctrl -- scene is broken
             else:
-                _status = (scene_ctrl, None, error.SCENE_BROKEN)
+                _status = (scene_ctrl, None, status.SCENE_BROKEN)
         # 2+ scene_ctrl found -- scene is broken
         elif (len(scene_ctrl)>1):
-            _status = (None, None, error.SCENE_BROKEN)
+            _status = (None, None, status.SCENE_BROKEN)
         return _status
 
     @classmethod
     def isPipelined(self):
-        if (self.getSceneStatus()[2] == error.SCENE_OK):
+        if (self.getSceneStatus()[2] == status.SCENE_OK):
             return True
         else: return False
 
@@ -123,7 +123,7 @@ class Scene(object):
             return out_str
         #
         scene_ctrl, scene_tag, status = self.getSceneStatus()
-        if (status == error.SCENE_OK):
+        if (status == status.SCENE_OK):
             self.scene_tag[c4d.ANNOTATIONTAG_TEXT] = _sceneToAnno()
             return True
         else:
@@ -201,7 +201,7 @@ class Scene(object):
         # set clean version, update scene_ctrl with new data, and save
         self.version = 1
         self.setSceneData()
-        self.setOutput()
+        self.setOutput(paths_only=True)
         self.saveWithBackup()
 
     def versionUp(self):
@@ -318,7 +318,7 @@ class Scene(object):
             # will inherit
             parent_rdata = doc.GetActiveRenderData()
             if parent_rdata.GetUp():
-                raise error.PipelineError(4)
+                raise status.PipelineError(4)
                 return
             # Create a child renderdata for each take
             for take in take_list:
@@ -396,7 +396,7 @@ class Scene(object):
             elif len(file_name) == 3:
                 cur_vers = int(file_name[1])+1
             else:
-                raise error.FileError(2)
+                raise status.FileError(2)
 
             incr_name = "{0}.{1}.{2}".format(name, str(cur_vers).zfill(4), ext)
             incr_file = os.path.join(file_path, incr_name)
@@ -419,8 +419,8 @@ class Scene(object):
         try:
             core.saveAs(backup_path)
             core.saveAs(self.file_path)
-        except error.FileError:
-            raise error.FileError(0)
+        except status.FileError:
+            raise status.FileError(0)
 
     def sortTakes(self):
         ''' Sorts objects into takes (via override groups) using sorting logic stored in a proj database.'''
@@ -495,8 +495,13 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
     # STANDARD OUTPUT SETTINGS
     # Resolution / naming convention / bit depth & channels
     rd[c4d.RDATA_FRAMERATE] = int(scene_data['frate'])
+    doc[c4d.DOCUMENT_FPS] = int(scene_data['frate'])
     for attribute in render_data['image_settings']:
-        rd[eval(attribute)] = render_data['image_settings'][attribute]
+        try:
+            rd[eval(attribute)] = render_data['image_settings'][attribute]
+        except AttributeError:
+            status.warning('Failed to set render attribute. Skipping...', attribute)
+            continue
 
     # SAMPLER SETTINGS --
     # Universal(?) settings
@@ -540,7 +545,7 @@ def setOutput( default_override=True, paths_only=False, prod='DEFAULT', **scene_
                 try: 
                     vpost[eval(attribute)] = render_data['vpost_effects'][effect_id][attribute]
                 except AttributeError:
-                    error.warning("Invalid attribute in render settings database", (effect_id, attribute))
+                    status.warning("Invalid attribute in render settings database", (effect_id, attribute))
 
     core.createRenderData(rd, 'My Render Setting')
 

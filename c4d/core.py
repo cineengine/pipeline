@@ -7,8 +7,8 @@
 #    
 #    Author:  Mark Rohrer
 #    Contact: mark.rohrer@gmail.com
-#    Version: 0.4
-#    Date:    05/05/2016
+#    Version: 1.0b
+#    Date:    01/27/2017
 #
 #    This version is still in progress.    
 #

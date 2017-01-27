@@ -19,18 +19,19 @@ from c4d import gui, bitmaps, plugins
 # custom libraries
 from pipeline.c4d import core 
 from pipeline.c4d import scene
-from pipeline.c4d import error
+from pipeline.c4d import status
 from pipeline.c4d import database
 from pipeline.c4d import submit
+from pipeline.c4d import gvars
 import pipeline.c4d.automation as auto
 reload(core)
 reload(scene)
-reload(error)
+reload(status)
 reload(database)
 reload(submit)
 reload(auto)
 
-error.info("Loaded ESPN frontend plugin for C4D","1.0a")
+status.info("Loaded ESPN frontend plugin for C4D","1.0a")
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183

@@ -1,1 +1,1 @@
-print "Loaded ESPN backend utilities for C4D :: Version 1.0a"
+print "Loaded ESPN backend utilities for C4D :: Version 1.0a :: 1/27/17"
