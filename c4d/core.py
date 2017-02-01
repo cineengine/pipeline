@@ -317,6 +317,17 @@ def take( name=None, set_active=False ):
     doc.EndUndo()
     return take
 
+def setOutputPaths( rgb_path, multi_path ):
+    doc = c4d.documents.GetActiveDocument()
+    rd  = doc.GetActiveRenderData()
+    doc.StartUndo()
+    doc.AddUndo(c4d.UNDOTYPE_CHANGE, rd)
+    rd[c4d.RDATA_PATH] = str(rgb_path)
+    rd[c4d.RDATA_MULTIPASS_FILENAME] = str(multi_path)
+    doc.EndUndo()
+    c4d.EventAdd()
+    return True
+
 def setOutputFiletype( filetype, depth=None, primary=True, multipass=True, rd=None ):
     doc = c4d.documents.GetActiveDocument()
     if (rd == None):

@@ -1,5 +1,6 @@
 from c4d import gui
 
+SCENE_PRELOAD =-1
 SCENE_NEW     = 0
 SCENE_OK      = 1
 SCENE_BROKEN  = 2
@@ -11,15 +12,15 @@ class BaseError(Exception):
     def __init__(self, message, alert=True):
         super(BaseError, self).__init__(message)
         self.message = message
-        self.Alert(elevate=alert)
+        self.Alert(alert=alert)
         self.Cleanup()
 
-    def Alert(self, elevate):
+    def Alert(self, alert):
         alert_text = "ERROR :: {0}".format(self.alert_map[self.message])
-        if (elevate):
+        if (alert):
             gui.MessageDialog(alert_text)
         else:
-            print alert_text
+            return
 
     def Cleanup(self):
         pass
