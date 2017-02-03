@@ -12,6 +12,122 @@ from pipeline.c4d import debug
 from pipeline.c4d.gvars import *
 reload(core)
 
+
+PRELOAD = 0  #initialization
+UNLINKED= 1  #instanced, populated or ready for population. relation to active scene is unknown.
+LINKED  = 2  #virtualized scene is also active in viewport
+BROKEN  =-1  #virtualized scene or active scene are invalid. general error state.
+DB_ERR  =-2  #error retrieving data from an external source.
+
+class Scene2(object):
+    status       = STATUS_PRELOAD
+    production   = ''
+    project_name = ''
+    scene_name   = ''
+    file_path    = ''
+    prod_data    = {}
+    version      = 0
+    framerate    = 0
+    scene_ctrl   = None
+    scene_tag    = None
+
+    def __init__(self, virtual=False):
+        if not (virtual):
+            init_active()
+
+    def init_active(self):
+        scene_ctrl = core.ls(name='__SCENE__')
+        # No scene_ctrl found -- must be new scene
+        if (scene_ctrl == None or scene_ctrl == []):
+            self.status     = STATUS_VIRTUAL
+        # more than one scene controller found
+        elif (len(scene_ctrl)>1):
+            self.status     = STATUS_BROKEN
+        # One scene_ctrl found -- check it for a tag
+        elif (len(scene_ctrl)==1):
+            scene_tag = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl[0])
+            if not (scene_tag):
+                # no scene tag found on the scene controller, report scene broken
+                self.status = STATUS_BROKEN
+            # attach scene tags
+            self.scene_ctrl = scene_ctrl[0]
+            self.scene_tag  = scene_tag[0]
+            try:
+                # pull scene data from tags
+                self.pull_scene()
+                # successful pull
+                self.status = STATUS_ACTIVE
+            except debug.PipelineError:
+                # failed pull
+                self.status = STATUS_BROKEN
+        else: pass
+
+    def check_link(self, func):
+        ''' Validates that the current virtual scene matches the active scene. Intended for use as a decorator.
+            Return status: ANY '''
+        pass
+
+    def get_active_scene(self):
+        ''' Attaches the active c4d document to the virtual scene. 
+            Return status: UNLINKED '''
+        pass
+
+    def get_scene_hooks(self):
+        ''' Checks for hooks in the active scene. Sets virtual scene status accordingly. 
+            Return status: UNLINKED '''
+        pass
+    
+    def bld_scene_hooks(self):
+        ''' Builds new hooks in the active scene. Forcibly removes existing hooks. 
+            Return status: UNLINKED '''
+        pass
+
+    def clr_scene_hooks(self):
+        ''' Clears all hooks from the active scene. 
+            Return status: UNLINKED '''
+        pass
+
+    def get_scene_data(self):
+        ''' Retrieves data from active scene hooks. Populates virtual scene with that information. Performs validation.
+            Return status (success): LINKED
+            Return status (failure): BROKEN '''
+        pass
+
+    def set_scene_data(self, save=True):
+        ''' Pushes data from the virtual scene to active scene hooks. Stores a copy of the previous virtual scene.
+            Optional flag to skip save.
+            Return status (success): LINKED
+            Return status (failure): BROKEN '''
+        pass
+
+    def pull_production(self):
+        ''' Pulls production data from the external database and attaches it to the virtual scene.
+            Return status (failure): DB_ERR '''
+        pass
+
+    def set_output_paths(self):
+        ''' Generates render output paths from virtual scene data and sets them in the active scene. '''
+        pass
+
+    def set_renderdata(self, preset):
+        ''' Sets the RenderData in the active scene to the passed production preset '''
+        pass
+
+    def save(self):
+        ''' Saves active scene with a backup. '''
+        pass
+
+    def rename(self):
+        ''' Renames the active scene. '''
+        pass
+
+    def version_up(self):
+        pass
+
+    def from_data(self, *data):
+        pass
+
+
 class Scene(object):
     status       = debug.SCENE_PRELOAD
     production   = ''
