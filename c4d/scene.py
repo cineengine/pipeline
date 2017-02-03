@@ -74,6 +74,7 @@ class Scene(object):
                 return False
 
         self.production = prod
+        self.prod_data  = database.getProduction(self.production)
         self.scene_name = scene
         self.proj_name  = proj
         self.framerate  = framerate

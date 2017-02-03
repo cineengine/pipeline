@@ -138,15 +138,15 @@ class ESPNMenu(gui.GeDialog):
             chk = self.GetBool(CHK_EXISTING)
             self.Enable(DRP_PROJ_NAME, chk)
             self.Enable(TXT_PROJ_NAME, 1-chk)
-            self.refresh()
+            self.refresh_ui()
         # "Production" dropdown
         elif (id == DRP_PROD_NAME):
-             self.refresh(projects=True)
+             self.refresh_ui(projects=True)
         # Text fields or "project" dropdown
         elif (id == TXT_PROJ_NAME or
               id == TXT_SCENE_NAME or
               id == DRP_PROJ_NAME):
-            self.refresh()
+            self.refresh_ui()
         # "Create new" button
         elif (id == BTN_NEWPROJ_EXEC):
             self.create_new_scene()
@@ -218,7 +218,7 @@ class ESPNMenu(gui.GeDialog):
                     prod_id = k
             # set the production dropdown and get the project dropdown ready
             self.SetInt32(DRP_PROD_NAME, prod_id)
-            self.refresh(preview=False, projects=True)
+            self.refresh_ui(preview=False, projects=True)
             self.SetBool(CHK_EXISTING, True)
             # get id of current project from the dict value
             proj_id = DRP_PROJ_NAME_START_ID
@@ -232,9 +232,9 @@ class ESPNMenu(gui.GeDialog):
             self.SetString(TXT_SCENE_NAME, self.this_scene.scene_name)
             self.SetInt32(RDO_FRAMERATE, 10000+fps)
             # refresh to update preview values
-            self.refresh()
+            self.refresh_ui()
 
-    def refresh(self, preview=True, projects=False):
+    def refresh_ui(self, preview=True, projects=False):
         ''' Updates the UI with selection or input changes.
             preview:  Updates preview text fields (when typing or changing dropdowns)
             projects:  Updates the project dropdown (when production selection changes)'''
@@ -272,7 +272,7 @@ class ESPNMenu(gui.GeDialog):
                 # update the project list
                 self.retrieve_project_folders()
                 # .. & refresh previews
-                self.refresh(preview=True, projects=False)
+                self.refresh_ui(preview=True, projects=False)
 
     def check_pipeline_status(func):
         def run_check(self):
@@ -330,6 +330,7 @@ class ESPNMenu(gui.GeDialog):
         scene_name = self.GetString(TXT_SCENE_NAME)
         framerate  = self.GetInt32(RDO_FRAMERATE)-10000
         # cancel if any required fields are empty
+        self.this_scene = scene.Scene()
         self.this_scene.init_new(
             prod = prod_name,
             proj = proj_name,
