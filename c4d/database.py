@@ -15,7 +15,7 @@ import json
 import os.path
 #
 from pipeline.c4d import status
-from pipeline.c4d.globals import *
+from pipeline.c4d.gvars import *
 
 # GETTERS ##########################################################################################
 def getProduction(prod_):

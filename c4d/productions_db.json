@@ -179,5 +179,10 @@
 
             }
         }
+    },
+    "SOWWG": {
+        "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\SPECIAL_OLYMPICS\\Austria_2017",
+        "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\SPECIAL_OLYMPICS\\Austria_2017\\000_Toolbox",
+        "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\SPECIAL_OLYMPICS\\Austria_2017"
     }
 }

@@ -19,19 +19,19 @@ from c4d import gui, bitmaps, plugins
 # custom libraries
 from pipeline.c4d import core 
 from pipeline.c4d import scene
-from pipeline.c4d import status
+from pipeline.c4d import error
 from pipeline.c4d import database
 from pipeline.c4d import submit
 from pipeline.c4d import gvars
 import pipeline.c4d.automation as auto
 reload(core)
 reload(scene)
-reload(status)
+reload(error)
 reload(database)
 reload(submit)
 reload(auto)
 
-status.info("Loaded ESPN frontend plugin for C4D","1.0a")
+error.info("Loaded ESPN frontend plugin for C4D","1.0a")
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -327,8 +327,8 @@ class ESPNMenu(gui.GeDialog):
             gui.MessageDialog(msg, c4d.GEMB_OK)
             return False
         # check for existing scene controller
-        scene_ctrl, scene_tag, status = scene.Scene.getSceneStatus()
-        if (status == error.SCENE_OK):
+        scene_ctrl, scene_tag, info = scene.Scene.getSceneStatus()
+        if (info == error.SCENE_OK):
             scene_ctrl.Remove()
         # create new scene controller
         scene_ctrl, scene_tag = scene.Scene.makeSceneCtrl()
