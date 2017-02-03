@@ -1,3 +1,7 @@
+# coding: UTF-8
+
+# Automation tools for ESPN Animation projects pipeline
+
 import c4d
 import os.path
 import shutil

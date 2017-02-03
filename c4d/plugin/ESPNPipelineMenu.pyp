@@ -1,16 +1,15 @@
-# !/usr/bin/env python
 # coding: UTF-8
 
 """ ESPNPipelineMenu.pyp: A Python plugin for Cinema 4D housing various pipeline utilities. """
 
 __author__     = "Mark Rohrer"
-__copyright__  = "Copyright 2016, ESPN Productions"
+__copyright__  = "Copyright 2016/2017, ESPN Productions"
 __credits__    = ["Mark Rohrer", "Martin Weber"]
-__license__    = "GPL"
-__version__    = "0.85"
+__license__    = "None"
+__version__    = "1.1-dev"
 __maintainer__ = "Mark Rohrer"
 __email__      = "mark.rohrer@espn.com"
-__status__     = "Beta testing"
+__status__     = "Pre-deployment"
 
 # internal libraries
 import c4d
@@ -19,19 +18,19 @@ from c4d import gui, bitmaps, plugins
 # custom libraries
 from pipeline.c4d import core 
 from pipeline.c4d import scene
-from pipeline.c4d import status
+from pipeline.c4d import debug
 from pipeline.c4d import database
 from pipeline.c4d import submit
 from pipeline.c4d import gvars
 import pipeline.c4d.automation as auto
 reload(core)
 reload(scene)
-reload(status)
+reload(debug)
 reload(database)
 reload(submit)
 reload(auto)
 
-status.info("Loaded ESPN frontend plugin for C4D","1.0a")
+debug.info("Loaded ESPN frontend plugin for C4D", __version__)
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -120,17 +119,16 @@ class ESPNMenu(gui.GeDialog):
 
     def CreateLayout(self):
         self.LoadDialogResource(ESPNPipelineMenu)
-        sc, st, status = scene.Scene.getSceneStatus()
-        self.tab1_pullProductionList()
+        self.retrieve_prod_list()
 
-        if (status == error.SCENE_OK):
+        if (scene.Scene.is_pipelined()):
             self.this_scene = scene.Scene()
-            self.tab1_populate(existing=True)
+            self.init_populate(existing=True)
         else: 
-            self.tab1_populate(existing=False)
+            self.init_populate(existing=False)
 
         self.SetInt32(RDO_FRAMERATE, RDO_FRAMERATE_30)
-        self.tab3_matchupEnabled()
+        self.toggle_matchup()
 
         return True
 
@@ -140,59 +138,59 @@ class ESPNMenu(gui.GeDialog):
             chk = self.GetBool(CHK_EXISTING)
             self.Enable(DRP_PROJ_NAME, chk)
             self.Enable(TXT_PROJ_NAME, 1-chk)
-            self.tab1_refresh()
+            self.refresh()
         # "Production" dropdown
         elif (id == DRP_PROD_NAME):
-             self.tab1_refresh(projects=True)
+             self.refresh(projects=True)
         # Text fields or "project" dropdown
         elif (id == TXT_PROJ_NAME or
               id == TXT_SCENE_NAME or
               id == DRP_PROJ_NAME):
-            self.tab1_refresh()
+            self.refresh()
         # "Create new" button
         elif (id == BTN_NEWPROJ_EXEC):
-            self.tab1_create()
+            self.create_new_scene()
         elif (id == BTN_HELP_EXEC):
             self.help('tab1')
         # tab 2 buttons
         elif (id == BTN_SETOUTPUT):
-            self.tab2_setOutput()
+            self.push_output_paths()
         elif (id == BTN_SUBMIT):
-            self.tab2_submit()
+            self.submit_to_farm()
         elif (id == BTN_NEWTAKE):
-            self.tab2_newTake()
+            self.create_take()
         elif (id == BTN_PNG_OUTPUT):
-            self.tab2_pngOutput()
+            self.push_png_output()
         elif (id == BTN_EXR_OUTPUT):
-            self.tab2_exrOutput()
+            self.push_exr_output()
         # tab 3
         elif (id == IS_MATCHUP):
-            self.tab3_matchupEnabled()
+            self.toggle_matchup()
         elif (id == TXT_HOME_TRICODE or
               id == TXT_AWAY_TRICODE):
-            self.tab3_updateSwatches()
+            self.retrieve_swatches()
         elif (id == HOME_PRIMARY_EXEC):
-            self.tab3_createTeamColorMat('home', 'primary')
+            self.create_team_color_material('home', 'primary')
         elif (id == HOME_SECONDARY_EXEC):
-            self.tab3_createTeamColorMat('home', 'secondary')
+            self.create_team_color_material('home', 'secondary')
         elif (id == HOME_TERTIARY_EXEC):
-            self.tab3_createTeamColorMat('home', 'tertiary')
+            self.create_team_color_material('home', 'tertiary')
         elif (id == AWAY_PRIMARY_EXEC):
-            self.tab3_createTeamColorMat('away', 'primary')
+            self.create_team_color_material('away', 'primary')
         elif (id == AWAY_SECONDARY_EXEC):
-            self.tab3_createTeamColorMat('away', 'secondary')
+            self.create_team_color_material('away', 'secondary')
         elif (id == AWAY_TERTIARY_EXEC):
-            self.tab3_createTeamColorMat('away', 'tertiary')
+            self.create_team_color_material('away', 'tertiary')
         elif (id == TEAM_SWITCH_EXEC):
-            self.tab3_switchTeam()
+            self.push_team_colors()
         elif (id == AUTOMATION_HELP_EXEC):
             self.help('tab3')
         elif (id == SAVE_BACKUP_EXEC):
-            self.tab4_saveWithBackup()
+            self.save()
         elif (id == RENAME_EXEC):
-            self.tab4_rename()
+            self.rename()
         elif (id == BTN_VERSIONUP):
-            self.tab4_versionUp()
+            self.version_up()
         elif (id == SAVE_RENAME_HELP_EXEC):
             self.help('save_rename')
         elif (id == RELINK_TEXTURES_EXEC):
@@ -202,11 +200,11 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################
-    def tab1_populate(self, existing=False):
+    def init_populate(self, existing=False):
         ''' Populates the UI with initial values.
             existing: Pulls in data from a pipelined scene (if applicable).'''
         # set default values
-        self.tab1_prodSelected(False)
+        self.toggle_prod_selected(False)
         self.SetBool(CHK_EXISTING, False)
         self.Enable(TXT_PREVIEW_PROJ, False)
         self.Enable(TXT_PREVIEW_FILE, False)
@@ -220,7 +218,7 @@ class ESPNMenu(gui.GeDialog):
                     prod_id = k
             # set the production dropdown and get the project dropdown ready
             self.SetInt32(DRP_PROD_NAME, prod_id)
-            self.tab1_refresh(preview=False, projects=True)
+            self.refresh(preview=False, projects=True)
             self.SetBool(CHK_EXISTING, True)
             # get id of current project from the dict value
             proj_id = DRP_PROJ_NAME_START_ID
@@ -234,9 +232,9 @@ class ESPNMenu(gui.GeDialog):
             self.SetString(TXT_SCENE_NAME, self.this_scene.scene_name)
             self.SetInt32(RDO_FRAMERATE, 10000+fps)
             # refresh to update preview values
-            self.tab1_refresh()
+            self.refresh()
 
-    def tab1_refresh(self, preview=True, projects=False):
+    def refresh(self, preview=True, projects=False):
         ''' Updates the UI with selection or input changes.
             preview:  Updates preview text fields (when typing or changing dropdowns)
             projects:  Updates the project dropdown (when production selection changes)'''
@@ -270,13 +268,24 @@ class ESPNMenu(gui.GeDialog):
         if (projects):
             if not (self.GetInt32(DRP_PROD_NAME) == 0):
                 # flag it as such
-                self.tab1_prodSelected(True)
+                self.toggle_prod_selected(True)
                 # update the project list
-                self.tab1_pullProjectList()
+                self.retrieve_project_folders()
                 # .. & refresh previews
-                self.tab1_refresh(preview=True, projects=False)
+                self.refresh(preview=True, projects=False)
 
-    def tab1_prodSelected(self, bool_):
+    def check_pipeline_status(func):
+        def run_check(self):
+            self.this_scene = scene.Scene()
+            if (self.this_scene.status == debug.SCENE_OK):
+                return func(self)
+            elif (self.this_scene.status == debug.SCENE_NEW):
+                raise debug.PipelineError(0)
+            elif (self.this_scene.status == debug.SCENE_BROKEN):
+                raise debug.PipelineError(0)
+        return run_check
+
+    def toggle_prod_selected(self, bool_):
         ''' Since the UI defaults to not having a production selected, most fields are disabled.
             When a production *is* selected, this method enables the dependent fields.'''
         self.Enable(CHK_EXISTING, bool_)
@@ -289,7 +298,7 @@ class ESPNMenu(gui.GeDialog):
             self.Enable(DRP_PROJ_NAME, chk)
             self.Enable(TXT_PROJ_NAME, 1-chk) 
 
-    def tab1_pullProductionList(self):
+    def retrieve_prod_list(self):
         # generate a dictionary with gui ID as key and name as value
         id_ = DRP_PROD_NAME_START_ID
         for prod in database.getAllProductions():
@@ -300,7 +309,7 @@ class ESPNMenu(gui.GeDialog):
         for prod in self.production_enum:
             self.AddChild(DRP_PROD_NAME, prod, self.production_enum[prod])
 
-    def tab1_pullProjectList(self):
+    def retrieve_project_folders(self):
         # generate a dictionary with gui ID as key and name as value
         id_ = DRP_PROJ_NAME_START_ID
         for proj in database.getAllProjects(self.production_enum[self.GetInt32(DRP_PROD_NAME)]):
@@ -311,7 +320,7 @@ class ESPNMenu(gui.GeDialog):
         for proj in self.project_enum:
             self.AddChild(DRP_PROJ_NAME, proj, self.project_enum[proj])
 
-    def tab1_create(self):
+    def create_new_scene(self):
         # populate strings from text fields
         prod_name = self.production_enum[self.GetInt32(DRP_PROD_NAME)]
         if (self.GetBool(CHK_EXISTING) == True):
@@ -321,27 +330,14 @@ class ESPNMenu(gui.GeDialog):
         scene_name = self.GetString(TXT_SCENE_NAME)
         framerate  = self.GetInt32(RDO_FRAMERATE)-10000
         # cancel if any required fields are empty
-        if (scene_name == '' or
-            proj_name  == ''):
-            msg = 'Project or Scene name has not been set. Both are required to proceed.'
-            gui.MessageDialog(msg, c4d.GEMB_OK)
-            return False
-        # check for existing scene controller
-        scene_ctrl, scene_tag, status = scene.Scene.getSceneStatus()
-        if (status == error.SCENE_OK):
-            scene_ctrl.Remove()
-        # create new scene controller
-        scene_ctrl, scene_tag = scene.Scene.makeSceneCtrl()
-        annotation = "Production: {0}\nProject: {1}\nScene: {2}\nFramerate: {3}\nVersion: {4}"
-        annotation = annotation.format(prod_name, proj_name, scene_name, str(framerate), str(1))
-        scene_tag[c4d.ANNOTATIONTAG_TEXT] = annotation
-        # setup project and save
-        scn = scene.Scene()
-        scn.makeFolders()
-        #scn.setTakes()
-        scn.setOutput()
-        #auto.relinkTextures(migrate=True)
-        scn.saveWithBackup()
+        self.this_scene.init_new(
+            prod = prod_name,
+            proj = proj_name,
+            scene= scene_name,
+            framerate=framerate,
+            version=1,
+            force=True
+            )
         return True
 
     def help(self, tab):
@@ -349,36 +345,30 @@ class ESPNMenu(gui.GeDialog):
         help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
         return True
 
-
     ### TAB 02 FUNCTIONS #########################################################################
-    def tab2_setOutput(self):
-        chk = scene.Scene.isPipelined()
-        if (chk):
-            scn = scene.Scene()
-            scn.setOutput()
-        else:
-            scene.Scene.setOutput()
-        return True
+    @check_pipeline_status
+    def push_output_paths(self):
+        self.this_scene.push_output_paths()
 
-    def tab2_submit(self):
+    def submit_to_farm(self):
         dlg = submit.SubmissionDialog()
         dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
 
-    def tab2_newTake(self):
+    def create_take(self):
         name = gui.RenameDialog('')
         if not (name == ''):
             core.take(name, set_active=False)
         else: pass
         return True
 
-    def tab2_pngOutput(self):
+    def push_png_output(self):
         core.setOutputFiletype('png', 16)
 
-    def tab2_exrOutput(self):
+    def push_exr_output(self):
         core.setOutputFiletype('exr')
 
     ### TAB 03 FUNCTIONS #########################################################################
-    def tab3_switchTeam(self):
+    def push_team_colors(self):
         chk = self.GetBool(IS_MATCHUP)
         values = {}
 
@@ -394,11 +384,8 @@ class ESPNMenu(gui.GeDialog):
         for k,v in values.iteritems():
             core.changeColor(k.upper(), v['color'], exact=False)
 
-    def tab3_updateSwatches(self):
-        chk = scene.Scene.isPipelined()
-        if (chk):
-            self.this_scene = scene.Scene()
-        else: return
+    @check_pipeline_status
+    def retrieve_swatches(self):
         home_tricode = self.GetString(TXT_HOME_TRICODE)
         away_tricode = self.GetString(TXT_AWAY_TRICODE)
 
@@ -432,7 +419,7 @@ class ESPNMenu(gui.GeDialog):
             self.SetColorField(VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
         return True
 
-    def tab3_matchupEnabled(self):
+    def toggle_matchup(self):
         chk = self.GetBool(IS_MATCHUP)
         if (chk):
             self.Enable(TXT_AWAY_TRICODE, True)
@@ -445,7 +432,7 @@ class ESPNMenu(gui.GeDialog):
             self.Enable(VEC_AWAY_COLOR_S, False)
             self.Enable(VEC_AWAY_COLOR_T, False)
 
-    def tab3_createTeamColorMat(self, location, swatch):
+    def create_team_color_material(self, location, swatch):
         location = location.upper()
         swatch   = swatch.upper()
         name     = '{0}_{1}'.format(location, swatch)
@@ -453,33 +440,26 @@ class ESPNMenu(gui.GeDialog):
         core.createMaterial(name)
 
     ### SAVE / RENAME SCENE TAB ##################################################################
-    def tab4_saveWithBackup(self):
-        chk = scene.Scene.isPipelined()
-        if (chk):
-            self.this_scene = scene.Scene()
-            self.this_scene.saveWithBackup()
-        else: raise error.PipelineError(0)
+    @check_pipeline_status
+    def save(self):
+        self.this_scene.save()
+        return True
 
-    def tab4_rename(self):
-        chk = scene.Scene.isPipelined()
-        if (chk):
-            self.this_scene = scene.Scene()
-            self.this_scene.rename()
-        else: raise error.PipelineError(0)
+    @check_pipeline_status
+    def rename(self):
+        self.this_scene.rename()
+        return True
+
+    @check_pipeline_status
+    def version_up(self):
+        scn.version_up()
+        return True
 
     def createObjectBuffers(self):
         if len(core.getCheckedTakes()):
-            scene.Scene.createObjectBuffers(consider_takes=True)
+            scene.createObjectBuffers(consider_takes=True)
         else:
-            scene.Scene.createObjectBuffers(consider_takes=False)
-
-    def tab4_versionUp(self):
-        chk = scene.Scene.isPipelined()
-        if (chk):
-            scn = scene.Scene()
-            scn.versionUp()
-        else: raise error.PipelineError(0)
-        return True
+            scene.createObjectBuffers(consider_takes=False)
 
 class ESPNHelp(gui.GeDialog):
     def __init__(self, panel):

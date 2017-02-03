@@ -1,21 +1,13 @@
-#    JSON Database operations for ESPN Animation projects pipeline
-#    
-#    Author:  Mark Rohrer
-#    Contact: mark.rohrer@gmail.com
-#    Version: 0.3
-#    Date:    04/06/2016
-#
-#    
-#
-#    Features to be added: 
+# coding: UTF-8
 
-#
+# JSON Database operations for ESPN Animation projects pipeline
+
 import c4d
 import json
 import os.path
 #
-from pipeline.c4d import status
-from pipeline.c4d.globals import *
+from pipeline.c4d import debug
+from pipeline.c4d.gvars import *
 
 # GETTERS ##########################################################################################
 def getProduction(prod_):
@@ -23,9 +15,8 @@ def getProduction(prod_):
     def merge(src,dest):
         for k,v in src:
             dest[k] = v
-    PRODUCTION_GLOBALS_DB = os.path.join(JSON_DB_PATH, "productions_db.json")
     merged_prod = {}
-    with open(PRODUCTION_GLOBALS_DB, 'r') as stream:
+    with open(PRODUCTION_DB, 'r') as stream:
         full_db = json.load(stream)
         base_db = full_db['DEFAULT']
 
@@ -33,14 +24,14 @@ def getProduction(prod_):
             prod_db = full_db[prod_]
             prod_db['is_default'] = False
         except KeyError:
-            raise status.DatabaseError(1)
+            raise debug.DatabaseError(1)
         # The project dictionaries only store the delta of data in the default dictionary
         # Therefore we merge the requested project dictionary over top of the default to create
         # a complete data set.
         base_db.update(prod_db)
 
         return base_db
-
+"""
 def getProductionDirty():
     ''' Infers the project based on where the current scene is located. '''
     scene_path = core.doc().GetDocumentPath()
@@ -51,13 +42,12 @@ def getProductionDirty():
         prod   = PRODUCTIONS[proj_]
         return prod
     except KeyError:
-        raise status.PipelineError(3)
-
+        raise debug.PipelineError(3)
+"""
 def getAllProductions():
     ''' Gets a list of all available / valid productions from the database. '''
-    PRODUCTION_GLOBALS_DB = os.path.join(JSON_DB_PATH, "productions_db.json")
     productions = []
-    with open(PRODUCTION_GLOBALS_DB, 'r') as stream:
+    with open(PRODUCTION_DB, 'r') as stream:
         full_db = json.load(stream)
         for k,v in full_db.iteritems():
             if (k == 'DEFAULT'):
@@ -75,7 +65,7 @@ def getTeamDatabase(prod_):
     ''' Gets the team database for a production. '''
     prod_db  = getProduction(prod_)
     if (prod_db['is_default'] == True):
-        raise status.DatabaseError(1)
+        raise debug.DatabaseError(1)
 
     team_db_ = prod_db['team_db']
     db_path  = os.path.join(JSON_DB_PATH, '{0}.json'.format(team_db_))
@@ -94,7 +84,7 @@ def getTeam(prod_, tricode, squelch=False):
         elif ('{0} {1}'.format(team_db[k]['city'], team_db[k]['nick']) == tricode):
             return team_db[k]
     # if it gets this far, the team wasn't found in the database.
-    raise status.DatabaseError(2, alert=1-squelch)
+    raise debug.DatabaseError(2, alert=1-squelch)
 
 def getAllTeams(prod_, name='tricode'):
     ''' Gets a list of all teams for a given production. '''

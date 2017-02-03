@@ -8,11 +8,12 @@ import os.path
 # custom libraries
 from pipeline.c4d import core
 from pipeline.c4d import database
-from pipeline.c4d import status
+from pipeline.c4d import debug
 from pipeline.c4d.gvars import *
+reload(core)
 
 class Scene(object):
-    status       = status.SCENE_PRELOAD
+    status       = debug.SCENE_PRELOAD
     production   = ''
     project_name = ''
     scene_name   = ''
@@ -24,7 +25,7 @@ class Scene(object):
 
     def __init__(self):
         self.init_status()
-        if (self.status == status.SCENE_OK):
+        if (self.status == debug.SCENE_OK):
             self.pull_scene()
     
     def __repr__(self):
@@ -42,20 +43,20 @@ class Scene(object):
         scene_ctrl = core.ls(name='__SCENE__')
         # No scene_ctrl found -- must be new scene
         if (scene_ctrl == None or scene_ctrl == []):
-            self.status     = status.SCENE_NEW
+            self.status     = debug.SCENE_NEW
             return self.status
         # One scene_ctrl found -- check it for a tag
         elif (len(scene_ctrl)==1):
             scene_tag = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl[0])
             if not (scene_tag):
-                self.status = status.SCENE_BROKEN
+                self.status = debug.SCENE_BROKEN
                 return self.status
             self.scene_ctrl = scene_ctrl[0]
             self.scene_tag  = scene_tag[0]
-            self.status     = status.SCENE_OK
+            self.status     = debug.SCENE_OK
         # 2+ scene_ctrl found -- scene is broken
         elif (len(scene_ctrl)>1):
-            self.status     = status.SCENE_BROKEN
+            self.status     = debug.SCENE_BROKEN
             return self.status
 
     def init_new(self, prod='', scene='', proj='', framerate=30, version=1, force=False):
@@ -65,7 +66,7 @@ class Scene(object):
             gui.MessageDialog(msg, c4d.GEMB_OK)
             return False
         # check for existing scene controller
-        if (self.status == status.SCENE_OK):
+        if (self.status == debug.SCENE_OK):
             if (force == True):
                 self.scene_ctrl.Remove()
             else:
@@ -92,7 +93,7 @@ class Scene(object):
     @classmethod
     def is_pipelined(self):
         self()
-        if (self.status == status.SCENE_OK):
+        if (self.status == debug.SCENE_OK):
             return True
         else: return False
 
@@ -120,9 +121,9 @@ class Scene(object):
         self.scene_name   = scene_data['Scene']
         self.framerate    = int(scene_data['Framerate'])
         self.version      = int(scene_data['Version'])
-        self.repath()
+        self.rebuild_paths()
 
-    def repath(self):
+    def rebuild_paths(self):
         ''' Updates internal path data for the scene when it is moved or renamed. '''
         self.file_name     = '{0}_{1}.c4d'.format(self.project_name, self.scene_name)
         self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
@@ -263,7 +264,7 @@ class Scene(object):
             elif len(file_name) == 3:
                 cur_vers = int(file_name[1])+1
             else:
-                raise status.FileError(2)
+                raise debug.FileError(2)
 
             incr_name = "{0}.{1}.{2}".format(name, str(cur_vers).zfill(4), ext)
             incr_file = os.path.join(file_path, incr_name)
@@ -271,8 +272,9 @@ class Scene(object):
             if os.path.exists(incr_file):
                 incr_file = increment(incr_file)
             return incr_file
-        #
-        self.repath()
+        # we add a pull here in case a TD has overridden the tag manually
+        self.pull_scene()
+        self.rebuild_paths()
 
         backup_folder = os.path.join(self.file_folder, 'backup')
         backup_file  = os.path.join(backup_folder, self.file_name)
@@ -286,8 +288,8 @@ class Scene(object):
         try:
             core.saveAs(backup_path)
             core.saveAs(self.file_path)
-        except status.FileError:
-            raise status.FileError(0)
+        except debug.FileError:
+            raise debug.FileError(0)
 
     def rename(self, name=None, verbose=True):
         ''' Rename the scene (with optional dialog) '''
@@ -299,7 +301,7 @@ class Scene(object):
             else: name = dlg
         # store the old name and update self
         self.scene_name = name
-        self.repath()
+        self.rebuild_paths()
         # check that the new file doesn't already exist
         if os.path.isfile(self.file_path) and (verbose):
             msg = 'Warning: A scene with this name already exists -- proceed anyway? (Existing renders may be overwritten -- check your output version before rendering!)'
@@ -309,13 +311,13 @@ class Scene(object):
             elif (prompt == c4d.GEMB_R_CANCEL):
                 # restore the old scene name and exit
                 self.scene_name = old_name
-                self.updateFilePath()
+                self.rebuild_paths()
                 return
         # set clean version, update scene_ctrl with new data, and save
         self.version = 1
         self.push_scene()
         self.push_output_paths()
-        self.saveWithBackup()
+        self.save()
 
     def version_up(self):
         ''' Version up the scene and save a new backup. '''
@@ -323,7 +325,7 @@ class Scene(object):
         self.version += 1
         self.push_scene()
         self.push_output_paths()
-        self.saveWithBackup()
+        self.save()
 
     def sort(self):
         ''' Sorts objects into takes (via override groups) using sorting logic stored in a proj database.'''
@@ -390,13 +392,13 @@ def clearObjectBuffers():
     doc.EndUndo()
     return True
 
-def enableObjectBuffer(id):
+def enableObjectBuffer(obid):
     ''' Inserts an object buffer into the active render data, with the passed id'''
     doc = c4d.documents.GetActiveDocument()
     rd = doc.GetActiveRenderData()
     ob = c4d.BaseList2D(c4d.Zmultipass)
     ob.GetDataInstance()[c4d.MULTIPASSOBJECT_TYPE] = c4d.VPBUFFER_OBJECTBUFFER
-    ob[c4d.MULTIPASSOBJECT_OBJECTBUFFER] = id
+    ob[c4d.MULTIPASSOBJECT_OBJECTBUFFER] = obid
     rd.InsertMultipass(ob)
     c4d.EventAdd()
 
@@ -405,10 +407,10 @@ def createObjectBuffers(consider_takes=False):
     doc = c4d.documents.GetActiveDocument()
     td = doc.GetTakeData()
     # clear all existing object buffers
-    self.clearObjectBuffers()
+    clearObjectBuffers()
     # "simple" mode -- takes are not considered, existing render data is modified
     if not (consider_takes):
-        self._buildObjectBuffers()
+        _buildObjectBuffers()
     # "complicated" mode -- creates child RenderData for each take, enabling only object buffers
     # belonging to visible objects in the take
     elif (consider_takes):
@@ -421,7 +423,7 @@ def createObjectBuffers(consider_takes=False):
         # will inherit
         parent_rdata = doc.GetActiveRenderData()
         if parent_rdata.GetUp():
-            raise status.PipelineError(4)
+            raise debug.PipelineError(4)
             return
         # Create a child renderdata for each take
         for take in take_list:
@@ -430,7 +432,7 @@ def createObjectBuffers(consider_takes=False):
             # Create the child data
             child_rdata = core.createChildRenderData(parent_rdata, suffix=take.GetName(), set_active=True)
             # Set up Object Buffers for the objects visible in the current take
-            self._buildObjectBuffers()
+            _buildObjectBuffers()
             # Assign the RenderData to the take
             take.SetRenderData(td, child_rdata)
             c4d.EventAdd()
@@ -463,7 +465,6 @@ def createUtilityPass(take=None):
 
     return (take, child_rdata)
 
-
 def _getObjectBufferIDs():
     ''' Private. Gets a set of all unique Object Buffer ids set in compositing tags in the scene. '''
     ids = []
@@ -487,8 +488,8 @@ def _buildObjectBuffers():
     # Get the object buffer IDs assigned to compositing tags in the scene
     # this operation also checks for objects that are invisible (dots) or flagged as matted  |
     # invisible to camera, and ignores them.
-    ids = self._getObjectBufferIDs()
+    ids = _getObjectBufferIDs()
     for id_ in ids:
         # enable the passed object buffers 
-        self.enableObjectBuffer(id_)
+        enableObjectBuffer(id_)
 

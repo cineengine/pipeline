@@ -1,68 +1,6 @@
 {
     "DEFAULT":  {
-        "is_default": 1,
         "frate"     : 30,
-        "layers"    : ["main"],
-        "renderer"  : 0,
-        "passes"    : [
-            "c4d.VPBUFFER_AMBIENTOCCLUSION",
-            "c4d.VPBUFFER_ILLUMINATION",
-            "c4d.VPBUFFER_TRANSPARENCY",
-            "c4d.VPBUFFER_REFLECTION",
-            "c4d.VPBUFFER_SPECULAR",
-            "c4d.VPBUFFER_DIFFUSE",
-            "c4d.VPBUFFER_ALLPOSTEFFECTS",
-            "c4d.VPBUFFER_DEPTH",
-            "c4d.VPBUFFER_MOTIONVECTOR",
-            "c4d.VPBUFFER_MAT_UV",
-            "c4d.VPBUFFER_MAT_NORMAL",
-            "c4d.VPBUFFER_ALLPOSTEFFECTS",
-            "c4d.VPBUFFER_MAT_COLOR",
-            "c4d.VPBUFFER_MAT_LUMINANCE"
-        ],
-        "passes_util" : [
-            "c4d.VPBUFFER_DEPTH",
-            "c4d.VPBUFFER_MOTIONVECTOR",
-            "c4d.VPBUFFER_MAT_UV",
-            "c4d.VPBUFFER_MAT_NORMAL",
-            "c4d.VPBUFFER_ALLPOSTEFFECTS"
-        ],
-        "image_settings" : {
-            "c4d.RDATA_MULTIPASS_ENABLE"     : 1,
-            "c4d.RDATA_XRES"                 : 1920,
-            "c4d.RDATA_YRES"                 : 1080,
-            "c4d.RDATA_TEXTUREERROR"         : 0,
-            "c4d.RDATA_ALPHACHANNEL"         : 1,
-            "c4d.RDATA_SEPARATEALPHA"        : 0,
-            "c4d.RDATA_STRAIGHTALPHA"        : 1,
-            "c4d.RDATA_FORMAT"               : 1023671,
-            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1023671,
-            "c4d.RDATA_FORMATDEPTH"          : 1,
-            "c4d.RDATA_MULTIPASS_SAVEDEPTH"  : 1,
-            "c4d.RDATA_NAMEFORMAT"           : 6,
-            "c4d.RDATA_LOCKRATIO"            : 1,
-            "c4d.RDATA_FILMASPECT"           : 1.77,
-            "c4d.RDATA_FILMPRESET"           : 3,
-            "c4d.RDATA_SAVEIMAGE"            : 1,
-            "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1
-        },
-        "image_settings_util" : {
-            "c4d.RDATA_FORMAT"               : 1023671,
-            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1023671,
-            "c4d.RDATA_SAVEIMAGE"            : 1,
-            "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1,
-            "c4d.RDATA_MULTIPASS_ENABLE"     : 1
-        },
-        "raytrace_settings_std_ren" : {
-            "c4d.RDATA_RAYDEPTH"             : 5,
-            "c4d.RDATA_REFLECTIONDEPTH"      : 2,
-            "c4d.RDATA_SHADOWDEPTH"          : 2,
-            "c4d.RDATA_ANTIALIASING"         : 2,
-            "c4d.RDATA_AAFILTER"             : 1,
-            "c4d.RDATA_AAMINLEVEL"           : 1,
-            "c4d.RDATA_AAMAXLEVEL"           : 3,
-            "c4d.RDATA_AATHRESHOLD"          : 0.01
-        },
         "folders"   : {
             "ae"       : [],
             "c4d"      : ["tex", "export", "backup"],
@@ -79,105 +17,13 @@
         "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\001_3D_ASSETS",
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\NBA_2016\\004_TOOLBOX\\002_3D_TEAMS",
         "team_db"   : "teams_nba",
-        "renderer"  : 1023342,
-        "image_settings" : {
-            "c4d.RDATA_MULTIPASS_ENABLE"     : 1,
-            "c4d.RDATA_XRES"                 : 1920,
-            "c4d.RDATA_YRES"                 : 1080,
-            "c4d.RDATA_TEXTUREERROR"         : 0,
-            "c4d.RDATA_ALPHACHANNEL"         : 1,
-            "c4d.RDATA_SEPARATEALPHA"        : 0,
-            "c4d.RDATA_STRAIGHTALPHA"        : 1,
-            "c4d.RDATA_FORMAT"               : 1016606,
-            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1016606,
-            "c4d.RDATA_NAMEFORMAT"           : 6,
-            "c4d.RDATA_LOCKRATIO"            : 1,
-            "c4d.RDATA_FILMASPECT"           : 1.77,
-            "c4d.RDATA_FILMPRESET"           : 3,
-            "c4d.RDATA_SAVEIMAGE"            : 1,
-            "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1
-        },
-        "image_settings_util" : {
-            "c4d.RDATA_FORMAT"               : 1016606,
-            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1016606,
-            "c4d.RDATA_SAVEIMAGE"            : 0,
-            "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1,
-            "c4d.RDATA_MULTIPASS_ENABLE"     : 1
-        },
-        "raytrace_settings_phys_ren"  : {
-            "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,
-            "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.05,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 2.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 2.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SSS"     : 4.0
-        },
-        "vpost_effects"   : {
-            "c4d.VPambientocclusion" : {
-                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH":    150.0,
-                "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE": 1
-            },
-            "c4d.VPsharpenfilter" : {
-                "c4d.VP_SHARPENFILTERSTRENGTH": 0.1
-            },
-            "1028398" : {
-                "c4d.VP_NORMALPASS_SPACE" : 2
-            }
-        }
+        "presets"   : ["Default"]
     },
     "WBC_2017": {
         "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\WBC_2017\\001_PROJECTS\\000_Animation",
         "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\WBC_2017\\004_TOOLBOX\\001_3D_ASSETS",
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\WBC_2017\\004_TOOLBOX\\002_3D_TEAMS",
-        "renderer"  : 1023342,
-        "image_settings" : {
-            "c4d.RDATA_MULTIPASS_ENABLE"     : 1,
-            "c4d.RDATA_XRES"                 : 1280,
-            "c4d.RDATA_YRES"                 : 720,
-            "c4d.RDATA_TEXTUREERROR"         : 0,
-            "c4d.RDATA_ALPHACHANNEL"         : 1,
-            "c4d.RDATA_SEPARATEALPHA"        : 0,
-            "c4d.RDATA_STRAIGHTALPHA"        : 1,
-            "c4d.RDATA_FORMAT"               : 1023671,
-            "c4d.RDATA_MULTIPASS_SAVEFORMAT" : 1023671,
-            "c4d.RDATA_FORMATDEPTH"          : 1,
-            "c4d.RDATA_MULTIPASS_SAVEDEPTH"  : 1,
-            "c4d.RDATA_NAMEFORMAT"           : 6,
-            "c4d.RDATA_LOCKRATIO"            : 1,
-            "c4d.RDATA_FILMASPECT"           : 1.77,
-            "c4d.RDATA_FILMPRESET"           : 3,
-            "c4d.RDATA_SAVEIMAGE"            : 1,
-            "c4d.RDATA_MULTIPASS_SAVEIMAGE"  : 1
-        },
-        "raytrace_settings_std_ren" : {
-            "c4d.RDATA_RAYDEPTH"             : 7,
-            "c4d.RDATA_REFLECTIONDEPTH"      : 3,
-            "c4d.RDATA_SHADOWDEPTH"          : 7,
-            "c4d.RDATA_AUTOLIGHT"            : 0
-        },
-        "raytrace_settings_phys_ren" : {
-            "c4d.VP_XMB_RAYTRACING_SAMPLER" : 1,
-            "c4d.VP_XMB_RAYTRACING_QUALITY" : 3,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_SHADING_ERROR"  : 0.085,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SHADING" : 3.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_LIGHT"   : 3.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_AO"      : 3.0,
-            "c4d.VP_XMB_RAYTRACING_SAMPLES_BLURRY_SSS"     : 0.0
-        },
-        "vpost_effects" : {
-            "c4d.VPambientocclusion" : {
-                "c4d.VPAMBIENTOCCLUSION_MAXLENGTH"         : 100.0,
-                "c4d.VPAMBIENTOCCLUSION_APPLYTOSCENE"      : 0
-            },
-            "c4d.VPglobalillumination" : {
-                "c4d.GI_SETUP_DATA_PRIMARY_METHOD"         : 6040,
-                "c4d.GI_SETUP_DATA_SECONDARY_METHOD"       : 6040,
-                "c4d.GI_SETUP_DATA_QMC_COUNT_METHOD"       : 6060,
-                "c4d.GI_SETUP_DATA_QMC_AREA_ENABLED"       : 0,
-                "c4d.GI_SETUP_DATA_QMC_COUNT"              : 20
-
-            }
-        }
+        "team_db"   : "teams_wbc",
+        "presets"   : ["Default", "GI-QMC"]
     }
 }

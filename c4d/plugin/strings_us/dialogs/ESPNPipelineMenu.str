@@ -22,7 +22,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	LBL_MIGPROJ_EXEC      "Migrates a pipelined scene into a new or existing project >>";
 	LBL_RENAME_EXEC       "Renames an existing scene in its current project >>";
 
-	SECOND_TAB_NAME       "Render layers & output";
+	SECOND_TAB_NAME       "Rendering";
 	LBL_OUTPUT_PATHS      "Setup render output";
 	LBL_TAKE_UTILS        "Take / Render Layer utilities";
 	BTN_SETOUTPUT         "Project default settings";
@@ -32,7 +32,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	BTN_VERSIONUP         "Version Up";
 	BTN_SUBMIT            "Submit Scene to Farm";
 	BTN_CREATE_OBJBUFFERS "Create Object Buffers";
-	THIRD_TAB_NAME        "Team Switching";
+	THIRD_TAB_NAME        "Automation";
 	LBL_HOME_TRICODE      "Home Team";
 	LBL_AWAY_TRICODE      "Away Team";
 	IS_MATCHUP            "Matchup";
@@ -47,7 +47,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	AWAY_TERTIARY_EXEC    "Away tertiary";
 	AUTOMATION_HELP_EXEC  "Instructions / help";
 
-	SAVE_RENAME_TAB       "Scene Utilities";
+	SAVE_RENAME_TAB       "Save & Submit";
 	SAVE_BACKUP_EXEC      "Save Scene & Backup";
 	RENAME_EXEC           "Rename Scene";
 	SAVE_RENAME_HELP_EXEC "Instructions / help";

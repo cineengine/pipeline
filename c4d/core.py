@@ -1,18 +1,8 @@
-# !/usr/bin/python
 # coding: UTF-8
 
 #    Core wrapper for Cinema 4d Python API
 #    - This wraps C4D functionality of a broad range of object operations with common conditionals
 #      and error handling.  These functions have no other dependencies besides Maxon's c4d module.
-#    
-#    Author:  Mark Rohrer
-#    Contact: mark.rohrer@gmail.com
-#    Version: 1.0b
-#    Date:    01/27/2017
-#
-#    This version is still in progress.    
-#
-#    Features to be added:  a lot
 
 import os.path
 # internal libraries
