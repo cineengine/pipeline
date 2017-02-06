@@ -1,26 +1,31 @@
 # coding: UTF-8
 
-# internal libraries
+# built-in libraries
+from os import makedirs
+from functools import wraps
+import os.path
+# c4d libraries
 import c4d
 from c4d import gui
-from os import makedirs
-import os.path
 # custom libraries
 from pipeline.c4d import core
 from pipeline.c4d import database
 from pipeline.c4d import debug
 from pipeline.c4d.gvars import *
-reload(core)
 
+class MetaScene(object):
+    ''' MetaScene is an mapper / wrapper for scene files in Cinema 4D's Python API. It consists of convenience functions
+    and JSON database integration for ESPN's Motion Graphics pipeline. 
 
-PRELOAD = 0  #initialization
-UNLINKED= 1  #instanced, populated or ready for population. relation to active scene is unknown.
-LINKED  = 2  #virtualized scene is also active in viewport
-BROKEN  =-1  #virtualized scene or active scene are invalid. general error state.
-DB_ERR  =-2  #error retrieving data from an external source.
+    Mapping direction is as follows:
+    User Input --> MetaScene --> Database --> MetaScene --> Cinema 4D Scene --> MetaScene --> Feedback
 
-class Scene2(object):
-    status       = STATUS_PRELOAD
+    The "virtual" scene (i.e. the metadata) consists of transient data from a database or an active scene.
+    The "real" scene (i.e. a c4d.BaseDocument object) is the target of most operations.
+    The internal naming convention is careful to distinguish these two entities (i.e. "vscene" and "rscene".)
+
+    The JSON databases are currently static, and therefore the mapping is effectively unidirectional. '''
+
     production   = ''
     project_name = ''
     scene_name   = ''
@@ -30,339 +35,77 @@ class Scene2(object):
     framerate    = 0
     scene_ctrl   = None
     scene_tag    = None
+    cleanup      = []
 
-    def __init__(self, virtual=False):
-        if not (virtual):
-            init_active()
-
-    def init_active(self):
-        scene_ctrl = core.ls(name='__SCENE__')
-        # No scene_ctrl found -- must be new scene
-        if (scene_ctrl == None or scene_ctrl == []):
-            self.status     = STATUS_VIRTUAL
-        # more than one scene controller found
-        elif (len(scene_ctrl)>1):
-            self.status     = STATUS_BROKEN
-        # One scene_ctrl found -- check it for a tag
-        elif (len(scene_ctrl)==1):
-            scene_tag = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl[0])
-            if not (scene_tag):
-                # no scene tag found on the scene controller, report scene broken
-                self.status = STATUS_BROKEN
-            # attach scene tags
-            self.scene_ctrl = scene_ctrl[0]
-            self.scene_tag  = scene_tag[0]
-            try:
-                # pull scene data from tags
-                self.pull_scene()
-                # successful pull
-                self.status = STATUS_ACTIVE
-            except debug.PipelineError:
-                # failed pull
-                self.status = STATUS_BROKEN
-        else: pass
-
-    def check_link(self, func):
-        ''' Validates that the current virtual scene matches the active scene. Intended for use as a decorator.
-            Return status: ANY '''
-        pass
-
-    def get_active_scene(self):
-        ''' Attaches the active c4d document to the virtual scene. 
-            Return status: UNLINKED '''
-        pass
-
-    def get_scene_hooks(self):
-        ''' Checks for hooks in the active scene. Sets virtual scene status accordingly. 
-            Return status: UNLINKED '''
-        pass
-    
-    def bld_scene_hooks(self):
-        ''' Builds new hooks in the active scene. Forcibly removes existing hooks. 
-            Return status: UNLINKED '''
-        pass
-
-    def clr_scene_hooks(self):
-        ''' Clears all hooks from the active scene. 
-            Return status: UNLINKED '''
-        pass
-
-    def get_scene_data(self):
-        ''' Retrieves data from active scene hooks. Populates virtual scene with that information. Performs validation.
-            Return status (success): LINKED
-            Return status (failure): BROKEN '''
-        pass
-
-    def set_scene_data(self, save=True):
-        ''' Pushes data from the virtual scene to active scene hooks. Stores a copy of the previous virtual scene.
-            Optional flag to skip save.
-            Return status (success): LINKED
-            Return status (failure): BROKEN '''
-        pass
-
-    def pull_production(self):
-        ''' Pulls production data from the external database and attaches it to the virtual scene.
-            Return status (failure): DB_ERR '''
-        pass
-
-    def set_output_paths(self):
-        ''' Generates render output paths from virtual scene data and sets them in the active scene. '''
-        pass
-
-    def set_renderdata(self, preset):
-        ''' Sets the RenderData in the active scene to the passed production preset '''
-        pass
-
-    def save(self):
-        ''' Saves active scene with a backup. '''
-        pass
-
-    def rename(self):
-        ''' Renames the active scene. '''
-        pass
-
-    def version_up(self):
-        pass
-
-    def from_data(self, *data):
-        pass
-
-
-class Scene(object):
-    status       = debug.SCENE_PRELOAD
-    production   = ''
-    project_name = ''
-    scene_name   = ''
-    file_path    = ''
-    version      = 0
-    framerate    = 0
-    scene_ctrl   = None
-    scene_tag    = None
-
+    ### Constructors
     def __init__(self):
-        self.init_status()
-        if (self.status == debug.SCENE_OK):
-            self.pull_scene()
-    
-    def __repr__(self):
-        _str_ = "\n"
-        _str_ += "Production: {}\n".format(self.production)
-        _str_ += "Project: {}\n".format(self.project_name)
-        _str_ += "Scene: {}".format(self.scene_name)
-        return _str_
+        if (self.is_tagged()):
+            self._get_rscene_data()
+            self._set_vscene_path()
+        self.is_sync()
 
-    # INITIALIZATION
     @classmethod
-    def init_status(self):
-        ''' Sets the status of the scene and returns a copy of the status msg.'''
-        # Tuple to store scene_ctrl node, scene_tag node, and status message
-        scene_ctrl = core.ls(name='__SCENE__')
-        # No scene_ctrl found -- must be new scene
-        if (scene_ctrl == None or scene_ctrl == []):
-            self.status     = debug.SCENE_NEW
-            return self.status
-        # One scene_ctrl found -- check it for a tag
-        elif (len(scene_ctrl)==1):
-            scene_tag = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl[0])
-            if not (scene_tag):
-                self.status = debug.SCENE_BROKEN
-                return self.status
-            self.scene_ctrl = scene_ctrl[0]
-            self.scene_tag  = scene_tag[0]
-            self.status     = debug.SCENE_OK
-        # 2+ scene_ctrl found -- scene is broken
-        elif (len(scene_ctrl)>1):
-            self.status     = debug.SCENE_BROKEN
-            return self.status
+    def from_data(self, set_output=False, set_rdata=False, save=False, **data):
+        ''' Create a new scene from a passed dictionary of values (data).
+        set_output (bool): set render output paths on the real scene
+        set_rdata (bool): apply the default renderdata preset for this production
+        save (bool): save the scene after creation.
+        data['production'] (str): the production ID. Must match the equivalent entry in the database
+        data['project_name'] (str): the name of the container project folder on the server
+        data['scene_name'] (str): the descriptive name of this scene
+        data['framerate'] (int): the framerate of the new scene 
+        data['version'] (int): the version of the new scene '''
 
-    def init_new(self, prod='', scene='', proj='', framerate=30, version=1, force=False):
-        """ Called on a new scene, or a scene that's being re-initialized into a new project."""
-        if (prod == '' or scene == '' or proj == ''):
-            msg = 'Missing production, project, or scene name. All are required to proceed.'
-            gui.MessageDialog(msg, c4d.GEMB_OK)
-            return False
-        # check for existing scene controller
-        if (self.status == debug.SCENE_OK):
-            if (force == True):
-                self.scene_ctrl.Remove()
-            else:
-                # Insert error here
-                return False
+        self()
+        if (self.is_tagged()):
+            self._clr_scene_hooks()
 
-        self.production = prod
-        self.prod_data  = database.getProduction(self.production)
-        self.scene_name = scene
-        self.proj_name  = proj
-        self.framerate  = framerate
-        self.version    = version
+        self.production   = data['production']
+        self.project_name = data['project_name']
+        self.scene_name   = data['scene_name']
+        self.framerate    = data['framerate']
+        self.version      = data['version']
 
-        # create new scene controller
-        self.make_scene_ctrl()
-        # setup project and save
-        self.make_folders()
-        #scn.setTakes()
-        self.push_renderdata()
-        self.push_output_paths()
-        #auto.relinkTextures(migrate=True)
-        self.save()
+        self._bld_scene_hooks()
+        self._set_rscene_data()
+        self._set_vscene_path()
+        self._bld_project_dir()
+
+        if (set_rdata):  self._set_rscene_renderdata()
+        if (set_output): self._set_rscene_output_paths()
+        if (save):       self.save()
+        
         return self
 
-    @classmethod
-    def is_pipelined(self):
-        self()
-        if (self.status == debug.SCENE_OK):
-            return True
-        else: return False
+    ## Decorators
+    def _validate(func):
+        ''' Validates that the current virtual scene metadata matches the active scene. '''
+        @wraps(func)
+        def check(self):
+            doc = c4d.documents.GetActiveDocument()
+            if not (self.is_tagged()): 
+                raise debug.PipelineError(0)
+            elif not (doc.GetDocumentPath() == os.path.dirname(self.file_path)):
+                raise debug.PipelineError(1)
+            elif not (doc.GetDocumentName() == os.path.basename(self.file_path)):
+                raise debug.PipelineError(1)
+            else: func(self)
+        return check
 
-    # PUSH/PULL FUNCTIONS
+    ### Public methods
+    def is_tagged(self):
+        ''' Confirms whether valid pipeline metadata tags are present in the scene. Attaches valid tags to virtual scene.
+        Returns: bool. '''
+        return self._get_rscene_hooks()[0]
 
-    # A "pull" method is called to update the Python controller when something in the scene is likely to have
-    # changed behind the frontend. The most common example is when the user opens a scene, or modifies the
-    # scene_tag directly.
-    def pull_scene(self):
-        ''' Updates this object with information from the scene_tag in the active document. '''
-        def tag_to_dict(tag_data):
-            ''' Takes a block of text from an annotation tag field and converts it to a dictionary.'''
-            a = tag_data.split('\n')
-            b = {}
-            for a_ in a:
-                kv = a_.split(':')
-                b[kv[0]] = kv[1].lstrip()
-            return b
-        # parse the scene tag string into a dictionary
-        scene_data = tag_to_dict(self.scene_tag[c4d.ANNOTATIONTAG_TEXT])
-        # populate attributes from dictionary
-        self.production   = scene_data['Production']
-        self.prod_data    = database.getProduction(self.production)
-        self.project_name = scene_data['Project']
-        self.scene_name   = scene_data['Scene']
-        self.framerate    = int(scene_data['Framerate'])
-        self.version      = int(scene_data['Version'])
-        self.rebuild_paths()
-
-    def rebuild_paths(self):
-        ''' Updates internal path data for the scene when it is moved or renamed. '''
-        self.file_name     = '{0}_{1}.c4d'.format(self.project_name, self.scene_name)
-        self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
-        self.backup_folder = os.path.join(self.file_folder, 'backup')
-        self.file_path     = os.path.join(self.file_folder, self.file_name)
-
-    # A "push" method updates the scene with information stored in the Python controller. Most frontend
-    # operations which use this object as a mapper involve a push to the scene to update it.
-    def push_scene(self):
-        ''' Updates the scene_tag with new or updated data from this object. '''
-        def dict_to_tag():
-            out_str = ''
-            out_str += 'Production: {0}\n'.format(self.production)
-            out_str += 'Project: {0}\n'.format(self.project_name)
-            out_str += 'Scene: {0}\n'.format(self.scene_name)
-            out_str += 'Framerate: {0}\n'.format(self.framerate)
-            out_str += 'Version: {0}'.format(self.version)
-            return out_str
-        #
-        if (self.is_pipelined()):
-            self.scene_tag[c4d.ANNOTATIONTAG_TEXT] = dict_to_tag()
-            return True
-        else:
-            return False
-
-    def push_output_paths(self):
-        ''' Set render output paths for this scene.'''
-        self.output_path = os.path.join(
-            self.prod_data['project'],
-            self.project_name,
-            'render_3d',
-            self.scene_name,
-            'v{0}'.format(str(self.version).zfill(3)),
-            '$take',
-            '{0}_{1}'.format(self.scene_name, '$take')
-            )
-        self.multi_path = os.path.join(
-            self.prod_data['project'],
-            self.project_name,
-            'render_3d',
-            self.scene_name,
-            'v{0}'.format(str(self.version).zfill(3)),
-            '$take_passes',
-            '{0}_{1}'.format(self.scene_name, '$take')
-            )
-        core.setOutputPaths(self.output_path, self.multi_path)
+    @_validate
+    def is_sync(self):
+        ''' Confirms whether the loaded "virtual" scene matches the active "real" scene in the user's viewport. '''
         return True
 
-    def push_renderdata(self, preset_name='Default'):
-        '''Load selected RenderData from a master library of production presets.'''
-        preset = c4d.documents.LoadDocument(PRESETS_PATH.format(self.production, preset_name), c4d.SCENEFILTER_0)
-        new_rd = preset.GetFirstRenderData()
-        core.createRenderData(new_rd, preset_name)
-        doc = c4d.documents.GetActiveDocument()
-        doc.SetActiveRenderData(new_rd)
-        return True
-
-    # BUILDERS / CREATORS
-    # These methods use the Python obj000ct as an intermediary to create new objects within Cinema4D or
-    # the filesystem    
-    def make_takes(self):
-        ''' Makes the default takes (render layers) and overrides for the specified production. '''
-        td = core.doc().GetTakeData()
-        for take_ in self.prod_data['layers']:
-            take = core.take(take_, set_active=True)
-            #take.SetChecked(True)
-            # Add the default override groups to the take
-            for og_ in core.OVERRIDE_GROUPS:
-                og = core.override(take, og_)
-                # Add the compositing tag for overriding
-                tag = og.AddTag(td, c4d.Tcompositing, mat=None)
-                tag.SetName('VISIBILITY_OVERRIDE')
-                # ... and set the default values
-                core.setCompositingTag( tag, og_ )
-        return
-
-    def make_folders(self, check_project=False):
-        ''' Makes folders for a new project. '''
-        def mkFolder(path_):
-            if not os.path.exists(path_):
-                try: os.mkdir(path_)
-                except WindowsError: FileError(3)
-
-        folder_struct = self.prod_data['folders']
-        main_folder   = os.path.join(self.prod_data['project'], self.project_name)
-
-        mkFolder(main_folder)    
-        for main, sub in folder_struct.iteritems():
-            mkFolder(os.path.join(main_folder, main))
-            for s in sub: 
-                mkFolder(os.path.join(main_folder, main, s))
-
-    def make_scene_ctrl(self):
-        ''' Makes a scene control node. Consists of a null "__SCENE__" with an annotation tag 
-        containing metadata for this object. '''
-        doc = core.doc()
-        doc.StartUndo()
-        # create null
-        scene_ctrl = c4d.BaseObject(c4d.Onull)
-        doc.InsertObject(scene_ctrl)
-        doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
-        scene_ctrl.SetName('__SCENE__')
-        # create and populate tag
-        scene_tag  = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
-        annotation = "Production: {0}\nProject: {1}\nScene: {2}\nFramerate: {3}\nVersion: {4}"
-        scene_tag[c4d.ANNOTATIONTAG_TEXT] = annotation.format(
-            self.production, 
-            self.proj_name, 
-            self.scene_name,
-            str(self.framerate), 
-            str(self.version)
-            )
-        #        
-        doc.AddUndo(c4d.UNDOTYPE_NEW, scene_tag)
-        c4d.EventAdd()
-        doc.EndUndo()
-
-        return (scene_ctrl, scene_tag)
-
-    # MISC. OPERATIONS 
+    @_validate
     def save(self):
-        ''' Saves and backs up the current scene file. '''
+        ''' Save the active scene and make a backup. '''
         def increment(filename):
             ''' This function takes a valid backup file-name and searches the destination folder for the 
             next valid version increment.  Note this is a fairly 'dumb' process, but ensures that a 
@@ -389,16 +132,13 @@ class Scene(object):
             if os.path.exists(incr_file):
                 incr_file = increment(incr_file)
             return incr_file
-        # we add a pull here in case a TD has overridden the tag manually
-        self.pull_scene()
-        self.rebuild_paths()
 
-        backup_folder = os.path.join(self.file_folder, 'backup')
-        backup_file  = os.path.join(backup_folder, self.file_name)
+        # validate before running
+        backup_file  = os.path.join(self.backup_folder, self.file_name)
         backup_path  = increment(backup_file)
 
-        if not os.path.exists(backup_folder):
-            makedirs(backup_folder)
+        if not os.path.exists(self.backup_folder):
+            makedirs(self.backup_folder)
         if not os.path.exists(self.file_folder):
             makedirs(self.file_folder)
 
@@ -408,8 +148,9 @@ class Scene(object):
         except debug.FileError:
             raise debug.FileError(0)
 
-    def rename(self, name=None, verbose=True):
-        ''' Rename the scene (with optional dialog) '''
+    @_validate
+    def rename(self, name=None):
+        ''' Rename the active scene without moving it to a new project folder.'''
         old_name = self.scene_name
         if (name == None):
             dlg = c4d.gui.RenameDialog(old_name)
@@ -418,7 +159,7 @@ class Scene(object):
             else: name = dlg
         # store the old name and update self
         self.scene_name = name
-        self.rebuild_paths()
+        self._set_vscene_path()
         # check that the new file doesn't already exist
         if os.path.isfile(self.file_path) and (verbose):
             msg = 'Warning: A scene with this name already exists -- proceed anyway? (Existing renders may be overwritten -- check your output version before rendering!)'
@@ -428,65 +169,182 @@ class Scene(object):
             elif (prompt == c4d.GEMB_R_CANCEL):
                 # restore the old scene name and exit
                 self.scene_name = old_name
-                self.rebuild_paths()
+                self._set_vscene_path()
                 return
         # set clean version, update scene_ctrl with new data, and save
         self.version = 1
-        self.push_scene()
-        self.push_output_paths()
+        self._set_rscene_data()
+        self._set_rscene_output_paths()
         self.save()
+        return True
 
+    @_validate
     def version_up(self):
-        ''' Version up the scene and save a new backup. '''
-        if not self.isPipelined(): return False
+        ''' Increment the scene's render output folder and save. '''
         self.version += 1
-        self.push_scene()
-        self.push_output_paths()
+        self._set_rscene_data()
+        self._set_rscene_output_paths()
         self.save()
+        return True
 
-    def sort(self):
-        ''' Sorts objects into takes (via override groups) using sorting logic stored in a proj database.'''
-        sort_dict = self.prod_data['sort']
-        doc = core.doc()
-        td  = doc.GetTakeData()
-        # Parse the sorting dictionary into lists of objects
-        for layer_, sort in sort_dict.iteritems():
-            for tag_ in sort['rgb']:
-                rgba_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
-            for tag_ in sort['pvo']:
-                pvo_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
-            for tag_ in sort['occ']:
-                occ_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
-            for tag_ in sort['off']:
-                off_obj = [o.GetObject() for o in core.lsTags(name=tag_, typ=c4d.Tannotation) if not tag_=='']
-            # Make the layer for sorting
-            doc.StartUndo()
-            layer = core.take(layer_, set_active=True)
-            doc.AddUndo(c4d.UNDOTYPE_NEW, layer)
-            start = layer.GetFirstOverrideGroup()
-            # Add the sorted objects to their respective render layers / takes
-            for og in core.ObjectIterator(start):
-                if og.GetName() == 'bty':
-                    pass
-                    #for obj in rgba_obj:
-                    #    doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
-                    #    og.AddToGroup(td, obj)
-                elif og.GetName() == 'pv_off':
-                    for obj in pvo_obj:
-                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
-                        og.AddToGroup(td, obj)
-                elif og.GetName() == 'black_hole':
-                    for obj in occ_obj:
-                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
-                        og.AddToGroup(td, obj)
-                elif og.GetName() == 'disable':
-                    for obj in off_obj:
-                        doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
-                        og.AddToGroup(td, obj)
-            doc.EndUndo()
+    ## Get operations (real scene)
+    def _get_rscene_hooks(self):
+        ''' Checks for hooks in the active scene. Sets virtual scene status accordingly.
+            Returns: (Bool, c4d.Tannotation) '''
+        scene_ctrl = core.ls(name='__SCENE__')
+        if (scene_ctrl == None) or (scene_ctrl == []):
+            return (False, None)
+
+        elif (len(scene_ctrl)>1):
+            self.cleanup += scene_ctrl
+            return (False, None)
+
+        elif (len(scene_ctrl)==1):
+            scene_tag = core.lsTags(name='SCENE_DATA', typ=c4d.Tannotation, obj=scene_ctrl[0])
+            if not (scene_tag):
+                self.cleanup += scene_ctrl
+                return (False, None)
+            else:
+                self.scene_ctrl = scene_ctrl[0]
+                self.scene_tag  = scene_tag[0]
+                return (True, self.scene_tag)
+        else: 
+            debug.warning("Unhandled exception in get_rscene_hooks().")
+            return (False, None)
+    
+    def _get_rscene_data(self):
+        ''' Retrieve data from active scene hooks. Populate virtual scene with that information. Performs no validation. '''
+        def tag_to_dict(tag_data):
+            ''' Takes a block of text from an annotation tag field and converts it to a dictionary.'''
+            a = tag_data.split('\n')
+            b = {}
+            for a_ in a:
+                kv = a_.split(':')
+                b[kv[0]] = kv[1].lstrip()
+            return b
+        # parse the scene tag string into a dictionary
+        scene_data = tag_to_dict(self.scene_tag[c4d.ANNOTATIONTAG_TEXT])
+        # populate attributes from dictionary
+        self.production   = scene_data['Production']
+        self.prod_data    = database.getProduction(self.production)
+        self.project_name = scene_data['Project']
+        self.scene_name   = scene_data['Scene']
+        self.framerate    = int(scene_data['Framerate'])
+        self.version      = int(scene_data['Version'])
+        self._set_vscene_path()
+        return True
+
+    ## Set operations (virtual scene)
+    def _set_vscene_path(self):
+        ''' Update internal path data for the scene when it is moved or renamed. '''
+        self.file_name     = '{0}_{1}.c4d'.format(self.project_name, self.scene_name)
+        self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
+        self.backup_folder = os.path.join(self.file_folder, 'backup')
+        self.file_path     = os.path.join(self.file_folder, self.file_name)
+
+    ## Set operations (real scene)
+    def _set_rscene_data(self, save=True):
+        ''' Push data from the virtual scene to the hooks in the active scene. Performs no safety check prior to running!
+            save: saves the scene after setting the data. '''
+        def dict_to_tag():
+            out_str = ''
+            out_str += 'Production: {0}\n'.format(self.production)
+            out_str += 'Project: {0}\n'.format(self.project_name)
+            out_str += 'Scene: {0}\n'.format(self.scene_name)
+            out_str += 'Framerate: {0}\n'.format(self.framerate)
+            out_str += 'Version: {0}'.format(self.version)
+            return out_str
+        #
+        if (self.is_tagged()):
+            self.scene_tag[c4d.ANNOTATIONTAG_TEXT] = dict_to_tag()
+            return True
+        else:
+            return False
+
+    def _set_rscene_output_paths(self):
+        ''' Generate render output paths from metadata and sets them in the active scene. '''
+        output_path = os.path.join(
+            self.prod_data['project'],
+            self.project_name,
+            'render_3d',
+            self.scene_name,
+            'v{0}'.format(str(self.version).zfill(3)),
+            '$take',
+            '{0}_{1}'.format(self.scene_name, '$take')
+            )
+        multi_path = os.path.join(
+            self.prod_data['project'],
+            self.project_name,
+            'render_3d',
+            self.scene_name,
+            'v{0}'.format(str(self.version).zfill(3)),
+            '$take_passes',
+            '{0}_{1}'.format(self.scene_name, '$take')
+            )
+        core.setOutputPaths(output_path, multi_path)
+        return True
+
+    def _set_rscene_renderdata(self, preset):
+        ''' Set the RenderData in the active scene to the passed production preset
+            preset (str): the name of a production render preset '''
+        doc        = c4d.documents.GetActiveDocument()
+        preset_loc = PRESETS_PATH.format(self.production, preset)
+        preset_doc = c4d.documents.LoadDocument(preset_loc, c4d.SCENEFILTER_0)
+        new_rd     = preset_doc.GetFirstRenderData()
+
+        core.createRenderData(new_rd, preset)
+        doc.SetActiveRenderData(new_rd)
+        return True
+
+    # Private constructors & deconstructors
+    def _bld_project_dir(self):
+        ''' Make a complete project directory tree for a new project. (Includes all project folders, not just C4D.)'''
+        def mk_dir(path_):
+            if not os.path.exists(path_):
+                try: os.mkdir(path_)
+                except WindowsError: FileError(3)
+
+        folder_struct = self.prod_data['folders']
+        main_folder   = os.path.join(self.prod_data['project'], self.project_name)
+
+        mk_dir(main_folder)    
+        for main, sub in folder_struct.iteritems():
+            mk_dir(os.path.join(main_folder, main))
+            for s in sub: 
+                mk_dir(os.path.join(main_folder, main, s))
+        return True
+
+    def _bld_rscene_hooks(self):
+        ''' Build new hooks in the active scene. Cleanup of existing hooks handled separately (see constructor method documentation.)'''
+        doc = c4d.documents.GetActiveDocument()
+        doc.StartUndo()
+
+        # create null
+        self.scene_ctrl = c4d.BaseObject(c4d.Onull)
+        doc.InsertObject(scene_ctrl)
+        doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
+        scene_ctrl.SetName('__SCENE__')
+        # create and populate tag
+        self.scene_tag  = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
+
+        doc.AddUndo(c4d.UNDOTYPE_NEW, scene_tag)
+        c4d.EventAdd()
+        doc.EndUndo()
+        return True
+
+    def _clr_rscene_hooks(self, force=False):
+        ''' Clear all hooks from the active scene. 
+            force: forces the removal of existing hooks (if any) '''
+        no_cleanup = self._get_rscene_hooks()[0]
+        if (no_cleanup) and (force):
+            self.scene_ctrl.Remove()
+        elif len(self.cleanup):
+            for obj in self.cleanup:
+                obj.Remove()
+        return True
 
 def clearAllMultipasses():
-    ''' Clears all multipass objects from the current RenderData '''
+    ''' Clear all multipass objects from the current RenderData '''
     doc = c4d.documents.GetActiveDocument()
     rdata = doc.GetActiveRenderData()
     doc.StartUndo()
@@ -497,7 +355,7 @@ def clearAllMultipasses():
     return True
 
 def clearObjectBuffers():
-    ''' Clears all object buffers from the current RenderData '''
+    ''' Clear all object buffers from the current RenderData '''
     doc = c4d.documents.GetActiveDocument()
     rdata = doc.GetActiveRenderData()
     doc.StartUndo()
@@ -510,7 +368,7 @@ def clearObjectBuffers():
     return True
 
 def enableObjectBuffer(obid):
-    ''' Inserts an object buffer into the active render data, with the passed id'''
+    ''' Insert an object buffer into the active render data, with the passed id'''
     doc = c4d.documents.GetActiveDocument()
     rd = doc.GetActiveRenderData()
     ob = c4d.BaseList2D(c4d.Zmultipass)
@@ -520,7 +378,7 @@ def enableObjectBuffer(obid):
     c4d.EventAdd()
 
 def createObjectBuffers(consider_takes=False):
-    ''' Parses the scene for all compositing tags with object buffers enabled, then creates them.'''    
+    ''' Parse the scene for all compositing tags with object buffers enabled, then creates them.'''    
     doc = c4d.documents.GetActiveDocument()
     td = doc.GetTakeData()
     # clear all existing object buffers
@@ -555,7 +413,7 @@ def createObjectBuffers(consider_takes=False):
             c4d.EventAdd()
 
 def createUtilityPass(take=None):
-    ''' Creates a utility pass version of the passed take. If no take is passed, it will create one
+    ''' Create a utility pass version of the passed take. If no take is passed, it will create one
         for the main take.'''
     doc = c4d.documents.GetActiveDocument()
     td  = doc.GetTakeData()
@@ -583,7 +441,7 @@ def createUtilityPass(take=None):
     return (take, child_rdata)
 
 def _getObjectBufferIDs():
-    ''' Private. Gets a set of all unique Object Buffer ids set in compositing tags in the scene. '''
+    ''' Private. Get a set of all unique Object Buffer ids set in compositing tags in the scene. '''
     ids = []
     channel_enable = 'c4d.COMPOSITINGTAG_ENABLECHN{}'
     channel_id     = 'c4d.COMPOSITINGTAG_IDCHN{}'
