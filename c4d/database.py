@@ -59,8 +59,14 @@ def getAllProductions():
 def getAllProjects(prod_):
     ''' Gets all projects associated with a production.'''
     prod = getProduction(prod_)
-    return [p for p in os.listdir(prod['project']) if os.path.isdir(os.path.join(prod['project'], p))]
-
+    #return [p for p in os.listdir(prod['project']) if os.path.isdir(os.path.join(prod['project'], p))]
+    dirs = os.listdir(prod['project'])
+    proj_list = []
+    for d in dirs:
+        if (os.path.isdir(os.path.join(prod['project'], d))):
+            proj_list.append(d)
+    return sorted(proj_list)
+    
 def getTeamDatabase(prod_):
     ''' Gets the team database for a production. '''
     prod_db  = getProduction(prod_)

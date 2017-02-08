@@ -25,7 +25,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	SECOND_TAB_NAME       "Rendering";
 	LBL_OUTPUT_PATHS      "Setup render output";
 	LBL_TAKE_UTILS        "Take / Render Layer utilities";
-	BTN_SETOUTPUT         "Project default settings";
+	BTN_SETOUTPUT         "Use default render folders";
 	BTN_PNG_OUTPUT        "PNG output";
 	BTN_EXR_OUTPUT        "EXR output";
 	BTN_NEWTAKE           "Make New Take";

@@ -3,9 +3,9 @@
 """ ESPNPipelineMenu.pyp: A Python plugin for Cinema 4D housing various pipeline utilities. """
 
 __author__     = "Mark Rohrer"
-__copyright__  = "Copyright 2016/2017, ESPN Productions"
+__copyright__  = "Copyright 2017, ESPN Productions"
 __credits__    = ["Mark Rohrer", "Martin Weber"]
-__license__    = "None"
+__license__    = "Educational use only"
 __version__    = "1.1-dev"
 __maintainer__ = "Mark Rohrer"
 __email__      = "mark.rohrer@espn.com"
@@ -30,7 +30,7 @@ reload(database)
 reload(submit)
 reload(auto)
 
-debug.info("Loaded ESPN frontend plugin for C4D", __version__)
+debug.info("Loaded ESPN Pipeline plug-in for C4D", __version__)
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -121,16 +121,23 @@ class ESPNMenu(gui.GeDialog):
         self.LoadDialogResource(ESPNPipelineMenu)
         self.retrieve_prod_list()
 
-        if (scene.Scene.is_pipelined()):
-            self.this_scene = scene.Scene()
-            self.init_populate(existing=True)
-        else: 
-            self.init_populate(existing=False)
+        self.this_scene = scene.MetaScene()
+        self.this_doc   = c4d.documents.GetActiveDocument()
+        self.populate()
 
         self.SetInt32(RDO_FRAMERATE, RDO_FRAMERATE_30)
         self.toggle_matchup()
 
+        self.SetTimer(500)
+
         return True
+
+    def Timer(self, msg):
+        if not (c4d.documents.GetActiveDocument() == self.this_doc):
+            self.this_scene = scene.MetaScene()
+            self.populate()
+            self.this_doc   = c4d.documents.GetActiveDocument()
+        #self.populate()
 
     def Command(self, id, msg):
         # "Use existing project" checkbox
@@ -200,7 +207,7 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     ### TAB 01 FUNCTIONS #########################################################################
-    def init_populate(self, existing=False):
+    def populate(self):
         ''' Populates the UI with initial values.
             existing: Pulls in data from a pipelined scene (if applicable).'''
         # set default values
@@ -209,7 +216,7 @@ class ESPNMenu(gui.GeDialog):
         self.Enable(TXT_PREVIEW_PROJ, False)
         self.Enable(TXT_PREVIEW_FILE, False)
 
-        if (existing):
+        if (self.this_scene.is_tagged()):
             doc = c4d.documents.GetActiveDocument()
             fps = doc.GetFps()
             # get id of current production from the dict value
@@ -274,17 +281,6 @@ class ESPNMenu(gui.GeDialog):
                 # .. & refresh previews
                 self.refresh_ui(preview=True, projects=False)
 
-    def check_pipeline_status(func):
-        def run_check(self):
-            self.this_scene = scene.Scene()
-            if (self.this_scene.status == debug.SCENE_OK):
-                return func(self)
-            elif (self.this_scene.status == debug.SCENE_NEW):
-                raise debug.PipelineError(0)
-            elif (self.this_scene.status == debug.SCENE_BROKEN):
-                raise debug.PipelineError(0)
-        return run_check
-
     def toggle_prod_selected(self, bool_):
         ''' Since the UI defaults to not having a production selected, most fields are disabled.
             When a production *is* selected, this method enables the dependent fields.'''
@@ -330,15 +326,16 @@ class ESPNMenu(gui.GeDialog):
         scene_name = self.GetString(TXT_SCENE_NAME)
         framerate  = self.GetInt32(RDO_FRAMERATE)-10000
         # cancel if any required fields are empty
-        self.this_scene = scene.Scene()
-        self.this_scene.init_new(
-            prod = prod_name,
-            proj = proj_name,
-            scene= scene_name,
-            framerate=framerate,
-            version=1,
-            force=True
-            )
+        self.this_scene = scene.MetaScene.from_data
+        (
+            {
+            'production'  : prod_name,
+            'project_name': proj_name,
+            'scene_name'  : scene_name,
+            'framerate'   : framerate,
+            'version'     : 1
+            }
+        )
         return True
 
     def help(self, tab):
@@ -347,9 +344,8 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     ### TAB 02 FUNCTIONS #########################################################################
-    @check_pipeline_status
     def push_output_paths(self):
-        self.this_scene.push_output_paths()
+        self.this_scene._set_rscene_output_paths()
 
     def submit_to_farm(self):
         dlg = submit.SubmissionDialog()
@@ -385,7 +381,6 @@ class ESPNMenu(gui.GeDialog):
         for k,v in values.iteritems():
             core.changeColor(k.upper(), v['color'], exact=False)
 
-    @check_pipeline_status
     def retrieve_swatches(self):
         home_tricode = self.GetString(TXT_HOME_TRICODE)
         away_tricode = self.GetString(TXT_AWAY_TRICODE)
@@ -441,19 +436,16 @@ class ESPNMenu(gui.GeDialog):
         core.createMaterial(name)
 
     ### SAVE / RENAME SCENE TAB ##################################################################
-    @check_pipeline_status
     def save(self):
         self.this_scene.save()
         return True
 
-    @check_pipeline_status
     def rename(self):
         self.this_scene.rename()
         return True
 
-    @check_pipeline_status
     def version_up(self):
-        scn.version_up()
+        self.this_scene.version_up()
         return True
 
     def createObjectBuffers(self):

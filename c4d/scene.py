@@ -36,6 +36,7 @@ class MetaScene(object):
     scene_ctrl   = None
     scene_tag    = None
     cleanup      = []
+    previous     = None
 
     ### Constructors
     def __init__(self):
@@ -77,33 +78,29 @@ class MetaScene(object):
         
         return self
 
-    ## Decorators
-    def _validate(func):
-        ''' Validates that the current virtual scene metadata matches the active scene. '''
-        @wraps(func)
-        def check(self):
-            doc = c4d.documents.GetActiveDocument()
-            if not (self.is_tagged()): 
-                raise debug.PipelineError(0)
-            elif not (doc.GetDocumentPath() == os.path.dirname(self.file_path)):
-                raise debug.PipelineError(1)
-            elif not (doc.GetDocumentName() == os.path.basename(self.file_path)):
-                raise debug.PipelineError(1)
-            else: func(self)
-        return check
-
     ### Public methods
     def is_tagged(self):
         ''' Confirms whether valid pipeline metadata tags are present in the scene. Attaches valid tags to virtual scene.
         Returns: bool. '''
         return self._get_rscene_hooks()[0]
 
-    @_validate
     def is_sync(self):
         ''' Confirms whether the loaded "virtual" scene matches the active "real" scene in the user's viewport. '''
         return True
 
-    @_validate
+    ## Push/pull synchronization operations
+    def pull_from_scene(self):
+        self._get_rscene_hooks()
+        self._get_rscene_data()
+        self._set_vscene_path()
+        return True
+
+    def push_to_scene(self):
+        self._get_rscene_hooks()
+        self._set_rscene_data()
+        self._set_vscene_path()
+        return True
+
     def save(self):
         ''' Save the active scene and make a backup. '''
         def increment(filename):
@@ -148,7 +145,6 @@ class MetaScene(object):
         except debug.FileError:
             raise debug.FileError(0)
 
-    @_validate
     def rename(self, name=None):
         ''' Rename the active scene without moving it to a new project folder.'''
         old_name = self.scene_name
@@ -161,7 +157,7 @@ class MetaScene(object):
         self.scene_name = name
         self._set_vscene_path()
         # check that the new file doesn't already exist
-        if os.path.isfile(self.file_path) and (verbose):
+        if os.path.isfile(self.file_path):
             msg = 'Warning: A scene with this name already exists -- proceed anyway? (Existing renders may be overwritten -- check your output version before rendering!)'
             prompt = c4d.gui.MessageDialog(msg, c4d.GEMB_OKCANCEL)
             if (prompt == c4d.GEMB_R_OK):
@@ -178,7 +174,6 @@ class MetaScene(object):
         self.save()
         return True
 
-    @_validate
     def version_up(self):
         ''' Increment the scene's render output folder and save. '''
         self.version += 1
@@ -222,6 +217,8 @@ class MetaScene(object):
                 kv = a_.split(':')
                 b[kv[0]] = kv[1].lstrip()
             return b
+        # store a copy of the previous version of this object
+        self.previous = self
         # parse the scene tag string into a dictionary
         scene_data = tag_to_dict(self.scene_tag[c4d.ANNOTATIONTAG_TEXT])
         # populate attributes from dictionary
