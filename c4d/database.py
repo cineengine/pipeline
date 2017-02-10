@@ -66,6 +66,11 @@ def getAllProjects(prod_):
         if (os.path.isdir(os.path.join(prod['project'], d))):
             proj_list.append(d)
     return sorted(proj_list)
+
+def getAllPresets(prod_):
+    ''' Gets all render presets associated with a production.'''
+    prod = getProduction(prod_)
+    return sorted(prod["presets"])
     
 def getTeamDatabase(prod_):
     ''' Gets the team database for a production. '''

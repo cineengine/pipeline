@@ -9,6 +9,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	CHK_EXISTING          "Use existing project";
 	LBL_SCENE_NAME        "Scene Name:";
 	LBL_FRAMERATE         "Framerate:";
+	RDO_FRAMERATE_24      "24 fps";
 	RDO_FRAMERATE_30      "30 fps";
 	RDO_FRAMERATE_60      "60 fps";
 	LBL_PREVIEW_NULL      " ";
@@ -25,7 +26,7 @@ DIALOGSTRINGS ESPNPipelineMenu
 	SECOND_TAB_NAME       "Rendering";
 	LBL_OUTPUT_PATHS      "Setup render output";
 	LBL_TAKE_UTILS        "Take / Render Layer utilities";
-	BTN_SETOUTPUT         "Use default render folders";
+	BTN_SETOUTPUT         "Reset Render Folders";
 	BTN_PNG_OUTPUT        "PNG output";
 	BTN_EXR_OUTPUT        "EXR output";
 	BTN_NEWTAKE           "Make New Take";
