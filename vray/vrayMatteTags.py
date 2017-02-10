@@ -1,9 +1,9 @@
 from maya import cmds
 from maya import OpenMayaUI as omui 
 from maya import mel
-from PySide2.QtCore import * 
-from PySide2.QtWidgets import * 
-from shiboken2 import wrapInstance 
+from PySide.QtCore import * 
+from PySide.QtGui import * 
+from shiboken import wrapInstance 
 
 '''
 vrayMatteTags.py
