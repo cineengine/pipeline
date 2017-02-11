@@ -39,8 +39,8 @@ class MetaScene(object):
     previous     = None
 
     ### Constructors
-    def __init__(self):
-        if (self.is_tagged()):
+    def __init__(self, null=False):
+        if (self.is_tagged()) and not (null):
             self._get_rscene_data()
             self._set_vscene_path()
         self.is_sync()

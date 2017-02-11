@@ -110,35 +110,24 @@ DRP_PROJ_NAME_START_ID=80000
 DRP_PROD_NAME_START_ID=90000
 
 class ESPNMenu(gui.GeDialog):
-
-
     def __init__(self):
-        self.this_scene = scene.MetaScene()
-        self.this_doc   = c4d.documents.GetActiveDocument()
-
-        self.prod_dict = {}
-        self.prod_id   = DRP_PROD_NAME_START_ID
-        self.prod_dict[self.prod_id] = ''
-        self.reset_context_dropdowns()
-
-        self.proj_use_existing= False
-        self.prod_selected    = False
-        self.matchup_selected = False
-
+        self.null_scene = scene.MetaScene(null=True)
+        self.live_scene = scene.MetaScene()
+        self.live_doc   = c4d.documents.GetActiveDocument()
+        self.setEmptyDropdowns(
+            prod=True, 
+            proj=True, 
+            pres=True
+            )
+    ### GeDialog Overrides ###################################################
     def CreateLayout(self):
         self.LoadDialogResource(ESPNPipelineMenu)
-        self.Enable(TXT_PREVIEW_PROJ, False)
-        self.Enable(TXT_PREVIEW_FILE, False)
 
-        self.retrieve_prod_list()
-        self.populate()
-        
-        #self.refresh_preview_text()
+        self.pullSceneData()
+        self.setDefaultState()
 
-        #self.toggle_matchup()
-
+        self.populateNew()
         #self.SetTimer(500)
-
         return True
 
     #def Timer(self, msg):
@@ -152,7 +141,7 @@ class ESPNMenu(gui.GeDialog):
             self.toggle_use_existing_project()
         # "Production" dropdown
         elif (id == DRP_PROD_NAME):
-            self.changed_production()
+            self.onChangedProduction()
             #self.refresh_preview()
         # Text fields or "project" dropdown
         elif (id == TXT_PROJ_NAME or
@@ -215,39 +204,184 @@ class ESPNMenu(gui.GeDialog):
             self.createObjectBuffers()
         return True
 
-    ### TAB 01 FUNCTIONS #####################################################
-    def populate(self):
-        ''' Populates the UI with initial values. Pulls in data from a 
-        pipelined scene (if applicable).'''
-        # set default values
-        self.toggle_prod_selected(False)
-        self.SetBool(CHK_EXISTING, False)
-        self.SetInt32(RDO_FRAMERATE, RDO_FRAMERATE_30)
+    ### Populators ###########################################################
+    def populateNew(self):
+        self.setProduction( self.prod_id )
+        self.setProject( self.proj_id )
+        self.setScene( self.live_scene.scene_name )
+        self.setFramerate( self.live_scene.framerate )
+        self.setPreset()
+        return True
 
-        if (self.this_scene.is_tagged()):
-            fps = c4d.documents.GetActiveDocument().GetFps()
-            # get id of current production from the dict value
-            for k,v in self.prod_dict.iteritems():
-                if (v == self.this_scene.production):
-                    self.prod_id = k
+    def populateProductions(self):
+        self.pullProductionList()
+        # populate production dropdown
+        for idx in self.productions:
+            self.AddChild(DRP_PROD_NAME, idx, self.productions[idx])
+        self.setProduction(DRP_PROD_NAME_START_ID)
+        return True
 
-            # set the production dropdown and get the project dropdown ready
-            self.SetInt32(DRP_PROD_NAME, self.prod_id)
-            self.SetBool(CHK_EXISTING, True)
-            self.retrieve_projects()
-            # get id of current project from the dict value
-            self.proj_id = DRP_PROJ_NAME_START_ID
-            for k,v in self.proj_dict.iteritems():
-                if (v == self.this_scene.project_name):
+    def populateProjects(self):
+        # populate project dropdown
+        for idx in self.projects:
+            self.AddChild(DRP_PROJ_NAME, idx, self.projects[idx])
+        self.setProject(DRP_PROJ_NAME_START_ID)
+        return True
+
+    def populatePresets(self):
+        pass
+
+    ### Setters ##############################################################
+    def setDefaultState(self):
+        self.Enable(TXT_PREVIEW_PROJ, False)
+        self.Enable(TXT_PREVIEW_FILE, False)
+
+        self.toggleProductionSelected(False)
+        self.toggleProjectSelected(False)
+        self.setFramerate(30)
+
+        self.populateProductions()
+
+    def setProduction(self, idx):
+        self.SetInt32(DRP_PROD_NAME, idx)
+        self.onChangedProduction()
+        return True
+
+    def setProject(self, idx):
+        self.SetInt32(DRP_PROJ_NAME, idx)
+        self.onChangedProject()
+        return True
+
+    def setScene(self, scene_name):
+        self.SetString(TXT_SCENE_NAME, scene_name)
+        self.onChangedTextField()
+        return True
+
+    def setFramerate(self, frate):
+        if not (frate == 24) or (frate == 30) or (frate == 60):
+            return False
+        self.SetInt32(RDO_FRAMERATE, 10000+frate)
+        return True
+
+    def setPreset(self):
+        pass
+
+    def setPreviewText(self):
+        pass
+
+    def setEmptyDropdowns(self, prod=False, proj=False, pres=False):
+        if (prod):
+            self.prod_selected = False
+            self.productions   = {}
+            self.prod_id       = DRP_PROD_NAME_START_ID
+        if (proj):
+            self.proj_existing = False
+            self.projects      = {}
+            self.proj_id       = DRP_PROJ_NAME_START_ID
+        if (pres):
+            self.pres_selected = False
+            self.presets       = {}
+            self.pres_id       = DRP_PRES_NAME_START_ID
+        return True
+
+    ### Getters ##############################################################
+    def getProduction(self):
+        self.prod_id = self.GetInt32(DRP_PROD_NAME)
+        return self.prod_id
+
+    def getProject(self):
+        pass
+
+    def getScene(self):
+        return self.GetString(TXT_SCENE_NAME)
+
+    def getFramerate(self):
+        pass
+
+    ### Togglers #############################################################
+    def toggleProductionSelected(self, flag):
+        ''' Since the UI defaults to not having a production selected, most
+        fields are disabled. When a production *is* selected, this method
+        enables the dependent fields.'''
+        self.Enable(CHK_EXISTING, flag)
+        self.Enable(DRP_PROJ_NAME, flag)
+        self.Enable(TXT_PROJ_NAME, flag)
+        self.Enable(TXT_SCENE_NAME, flag)
+        self.Enable(RDO_FRAMERATE, flag)
+        self.prod_selected = flag
+        return True
+
+    def toggleProjectSelected(self, flag):
+        pass
+
+    def toggleMatchup(self):
+        pass
+
+    ### Refreshers ###########################################################
+    def onChangedProduction(self):
+        if not (self.getProduction() == DRP_PROD_NAME_START_ID):
+            self.toggleProductionSelected(True)
+            self.populateProjects()
+            self.populatePresets()
+            self.setPreviewText()
+        else:
+            self.toggleProductionSelected(False)
+        return True
+
+    def onChangedProject(self):
+        self.setPreviewText()
+        return True
+
+    def onChangedPreset(self):
+        pass
+
+    def onChangedTextField(self):
+        self.setPreviewText()
+        return True
+
+    ### Pullers ##############################################################
+    def pullSceneData(self):
+        self.live_scene = scene.MetaScene()
+        self.prod_id    = DRP_PROD_NAME_START_ID
+        self.proj_id    = DRP_PROJ_NAME_START_ID
+        # Exit out if the scene isn't tagged
+        if not (self.live_scene.is_tagged()):
+            return False
+        # Get the index of the production
+        for k,v in self.productions.iteritems():
+            if (v == self.live_scene.production):
+                self.prod_id = k
+        try:
+            # Get the index of the project
+            self.pullProjectList()
+            for k,v in self.projects.iteritems():
+                if (v == self.live_scene.project_name):
                     self.proj_id = k
+        except KeyError: pass
+        return True
 
-            # set the project dropdown
-            self.SetInt32(DRP_PROJ_NAME, self.proj_id)
-            self.Enable(TXT_PROJ_NAME, False)
-            # set the scene name and framerate
-            self.SetString(TXT_SCENE_NAME, self.this_scene.scene_name)
-            self.SetInt32(RDO_FRAMERATE, 10000+fps)
-            self.toggle_prod_selected(True)
+    def pullProductionList(self):
+        # generate a dictionary with gui ID as key and name as value
+        self.setEmptyDropdowns(prod=True)
+        idx = DRP_PROD_NAME_START_ID
+        self.productions[idx] = ''
+        for prod in database.getAllProductions():
+            idx += 1
+            self.productions[idx] = prod
+        return True
+
+    def pullProjectList(self):
+        # generate a dictionary with gui ID as key and name as value
+        idx = DRP_PROJ_NAME_START_ID
+        for proj in database.getAllProjects(self.productions[self.prod_id]):
+            idx += 1
+            self.projects[idx] = proj
+            #print "retrieve_projects(): {}".format(id_)
+        return True
+
+    def pullRenderPresets(self):
+        pass
+
 
     def validate_fields(self):
         pass
@@ -335,25 +469,12 @@ class ESPNMenu(gui.GeDialog):
         self.SetString(TXT_PREVIEW_FILE, scene_prev)
 
     def retrieve_prod_list(self):
-        # generate a dictionary with gui ID as key and name as value
-        id_ = DRP_PROD_NAME_START_ID
-        for prod in database.getAllProductions():
-            id_ += 1
-            self.prod_dict[id_] = prod
-        # tab1_populate production list
-        for id_ in self.prod_dict:
-            self.AddChild(DRP_PROD_NAME, id_, self.prod_dict[id_])
+        #DEPRECATED
+        pass
 
     def retrieve_projects(self):
-        # generate a dictionary with gui ID as key and name as value
-        id_ = DRP_PROJ_NAME_START_ID
-        for proj in database.getAllProjects(self.prod_dict[self.prod_id]):
-            id_ += 1
-            self.proj_dict[id_] = proj
-            #print "retrieve_projects(): {}".format(id_)
-        # tab1_populate project list
-        for id_ in self.proj_dict:
-            self.AddChild(DRP_PROJ_NAME, id_, self.proj_dict[id_])
+        #DEPRECATED
+        pass
 
     def retrieve_presets(self):
         id_ = DRP_PRES_NAME_START_ID
@@ -365,19 +486,8 @@ class ESPNMenu(gui.GeDialog):
             self.AddChild(DRP_PRES_NAME, id_, self.pres_dict[id_])
 
     def toggle_prod_selected(self, bool_):
-        ''' Since the UI defaults to not having a production selected, most
-        fields are disabled. When a production *is* selected, this method
-        enables the dependent fields.'''
-        self.prod_selected = bool_
-        self.Enable(CHK_EXISTING, bool_)
-        self.Enable(DRP_PROJ_NAME, bool_)
-        self.Enable(TXT_PROJ_NAME, bool_)
-        self.Enable(TXT_SCENE_NAME, bool_)
-        self.Enable(RDO_FRAMERATE, bool_)
-        if (bool_ == True):
-            chk = self.GetBool(CHK_EXISTING)
-            self.Enable(DRP_PROJ_NAME, chk)
-            self.Enable(TXT_PROJ_NAME, 1-chk) 
+        #deprecated
+        pass
 
     def toggle_matchup(self):
         chk = self.GetBool(IS_MATCHUP)
