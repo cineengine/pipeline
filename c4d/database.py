@@ -90,12 +90,12 @@ def getTeam(prod_, tricode, squelch=False):
     ''' Gets a team from a production, based on tricode or full name.'''
     team_db = getTeamDatabase(prod_)
     for k,v in team_db.iteritems():
-        if k == tricode:
+        if (tricode == k):
             return team_db[k]
         elif ('{0} {1}'.format(team_db[k]['city'], team_db[k]['nick']) == tricode):
             return team_db[k]
     # if it gets this far, the team wasn't found in the database.
-    raise debug.DatabaseError(2, alert=1-squelch)
+    #raise debug.DatabaseError(2, alert=1-squelch)
 
 def getAllTeams(prod_, name='tricode'):
     ''' Gets a list of all teams for a given production. '''
@@ -126,7 +126,6 @@ def getTeamColors(prod_, tricode, squelch=False):
         'tertiary': c4d.Vector(*convertColor(team['tertiary']))
         }
     return ret_colors
-
 
 def isTricode(prod_, tricode):
     try:

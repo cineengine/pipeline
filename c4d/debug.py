@@ -37,6 +37,14 @@ class FileError(BaseError):
         3: 'Could not create one or more project folders.'
     }
 
+class UIError(BaseError):
+    alert_map = {
+        0: 'Selected production could not be validated. Check the dropdown and try again.',
+        1: 'Selected project could not be validated. Check the dropdown and try again.',
+        2: 'Selected scene name could not be validated. Check the field and try again.',
+        3: 'Selected framerate could not be validated. Check the field and try again.'
+    }
+
 class PipelineError(BaseError):
     alert_map = {
         0: 'No valid __SCENE__ object found. Has this scene been set up in the pipeline? If not, run the pipeline setup and try again.',

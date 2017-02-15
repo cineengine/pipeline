@@ -43,10 +43,25 @@ class MetaScene(object):
         if (self.is_tagged()) and not (null):
             self._get_rscene_data()
             self._set_vscene_path()
-        self.is_sync()
+        #self.is_sync()
+
+    def __repr__(self):
+        _repr  = 'PRODUCTION: {0}\n'
+        _repr += 'PROJECT: {1}\n'
+        _repr += 'SCENE: {2}\n'
+        _repr += 'FRAMERATE: {3}\n'
+        _repr += 'VERSION: {4}\n'
+
+        return _repr.format(
+            self.production,
+            self.project_name,
+            self.scene_name,
+            self.framerate,
+            self.version
+            )
 
     @classmethod
-    def from_data(self, set_output=False, set_rdata=False, save=False, **data):
+    def from_data(self, data, set_output=False, set_frate=False, set_rdata=False, save=False):
         ''' Create a new scene from a passed dictionary of values (data).
         set_output (bool): set render output paths on the real scene
         set_rdata (bool): apply the default renderdata preset for this production
@@ -57,32 +72,33 @@ class MetaScene(object):
         data['framerate'] (int): the framerate of the new scene 
         data['version'] (int): the version of the new scene '''
 
-        self()
-        if (self.is_tagged()):
-            self._clr_scene_hooks()
+        this_scene = self()
+        if (this_scene.is_tagged()):
+            this_scene._clr_rscene_hook(force=True)
 
-        self.production   = data['production']
-        self.project_name = data['project_name']
-        self.scene_name   = data['scene_name']
-        self.framerate    = data['framerate']
-        self.version      = data['version']
+        this_scene.production   = data['production']
+        this_scene.project_name = data['project_name']
+        this_scene.scene_name   = data['scene_name']
+        this_scene.framerate    = data['framerate']
+        this_scene.version      = data['version']
 
-        self._bld_scene_hooks()
-        self._set_rscene_data()
-        self._set_vscene_path()
-        self._bld_project_dir()
+        this_scene._bld_rscene_hook()
+        this_scene._set_rscene_data()
+        this_scene._set_vscene_path()
+        this_scene._bld_project_dir()
 
-        if (set_rdata):  self._set_rscene_renderdata()
-        if (set_output): self._set_rscene_output_paths()
-        if (save):       self.save()
+        if (set_rdata):  this_scene._set_rscene_renderdata()
+        if (set_output): this_scene._set_rscene_output_paths()
+        if (set_frate):  this_scene._set_rscene_framerate()
+        if (save):       this_scene.save()
         
-        return self
+        return this_scene
 
     ### Public methods
     def is_tagged(self):
         ''' Confirms whether valid pipeline metadata tags are present in the scene. Attaches valid tags to virtual scene.
         Returns: bool. '''
-        return self._get_rscene_hooks()[0]
+        return self._get_rscene_hook()[0]
 
     def is_sync(self):
         ''' Confirms whether the loaded "virtual" scene matches the active "real" scene in the user's viewport. '''
@@ -90,13 +106,13 @@ class MetaScene(object):
 
     ## Push/pull synchronization operations
     def pull_from_scene(self):
-        self._get_rscene_hooks()
+        self._get_rscene_hook()
         self._get_rscene_data()
         self._set_vscene_path()
         return True
 
     def push_to_scene(self):
-        self._get_rscene_hooks()
+        self._get_rscene_hook()
         self._set_rscene_data()
         self._set_vscene_path()
         return True
@@ -183,7 +199,7 @@ class MetaScene(object):
         return True
 
     ## Get operations (real scene)
-    def _get_rscene_hooks(self):
+    def _get_rscene_hook(self):
         ''' Checks for hooks in the active scene. Sets virtual scene status accordingly.
             Returns: (Bool, c4d.Tannotation) '''
         scene_ctrl = core.ls(name='__SCENE__')
@@ -204,7 +220,7 @@ class MetaScene(object):
                 self.scene_tag  = scene_tag[0]
                 return (True, self.scene_tag)
         else: 
-            debug.warning("Unhandled exception in get_rscene_hooks().")
+            debug.warning("Unhandled exception in get_rscene_hook().")
             return (False, None)
     
     def _get_rscene_data(self):
@@ -220,6 +236,7 @@ class MetaScene(object):
         # store a copy of the previous version of this object
         self.previous = self
         # parse the scene tag string into a dictionary
+        self._get_rscene_hook()
         scene_data = tag_to_dict(self.scene_tag[c4d.ANNOTATIONTAG_TEXT])
         # populate attributes from dictionary
         self.production   = scene_data['Production']
@@ -240,7 +257,7 @@ class MetaScene(object):
         self.file_path     = os.path.join(self.file_folder, self.file_name)
 
     ## Set operations (real scene)
-    def _set_rscene_data(self, save=True):
+    def _set_rscene_data(self):
         ''' Push data from the virtual scene to the hooks in the active scene. Performs no safety check prior to running!
             save: saves the scene after setting the data. '''
         def dict_to_tag():
@@ -257,6 +274,15 @@ class MetaScene(object):
             return True
         else:
             return False
+
+    def _set_rscene_framerate(self):
+        ''' Sets the framerate in the project settings as well as the current RenderData'''
+        doc = c4d.documents.GetActiveDocument()
+        rd  = doc.GetActiveRenderData()
+        doc.SetFps(self.framerate)
+        rd[c4d.RDATA_FRAMERATE] = self.framerate
+        c4d.EventAdd()
+        return True
 
     def _set_rscene_output_paths(self):
         ''' Generate render output paths from metadata and sets them in the active scene. '''
@@ -311,28 +337,31 @@ class MetaScene(object):
                 mk_dir(os.path.join(main_folder, main, s))
         return True
 
-    def _bld_rscene_hooks(self):
+    def _bld_rscene_hook(self):
         ''' Build new hooks in the active scene. Cleanup of existing hooks handled separately (see constructor method documentation.)'''
         doc = c4d.documents.GetActiveDocument()
         doc.StartUndo()
 
         # create null
-        self.scene_ctrl = c4d.BaseObject(c4d.Onull)
+        scene_ctrl = c4d.BaseObject(c4d.Onull)
         doc.InsertObject(scene_ctrl)
         doc.AddUndo(c4d.UNDOTYPE_NEW, scene_ctrl)
         scene_ctrl.SetName('__SCENE__')
         # create and populate tag
-        self.scene_tag  = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
+        scene_tag  = core.tag(scene_ctrl, typ=c4d.Tannotation, name='SCENE_DATA')[0]
 
         doc.AddUndo(c4d.UNDOTYPE_NEW, scene_tag)
         c4d.EventAdd()
         doc.EndUndo()
+
+        self.scene_ctrl = scene_ctrl
+        self.scene_tag = scene_tag
         return True
 
-    def _clr_rscene_hooks(self, force=False):
+    def _clr_rscene_hook(self, force=False):
         ''' Clear all hooks from the active scene. 
             force: forces the removal of existing hooks (if any) '''
-        no_cleanup = self._get_rscene_hooks()[0]
+        no_cleanup = self._get_rscene_hook()[0]
         if (no_cleanup) and (force):
             self.scene_ctrl.Remove()
         elif len(self.cleanup):

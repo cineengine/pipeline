@@ -25,5 +25,12 @@
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\WBC_2017\\004_TOOLBOX\\002_3D_TEAMS",
         "team_db"   : "teams_wbc",
         "presets"   : ["Default", "GI-QMC"]
+    },
+    "XX_TEST": {
+        "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\XX_TEST\\001_PROJECTS\\000_Animation",
+        "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\XX_TEST\\004_TOOLBOX\\001_3D_ASSETS",
+        "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\XX_TEST\\004_TOOLBOX\\002_3D_TEAMS",
+        "team_db"   : "teams_nba",
+        "presets"   : ["Default", "Default-2"]
     }
 }

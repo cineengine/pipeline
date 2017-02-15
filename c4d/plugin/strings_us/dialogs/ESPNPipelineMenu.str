@@ -22,10 +22,12 @@ DIALOGSTRINGS ESPNPipelineMenu
 	LBL_NEWPROJ_EXEC      "Sets the name of the project and the scene, and saves a backup >> ";
 	LBL_MIGPROJ_EXEC      "Migrates a pipelined scene into a new or existing project >>";
 	LBL_RENAME_EXEC       "Renames an existing scene in its current project >>";
+	LBL_PRESET_BOX        "Render preset";
+	BTN_SET_PRESET        "Set";
 
 	SECOND_TAB_NAME       "Rendering";
-	LBL_OUTPUT_PATHS      "Setup render output";
-	LBL_TAKE_UTILS        "Take / Render Layer utilities";
+	LBL_OUTPUT_PATHS      "Render Presets";
+	LBL_TAKE_UTILS        "Takes (render layers)";
 	BTN_SETOUTPUT         "Reset Render Folders";
 	BTN_PNG_OUTPUT        "PNG output";
 	BTN_EXR_OUTPUT        "EXR output";

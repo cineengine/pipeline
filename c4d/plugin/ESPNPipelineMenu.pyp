@@ -8,7 +8,7 @@ __license__    = "Educational use only"
 __version__    = "1.1-dev"
 __maintainer__ = "Mark Rohrer"
 __email__      = "mark.rohrer@espn.com"
-__status__     = "Pre-deployment"
+__status__     = "Live"
 
 # internal libraries
 import c4d
@@ -76,6 +76,8 @@ LBL_OUTPUT_PATHS     = 20007
 LBL_TAKE_UTILS       = 20008
 BTN_CREATE_OBJBUFFERS= 20009
 DRP_PRES_NAME        = 20010
+BTN_SET_PRESET       = 20011
+LBL_PRESET_BOX       = 20012
 
 THIRD_TAB            = 30000
 LBL_HOME_TRICODE     = 30001
@@ -119,26 +121,26 @@ class ESPNMenu(gui.GeDialog):
             proj=True, 
             pres=True
             )
+
     ### GeDialog Overrides ###################################################
     def CreateLayout(self):
         self.LoadDialogResource(ESPNPipelineMenu)
-
-        self.pullSceneData()
         self.setDefaultState()
-
-        self.populateNew()
-        #self.SetTimer(500)
+        
+        self.pullProductionList()
+        self.populateFromScene()
+        self.SetTimer(500)
         return True
 
-    #def Timer(self, msg):
-    #    if not (c4d.documents.GetActiveDocument() == self.this_doc):
-    #        self.populate()
-    #        self.this_doc = c4d.documents.GetActiveDocument()
+    def Timer(self, msg):
+        if not (c4d.documents.GetActiveDocument() == self.live_doc):
+            self.populateFromScene()
+            self.live_doc = c4d.documents.GetActiveDocument()
 
     def Command(self, id, msg):
         # "Use existing project" checkbox
         if (id == CHK_EXISTING):
-            self.toggle_use_existing_project()
+            self.toggleProjectSelected()
         # "Production" dropdown
         elif (id == DRP_PROD_NAME):
             self.onChangedProduction()
@@ -146,48 +148,50 @@ class ESPNMenu(gui.GeDialog):
         # Text fields or "project" dropdown
         elif (id == TXT_PROJ_NAME or
               id == TXT_SCENE_NAME):
-            self.refresh_preview_text()
+            self.setPreviewText()
         elif (id == DRP_PROJ_NAME):
-            self.changed_project()
+            self.onChangedProject()
         # Render presets dropdown
         elif (id == DRP_PRES_NAME):
-            self.push_render_preset()
+            self.onChangedPreset()
+        elif (id == BTN_SET_PRESET):
+            self.buildPresetRenderData()
         # "Create new" button
         elif (id == BTN_NEWPROJ_EXEC):
-            self.create_new_scene()
+            print self.buildNewScene()
         elif (id == BTN_HELP_EXEC):
             self.help('tab1')
         # tab 2 buttons
         elif (id == BTN_SETOUTPUT):
-            self.push_output_paths()
+            self.pushOutputPaths()
         elif (id == BTN_SUBMIT):
-            self.submit_to_farm()
+            self.submitToFarm()
         elif (id == BTN_NEWTAKE):
-            self.create_take()
+            self.buildTake()
         elif (id == BTN_PNG_OUTPUT):
-            self.push_png_output()
+            self.pushPngOutput()
         elif (id == BTN_EXR_OUTPUT):
-            self.push_exr_output()
+            self.pushExrOutput()
         # tab 3
         elif (id == IS_MATCHUP):
-            self.toggle_matchup()
+            self.toggleMatchup()
         elif (id == TXT_HOME_TRICODE or
               id == TXT_AWAY_TRICODE):
-            self.retrieve_swatches()
+            self.populateSwatches()
         elif (id == HOME_PRIMARY_EXEC):
-            self.create_team_color_material('home', 'primary')
+            self.buildTeamColorMaterial('home', 'primary')
         elif (id == HOME_SECONDARY_EXEC):
-            self.create_team_color_material('home', 'secondary')
+            self.buildTeamColorMaterial('home', 'secondary')
         elif (id == HOME_TERTIARY_EXEC):
-            self.create_team_color_material('home', 'tertiary')
+            self.buildTeamColorMaterial('home', 'tertiary')
         elif (id == AWAY_PRIMARY_EXEC):
-            self.create_team_color_material('away', 'primary')
+            self.buildTeamColorMaterial('away', 'primary')
         elif (id == AWAY_SECONDARY_EXEC):
-            self.create_team_color_material('away', 'secondary')
+            self.buildTeamColorMaterial('away', 'secondary')
         elif (id == AWAY_TERTIARY_EXEC):
-            self.create_team_color_material('away', 'tertiary')
+            self.buildTeamColorMaterial('away', 'tertiary')
         elif (id == TEAM_SWITCH_EXEC):
-            self.push_team_colors()
+            self.pushTeamColors()
         elif (id == AUTOMATION_HELP_EXEC):
             self.help('tab3')
         elif (id == SAVE_BACKUP_EXEC):
@@ -195,7 +199,7 @@ class ESPNMenu(gui.GeDialog):
         elif (id == RENAME_EXEC):
             self.rename()
         elif (id == BTN_VERSIONUP):
-            self.version_up()
+            self.versionUp()
         elif (id == SAVE_RENAME_HELP_EXEC):
             self.help('save_rename')
         elif (id == RELINK_TEXTURES_EXEC):
@@ -204,16 +208,241 @@ class ESPNMenu(gui.GeDialog):
             self.createObjectBuffers()
         return True
 
-    ### Populators ###########################################################
-    def populateNew(self):
-        self.setProduction( self.prod_id )
-        self.setProject( self.proj_id )
-        self.setScene( self.live_scene.scene_name )
-        self.setFramerate( self.live_scene.framerate )
-        self.setPreset()
+    ### INTERFACE SCRIPTING FUNCTIONS ########################################
+    ### UI Setters ###########################################################
+    def setDefaultState(self):
+        self.Enable(TXT_PREVIEW_PROJ, False)
+        self.Enable(TXT_PREVIEW_FILE, False)
+
+        self.toggleProductionSelected(False)
+        self.toggleProjectSelected()
+        self.setFramerate(30)
+
+        self.populateProductions()
         return True
 
+    def setProduction(self, idx):
+        if not (idx == DRP_PROD_NAME_START_ID):
+            self.SetInt32(DRP_PROD_NAME, idx)
+            self.onChangedProduction()
+            return True
+        else: return False
+
+    def setProject(self, idx):
+        if not (idx == DRP_PROJ_NAME_START_ID):
+            self.SetInt32(DRP_PROJ_NAME, idx)
+            self.onChangedProject()
+            return True
+        else: return False
+
+    def setScene(self, scene_name):
+        if not (scene_name == ''):
+            self.SetString(TXT_SCENE_NAME, scene_name)
+            self.onChangedTextField()
+            return True
+        else: return False
+
+    def setFramerate(self, frate):
+        if not (frate == 24) and not (frate == 30) and not (frate == 60):
+            return False
+        self.SetInt32(RDO_FRAMERATE, 10000+frate)
+        return True
+
+    def setPreset(self, idx):
+        if not (idx == DRP_PRES_NAME_START_ID):
+            self.SetInt32(DRP_PRES_NAME, idx)
+            self.onChangedPreset()
+            return True
+        else: return False
+
+    def setEmpty(self, field):
+        self.SetString(field, '')
+        return True
+
+    def setPreviewText(self):
+        prod_name     = self.productions[self.prod_id]
+        scene_name    = self.GetString(TXT_SCENE_NAME)
+        prod_folder   = database.getProduction(prod_name)['project']
+        if self.GetBool(CHK_EXISTING):
+            proj_name = self.projects[self.proj_id]
+        else:
+            proj_name = self.GetString(TXT_PROJ_NAME)
+
+        # Don't allow spaces as the user types
+        proj_name     =  proj_name.replace(' ', '_') 
+        scene_name    = scene_name.replace(' ', '_')
+
+        # Generate preview paths
+        scene_prev = '{0}_{1}.c4d'.format(proj_name, scene_name)
+        proj_prev  = os.path.relpath(
+            "{0}\\{1}\\c4d\\".format(prod_folder, proj_name),
+            "Y:\\Workspace\\MASTER_PROJECTS\\"
+            )
+
+        self.SetString(TXT_PROJ_NAME, proj_name)
+        self.SetString(TXT_SCENE_NAME, scene_name)
+        self.SetString(TXT_PREVIEW_PROJ, proj_prev)
+        self.SetString(TXT_PREVIEW_FILE, scene_prev)
+        return True
+
+    def setEmptyDropdowns(self, prod=False, proj=False, pres=False):
+        if (prod):
+            self.FreeChildren(DRP_PROD_NAME)
+            self.prod_selected = False
+            self.productions   = {}
+            self.prod_id       = DRP_PROD_NAME_START_ID
+        if (proj):
+            self.FreeChildren(DRP_PROJ_NAME)
+            self.proj_existing = False
+            self.projects      = {}
+            self.proj_id       = DRP_PROJ_NAME_START_ID
+        if (pres):
+            self.FreeChildren(DRP_PRES_NAME)
+            self.pres_selected = False
+            self.presets       = {}
+            self.pres_id       = DRP_PRES_NAME_START_ID
+        return True
+
+    ### UI Getters ###########################################################
+    def getInvalidFields(self):
+        prd = self.getProduction()
+        prj = self.getProject()
+        scn = self.getScene()
+        fra = self.getFramerate()
+        if (self.prod_id == DRP_PROD_NAME_START_ID):
+            return 0
+        elif (prd.lstrip() == '') or (prd == None):
+            return 0
+        if (self.proj_id == DRP_PROJ_NAME_START_ID):
+            return 1
+        elif (proj.lstrip() == '') or (prj == None):
+            return 1
+        if (not scn) or (scn == ''):
+            return 2
+        if (not fra) or (fra == RDO_FRAMERATE):
+            return 3
+        return None
+
+    def getProduction(self):
+        self.prod_id = self.GetInt32(DRP_PROD_NAME)
+        return self.productions[self.prod_id]
+
+    def getProject(self):
+        if (self.GetBool(CHK_EXISTING)):
+            self.proj_id = self.GetInt32(DRP_PROJ_NAME)
+            return self.projects[self.proj_id]
+        else:
+            return self.GetString(TXT_PROJ_NAME)
+
+    def getScene(self):
+        self.scene = self.GetString(TXT_SCENE_NAME)
+        return self.scene
+
+    def getPreset(self):
+        self.pres_id = self.GetInt32(DRP_PRES_NAME)
+        print self.presets[self.pres_id]
+        return self.presets[self.pres_id]
+
+    def getFramerate(self):
+        return (self.GetInt32(RDO_FRAMERATE)-10000)
+
+    ### UI Togglers ##########################################################
+    def toggleProductionSelected(self, flag):
+        ''' Since the UI defaults to not having a production selected, most
+        fields are disabled. When a production *is* selected, this method
+        enables the dependent fields.'''
+        self.Enable(CHK_EXISTING, flag)
+        #self.Enable(DRP_PROJ_NAME, flag)
+        self.Enable(TXT_PROJ_NAME, flag)
+        self.Enable(TXT_SCENE_NAME, flag)
+        self.Enable(RDO_FRAMERATE, flag)
+        self.prod_selected = flag
+        return True
+
+    def toggleProjectSelected(self, flag=None):
+        if (flag == None):
+            flag = self.GetBool(CHK_EXISTING)
+        else:
+            self.SetBool(CHK_EXISTING, flag)
+        self.Enable(TXT_PROJ_NAME, 1-flag)
+        self.Enable(DRP_PROJ_NAME, flag)
+        return True
+
+    def toggleMatchup(self, flag=None):
+        if (flag == None):
+            flag = self.GetBool(IS_MATCHUP)
+        if (flag):
+            self.Enable(TXT_AWAY_TRICODE, True)
+            self.Enable(VEC_AWAY_COLOR_P, True)
+            self.Enable(VEC_AWAY_COLOR_S, True)
+            self.Enable(VEC_AWAY_COLOR_T, True)
+        else:
+            self.Enable(TXT_AWAY_TRICODE, False)
+            self.Enable(VEC_AWAY_COLOR_P, False)
+            self.Enable(VEC_AWAY_COLOR_S, False)
+            self.Enable(VEC_AWAY_COLOR_T, False)
+        self.matchup_selected = flag
+        return True
+
+    ### UI Refreshers ########################################################
+    def onChangedProduction(self):
+        if not (self.getProduction() == DRP_PROD_NAME_START_ID):
+            # clear dependent dropdowns / text fields
+            self.toggleProjectSelected(flag=False)
+            self.setEmptyDropdowns(proj=True, pres=True)
+            self.setEmpty(TXT_PROJ_NAME)
+            # repopulate depdendent fields
+            self.populateProjects()
+            self.populatePresets()
+            self.setPreviewText()
+            # enable dependent fields
+            self.toggleProductionSelected(True)
+        else:
+            self.toggleProductionSelected(False)
+        return True
+
+    def onChangedProject(self):
+        self.getProject()
+        self.setPreviewText()
+        return True
+
+    def onChangedPreset(self):
+        self.getPreset()
+        return True
+
+    def onChangedTextField(self):
+        self.setPreviewText()
+        return True
+
+    ### UI Populators ########################################################
+    def populateFromScene(self):
+        self.live_scene = scene.MetaScene()
+        self.prod_id    = DRP_PROD_NAME_START_ID
+        self.proj_id    = DRP_PROJ_NAME_START_ID
+        self.populateProductions()
+        # Exit out if the scene isn't tagged
+        if not (self.live_scene.is_tagged()):
+            return False
+        # Get the index of the production
+        for k,v in self.productions.iteritems():
+            if (v == self.live_scene.production):
+                self.prod_id = k
+                self.setProduction(self.prod_id)
+        try:
+            # Get the index of the project
+            self.populateProjects()
+            for k,v in self.projects.iteritems():
+                if (v == self.live_scene.project_name):
+                    self.proj_id = k
+                    self.setProject(self.proj_id)
+                    self.toggleProjectSelected(flag=True)
+        except KeyError: pass
+        self.setScene(self.live_scene.scene_name)
+        self.setFramerate(self.live_scene.framerate)
+        return True
+    
     def populateProductions(self):
+        self.setEmptyDropdowns(prod=True)
         self.pullProductionList()
         # populate production dropdown
         for idx in self.productions:
@@ -222,6 +451,8 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     def populateProjects(self):
+        self.setEmptyDropdowns(proj=True)
+        self.pullProjectList()
         # populate project dropdown
         for idx in self.projects:
             self.AddChild(DRP_PROJ_NAME, idx, self.projects[idx])
@@ -229,135 +460,42 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     def populatePresets(self):
-        pass
-
-    ### Setters ##############################################################
-    def setDefaultState(self):
-        self.Enable(TXT_PREVIEW_PROJ, False)
-        self.Enable(TXT_PREVIEW_FILE, False)
-
-        self.toggleProductionSelected(False)
-        self.toggleProjectSelected(False)
-        self.setFramerate(30)
-
-        self.populateProductions()
-
-    def setProduction(self, idx):
-        self.SetInt32(DRP_PROD_NAME, idx)
-        self.onChangedProduction()
+        self.setEmptyDropdowns(pres=True)
+        self.pullRenderPresets()
+        for idx in self.presets:
+            self.AddChild(DRP_PRES_NAME, idx, self.presets[idx])
+        self.setPreset(DRP_PRES_NAME_START_ID)
         return True
 
-    def setProject(self, idx):
-        self.SetInt32(DRP_PROJ_NAME, idx)
-        self.onChangedProject()
-        return True
-
-    def setScene(self, scene_name):
-        self.SetString(TXT_SCENE_NAME, scene_name)
-        self.onChangedTextField()
-        return True
-
-    def setFramerate(self, frate):
-        if not (frate == 24) or (frate == 30) or (frate == 60):
-            return False
-        self.SetInt32(RDO_FRAMERATE, 10000+frate)
-        return True
-
-    def setPreset(self):
-        pass
-
-    def setPreviewText(self):
-        pass
-
-    def setEmptyDropdowns(self, prod=False, proj=False, pres=False):
-        if (prod):
-            self.prod_selected = False
-            self.productions   = {}
-            self.prod_id       = DRP_PROD_NAME_START_ID
-        if (proj):
-            self.proj_existing = False
-            self.projects      = {}
-            self.proj_id       = DRP_PROJ_NAME_START_ID
-        if (pres):
-            self.pres_selected = False
-            self.presets       = {}
-            self.pres_id       = DRP_PRES_NAME_START_ID
-        return True
-
-    ### Getters ##############################################################
-    def getProduction(self):
-        self.prod_id = self.GetInt32(DRP_PROD_NAME)
-        return self.prod_id
-
-    def getProject(self):
-        pass
-
-    def getScene(self):
-        return self.GetString(TXT_SCENE_NAME)
-
-    def getFramerate(self):
-        pass
-
-    ### Togglers #############################################################
-    def toggleProductionSelected(self, flag):
-        ''' Since the UI defaults to not having a production selected, most
-        fields are disabled. When a production *is* selected, this method
-        enables the dependent fields.'''
-        self.Enable(CHK_EXISTING, flag)
-        self.Enable(DRP_PROJ_NAME, flag)
-        self.Enable(TXT_PROJ_NAME, flag)
-        self.Enable(TXT_SCENE_NAME, flag)
-        self.Enable(RDO_FRAMERATE, flag)
-        self.prod_selected = flag
-        return True
-
-    def toggleProjectSelected(self, flag):
-        pass
-
-    def toggleMatchup(self):
-        pass
-
-    ### Refreshers ###########################################################
-    def onChangedProduction(self):
-        if not (self.getProduction() == DRP_PROD_NAME_START_ID):
-            self.toggleProductionSelected(True)
-            self.populateProjects()
-            self.populatePresets()
-            self.setPreviewText()
-        else:
-            self.toggleProductionSelected(False)
-        return True
-
-    def onChangedProject(self):
-        self.setPreviewText()
-        return True
-
-    def onChangedPreset(self):
-        pass
-
-    def onChangedTextField(self):
-        self.setPreviewText()
-        return True
-
-    ### Pullers ##############################################################
-    def pullSceneData(self):
-        self.live_scene = scene.MetaScene()
-        self.prod_id    = DRP_PROD_NAME_START_ID
-        self.proj_id    = DRP_PROJ_NAME_START_ID
-        # Exit out if the scene isn't tagged
-        if not (self.live_scene.is_tagged()):
-            return False
-        # Get the index of the production
-        for k,v in self.productions.iteritems():
-            if (v == self.live_scene.production):
-                self.prod_id = k
+    def populateSwatches(self):
+        home_tricode = self.GetString(TXT_HOME_TRICODE)
+        away_tricode = self.GetString(TXT_AWAY_TRICODE)
         try:
-            # Get the index of the project
-            self.pullProjectList()
-            for k,v in self.projects.iteritems():
-                if (v == self.live_scene.project_name):
-                    self.proj_id = k
-        except KeyError: pass
+            home_colors = database.getTeamColors(self.getProduction(), home_tricode, squelch=True)
+        except:
+            home_colors = None
+        try:
+            away_colors = database.getTeamColors(self.getProduction(), away_tricode, squelch=True)
+        except:
+            away_colors = None
+
+        if (home_colors):
+            self.SetColorField(VEC_HOME_COLOR_P, home_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_S, home_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_T, home_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        else:
+            self.SetColorField(VEC_HOME_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_HOME_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+
+        if (away_colors):
+            self.SetColorField(VEC_AWAY_COLOR_P, away_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_S, away_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_T, away_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+        else:
+            self.SetColorField(VEC_AWAY_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
+            self.SetColorField(VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
         return True
 
     def pullProductionList(self):
@@ -380,246 +518,94 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     def pullRenderPresets(self):
-        pass
-
-
-    def validate_fields(self):
-        pass
-
-    def toggle_use_existing_project(self):
-        # Query checkbox
-        chk = self.GetBool(CHK_EXISTING)
-        self.use_existing = chk
-        # Activate / deactivate relevant fields
-        self.Enable(DRP_PROJ_NAME, chk)
-        self.Enable(TXT_PROJ_NAME, 1-chk)
-        # Set the project id internally
-        if (chk): self.proj_id = self.GetInt32(DRP_PROJ_NAME)
-        else:     self.proj_id = DRP_PROJ_NAME_START_ID
-        # Update the text preview
-        self.refresh_preview_text()
-
-    def changed_production(self):
-        # Update UI variables with new selection
-        self.prod_id = self.GetInt32(DRP_PROD_NAME)
-        # Reset production-depdendent context dropdowns
-        self.reset_context_dropdowns()
-        # Refresh the UI with new values
-        if not (self.GetInt32(DRP_PROD_NAME) == 0):
-            self.toggle_prod_selected(True)
-            # update the project list
-            self.retrieve_projects()
-            # update the preset list
-            self.retrieve_presets()
-            # .. & refresh previews
-            self.SetInt32(DRP_PROJ_NAME, DRP_PROJ_NAME_START_ID)
-            self.SetInt32(DRP_PRES_NAME, DRP_PRES_NAME_START_ID)
-            #self.populate()
-        else:
-            self.toggle_prod_selected(False)
-        self.refresh_preview_text()
-
-    def changed_project(self):
-        self.proj_id = self.GetInt32(DRP_PROJ_NAME)
-        self.refresh_preview_text()
-
-    def changed_preset(self):
-        self.pres_id = self.GetInt32(DRP_PRES_NAME)
-
-    def reset_context_dropdowns(self):
-        self.proj_dict = {}
-        self.pres_dict = {}
-        self.proj_id   = DRP_PROJ_NAME_START_ID
-        self.pres_id   = DRP_PRES_NAME_START_ID
-        self.proj_dict[self.proj_id] = ''
-        self.pres_dict[self.pres_id] = ''
-        try:
-            self.FreeChildren(DRP_PROJ_NAME)
-            self.FreeChildren(DRP_PRES_NAME)
-            self.SetInt32(DRP_PROJ_NAME, self.proj_id)
-            self.SetInt32(DRP_PRES_NAME, self.pres_id)
-        except: pass
-
-    def refresh_preview_text(self):
-        ''' Updates preview text fields (when typing or changing dropdowns)'''
-        # parse ui fields into string values
-        prod_name = self.prod_dict[self.prod_id]
-        if self.GetBool(CHK_EXISTING):
-            proj_name = self.proj_dict[self.proj_id]
-            self.Enable(DRP_PROJ_NAME, True)
-            self.Enable(TXT_PROJ_NAME, False)
-        else:
-            proj_name = self.GetString(TXT_PROJ_NAME)
-            self.Enable(DRP_PROJ_NAME, False)
-            self.Enable(TXT_PROJ_NAME, True)
-        scene_name = self.GetString(TXT_SCENE_NAME)
-        prod_folder = database.getProduction(prod_name)['project']
-        # Don't allow spaces as the user types
-        proj_name = proj_name.replace(' ', '_') 
-        scene_name = scene_name.replace(' ', '_')
-        self.SetString(TXT_PROJ_NAME, proj_name)
-        self.SetString(TXT_SCENE_NAME, scene_name)
-        # Generate preview paths
-        scene_prev = '{0}_{1}.c4d'.format(proj_name, scene_name)
-        proj_prev  = os.path.relpath(
-            "{0}\\{1}\\c4d\\".format(prod_folder, proj_name),
-            "Y:\\Workspace\\MASTER_PROJECTS\\"
-            )
-        self.SetString(TXT_PREVIEW_PROJ, proj_prev)
-        self.SetString(TXT_PREVIEW_FILE, scene_prev)
-
-    def retrieve_prod_list(self):
-        #DEPRECATED
-        pass
-
-    def retrieve_projects(self):
-        #DEPRECATED
-        pass
-
-    def retrieve_presets(self):
-        id_ = DRP_PRES_NAME_START_ID
-        for pres in database.getAllPresets(self.prod_dict[self.prod_id]):
-            id_ += 1
-            self.pres_dict[id_] = pres
-            #print "retrieve_presets(): {}".format(id_)
-        for id_ in self.pres_dict:
-            self.AddChild(DRP_PRES_NAME, id_, self.pres_dict[id_])
-
-    def toggle_prod_selected(self, bool_):
-        #deprecated
-        pass
-
-    def toggle_matchup(self):
-        chk = self.GetBool(IS_MATCHUP)
-        self.matchup_selected = chk
-        if (chk):
-            self.Enable(TXT_AWAY_TRICODE, True)
-            self.Enable(VEC_AWAY_COLOR_P, True)
-            self.Enable(VEC_AWAY_COLOR_S, True)
-            self.Enable(VEC_AWAY_COLOR_T, True)
-        else:
-            self.Enable(TXT_AWAY_TRICODE, False)
-            self.Enable(VEC_AWAY_COLOR_P, False)
-            self.Enable(VEC_AWAY_COLOR_S, False)
-            self.Enable(VEC_AWAY_COLOR_T, False)
-    """
-    def create_new_scene(self):
-        # populate strings from text fields
-        prod_name = self.production_enum[self.GetInt32(DRP_PROD_NAME)]
-        if (self.GetBool(CHK_EXISTING) == True):
-            proj_name = self.project_enum[self.GetInt32(DRP_PROJ_NAME)]
-        else:
-            proj_name = self.GetString(TXT_PROJ_NAME)
-        scene_name = self.GetString(TXT_SCENE_NAME)
-        framerate  = self.GetInt32(RDO_FRAMERATE)-10000
-        # cancel if any required fields are empty
-        self.this_scene = scene.MetaScene.from_data
-        (
-            {
-            'production'  : prod_name,
-            'project_name': proj_name,
-            'scene_name'  : scene_name,
-            'framerate'   : framerate,
-            'version'     : 1
-            }
-        )
-        return True"""
-
-    def help(self, tab):
-        help_diag = ESPNHelp(panel=tab)
-        help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
+        # generate a dictionary with gui ID as key and name as value
+        idx = DRP_PRES_NAME_START_ID
+        for pres in database.getAllPresets(self.productions[self.prod_id]):
+            idx +=1 
+            self.presets[idx] = pres
         return True
 
-    ### TAB 02 FUNCTIONS #########################################################################
-    def push_output_paths(self):
-        self.this_scene._set_rscene_output_paths()
+    ### OPERATIONS ###########################################################
+    ### Builders (of C4D objects) ############################################
+    def buildNewScene(self):
+        invalid_field = self.getInvalidFields()
+        if not (invalid_field == None):
+            raise debug.UIError(invalid_field)
 
-    def submit_to_farm(self):
-        dlg = submit.SubmissionDialog()
-        dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
+        self.live_scene = scene.MetaScene()
+        # cancel if any required fields are empty
+        self.live_scene.from_data(       
+            {'production'  : self.getProduction(),
+             'project_name': self.getProject(),
+             'scene_name'  : self.getScene(),
+             'framerate'   : self.getFramerate(),
+             'version'     : 1},
+            set_output = True,
+            set_frate  = True,
+            set_rdata  = False,
+            save       = True
+        )
+        return True
 
-    def create_take(self):
+    def buildPresetRenderData(self):
+        self.live_scene._set_rscene_renderdata(self.getPreset())
+        self.live_scene._set_rscene_output_paths()
+        return True
+
+    def buildTake(self):
         name = gui.RenameDialog('')
         if not (name == ''):
             core.take(name, set_active=False)
         else: pass
         return True
 
-    def push_png_output(self):
-        core.setOutputFiletype('png', 16)
-
-    def push_exr_output(self):
-        core.setOutputFiletype('exr')
-
-    ### TAB 03 FUNCTIONS #########################################################################
-    def push_team_colors(self):
-        chk = self.GetBool(IS_MATCHUP)
-        values = {}
-
-        values['home_primary'] = self.GetColorField(VEC_HOME_COLOR_P)
-        values['home_secondary'] = self.GetColorField(VEC_HOME_COLOR_S)
-        values['home_tertiary'] = self.GetColorField(VEC_HOME_COLOR_T)
-
-        if (chk):
-            values['away_primary'] = self.GetColorField(VEC_AWAY_COLOR_P)
-            values['away_secondary'] = self.GetColorField(VEC_AWAY_COLOR_S)
-            values['away_tertiary'] = self.GetColorField(VEC_AWAY_COLOR_T)
-
-        for k,v in values.iteritems():
-            core.changeColor(k.upper(), v['color'], exact=False)
-
-    def retrieve_swatches(self):
-        home_tricode = self.GetString(TXT_HOME_TRICODE)
-        away_tricode = self.GetString(TXT_AWAY_TRICODE)
-
-        try:
-            home_colors = database.getTeamColors(self.this_scene.production, home_tricode, squelch=True)
-            home_team = True
-        except:
-            home_team = None
-        try:
-            away_colors = database.getTeamColors(self.this_scene.production, away_tricode, squelch=True)
-            away_team = True
-        except:
-            away_team = None
-
-        if (home_team):
-            self.SetColorField(VEC_HOME_COLOR_P, home_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_HOME_COLOR_S, home_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_HOME_COLOR_T, home_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        else:
-            self.SetColorField(VEC_HOME_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_HOME_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_HOME_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-
-        if (away_team):
-            self.SetColorField(VEC_AWAY_COLOR_P, away_colors['primary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_AWAY_COLOR_S, away_colors['secondary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_AWAY_COLOR_T, away_colors['tertiary'], 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        else:
-            self.SetColorField(VEC_AWAY_COLOR_P, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_AWAY_COLOR_S, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-            self.SetColorField(VEC_AWAY_COLOR_T, c4d.Vector(0,0,0), 1.0, 1.0, c4d.DR_COLORFIELD_NO_BRIGHTNESS)
-        return True
-
-    def create_team_color_material(self, location, swatch):
+    def buildTeamColorMaterial(self, location, swatch):
         location = location.upper()
         swatch   = swatch.upper()
         name     = '{0}_{1}'.format(location, swatch)
-
         core.createMaterial(name)
+        return True
 
-    ### SAVE / RENAME SCENE TAB ##################################################################
+    ### Pushers (modify C4D objects) #########################################
+    def pushOutputPaths(self):
+        self.live_scene._set_rscene_output_paths()
+        return True
+
+    def pushPngOutput(self):
+        core.setOutputFiletype('png', 16)
+
+    def pushExrOutput(self):
+        core.setOutputFiletype('exr')
+
+    def pushTeamColors(self):
+        values = {}
+        values['home_primary'] = self.GetColorField(VEC_HOME_COLOR_P)
+        values['home_secondary'] = self.GetColorField(VEC_HOME_COLOR_S)
+        values['home_tertiary'] = self.GetColorField(VEC_HOME_COLOR_T)
+        if (self.GetBool(IS_MATCHUP)):
+            values['away_primary'] = self.GetColorField(VEC_AWAY_COLOR_P)
+            values['away_secondary'] = self.GetColorField(VEC_AWAY_COLOR_S)
+            values['away_tertiary'] = self.GetColorField(VEC_AWAY_COLOR_T)
+        for k,v in values.iteritems():
+            core.changeColor(k.upper(), v['color'], exact=False)
+        return True
+
+    ### Executors (external scripts / operations) ############################
+    def submitToFarm(self):
+        dlg = submit.SubmissionDialog()
+        dlg.Open(c4d.DLG_TYPE_MODAL, defaultw=300, defaulth=50)
+        return True
+
     def save(self):
-        self.this_scene.save()
+        self.live_scene.save()
         return True
 
     def rename(self):
-        self.this_scene.rename()
+        self.live_scene.rename()
         return True
 
-    def version_up(self):
-        self.this_scene.version_up()
+    def versionUp(self):
+        self.live_scene.version_up()
         return True
 
     def createObjectBuffers(self):
@@ -627,6 +613,13 @@ class ESPNMenu(gui.GeDialog):
             scene.createObjectBuffers(consider_takes=True)
         else:
             scene.createObjectBuffers(consider_takes=False)
+        return True
+
+    def help(self, tab):
+        help_diag = ESPNHelp(panel=tab)
+        help_diag.Open(dlgtype=c4d.DLG_TYPE_MODAL, xpos=-1, ypos=-1)
+        return True
+
 
 class ESPNHelp(gui.GeDialog):
     def __init__(self, panel):
