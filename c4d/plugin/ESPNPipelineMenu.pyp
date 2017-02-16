@@ -1,20 +1,14 @@
 # coding: UTF-8
 
 """ ESPNPipelineMenu.pyp: A Python plugin for Cinema 4D housing various pipeline utilities. """
-__author__     = "Mark Rohrer"
-__copyright__  = "Copyright 2017, ESPN Productions"
-__credits__    = ["Mark Rohrer", "Martin Weber"]
-__license__    = "Educational use only"
-__version__    = "1.1-dev"
-__maintainer__ = "Mark Rohrer"
-__email__      = "mark.rohrer@espn.com"
-__status__     = "Live"
 
 # internal libraries
 import c4d
 import os
 from c4d import gui, bitmaps, plugins
 # custom libraries
+from pipeline.c4d import __version__
+from pipeline.c4d import __date__
 from pipeline.c4d import core 
 from pipeline.c4d import scene
 from pipeline.c4d import debug
@@ -29,7 +23,10 @@ reload(database)
 reload(submit)
 reload(auto)
 
-debug.info("Loaded ESPN Pipeline plug-in for C4D", __version__)
+debug.info(
+    "Loaded ESPN frontend plug-in for C4D", 
+    "Version {0}: {1}".format(__version__, __date__)
+    )
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -309,16 +306,21 @@ class ESPNMenu(gui.GeDialog):
         prj = self.getProject()
         scn = self.getScene()
         fra = self.getFramerate()
+        # validate Production entries
         if (self.prod_id == DRP_PROD_NAME_START_ID):
             return 0
         elif (prd.lstrip() == '') or (prd == None):
             return 0
-        if (self.proj_id == DRP_PROJ_NAME_START_ID):
+        # validate Project entries
+        exists = self.GetBool(CHK_EXISTING)
+        if (exists) and (self.proj_id == DRP_PROJ_NAME_START_ID):
             return 1
-        elif (proj.lstrip() == '') or (prj == None):
+        elif (not exists) and ((prj.lstrip() == '') or (prj == None)):
             return 1
+        # validate Scene entries
         if (not scn) or (scn == ''):
             return 2
+        # validate Framerate selection
         if (not fra) or (fra == RDO_FRAMERATE):
             return 3
         return None
@@ -340,7 +342,6 @@ class ESPNMenu(gui.GeDialog):
 
     def getPreset(self):
         self.pres_id = self.GetInt32(DRP_PRES_NAME)
-        print self.presets[self.pres_id]
         return self.presets[self.pres_id]
 
     def getFramerate(self):
@@ -548,8 +549,11 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     def buildPresetRenderData(self):
-        self.live_scene._set_rscene_renderdata(self.getPreset())
-        self.live_scene._set_rscene_output_paths()
+        try:
+            self.live_scene._set_rscene_renderdata(self.getPreset())
+            self.live_scene._set_rscene_output_paths()
+        except AttributeError:
+            raise debug.PipelineError(1)
         return True
 
     def buildTake(self):

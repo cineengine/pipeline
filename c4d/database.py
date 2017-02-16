@@ -60,11 +60,14 @@ def getAllProjects(prod_):
     ''' Gets all projects associated with a production.'''
     prod = getProduction(prod_)
     #return [p for p in os.listdir(prod['project']) if os.path.isdir(os.path.join(prod['project'], p))]
-    dirs = os.listdir(prod['project'])
     proj_list = []
-    for d in dirs:
-        if (os.path.isdir(os.path.join(prod['project'], d))):
-            proj_list.append(d)
+    try:
+        dirs = os.listdir(prod['project'])
+        for d in dirs:
+            if (os.path.isdir(os.path.join(prod['project'], d))):
+                proj_list.append(d)
+    except WindowsError:
+        pass
     return sorted(proj_list)
 
 def getAllPresets(prod_):

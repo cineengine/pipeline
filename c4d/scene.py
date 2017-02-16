@@ -312,6 +312,7 @@ class MetaScene(object):
             preset (str): the name of a production render preset '''
         doc        = c4d.documents.GetActiveDocument()
         preset_loc = PRESETS_PATH.format(self.production, preset)
+        print preset_loc
         preset_doc = c4d.documents.LoadDocument(preset_loc, c4d.SCENEFILTER_0)
         new_rd     = preset_doc.GetFirstRenderData()
 
@@ -324,8 +325,10 @@ class MetaScene(object):
         ''' Make a complete project directory tree for a new project. (Includes all project folders, not just C4D.)'''
         def mk_dir(path_):
             if not os.path.exists(path_):
-                try: os.mkdir(path_)
-                except WindowsError: FileError(3)
+                try: 
+                    os.mkdir(path_)
+                except WindowsError: 
+                    debug.FileError(3)
 
         folder_struct = self.prod_data['folders']
         main_folder   = os.path.join(self.prod_data['project'], self.project_name)
