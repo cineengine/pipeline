@@ -11,34 +11,22 @@ from pipeline.c4d import __version__
 from pipeline.c4d import __date__
 from pipeline.c4d import core 
 from pipeline.c4d import scene
-<<<<<<< HEAD
 from pipeline.c4d import debug
-=======
-from pipeline.c4d import error
->>>>>>> master
 from pipeline.c4d import database
 from pipeline.c4d import submit
 from pipeline.c4d import gvars
 import pipeline.c4d.automation as auto
 reload(core)
 reload(scene)
-<<<<<<< HEAD
 reload(debug)
-=======
-reload(error)
->>>>>>> master
 reload(database)
 reload(submit)
 reload(auto)
 
-<<<<<<< HEAD
 debug.info(
     "Loaded ESPN frontend plug-in for C4D", 
     "Version {0}: {1}".format(__version__, __date__)
     )
-=======
-error.info("Loaded ESPN frontend plugin for C4D","1.0a")
->>>>>>> master
 
 PLUGIN_ID = 1037160
 BUTTON_ID = 1037183
@@ -276,8 +264,6 @@ class ESPNMenu(gui.GeDialog):
             proj_name = self.projects[self.proj_id]
         else:
             proj_name = self.GetString(TXT_PROJ_NAME)
-<<<<<<< HEAD
-
         # Don't allow spaces as the user types
         proj_name     =  proj_name.replace(' ', '_') 
         scene_name    = scene_name.replace(' ', '_')
@@ -293,32 +279,6 @@ class ESPNMenu(gui.GeDialog):
         self.SetString(TXT_SCENE_NAME, scene_name)
         self.SetString(TXT_PREVIEW_PROJ, proj_prev)
         self.SetString(TXT_PREVIEW_FILE, scene_prev)
-=======
-        scene_name = self.GetString(TXT_SCENE_NAME)
-        framerate  = self.GetInt32(RDO_FRAMERATE)-10000
-        # cancel if any required fields are empty
-        if (scene_name == '' or
-            proj_name  == ''):
-            msg = 'Project or Scene name has not been set. Both are required to proceed.'
-            gui.MessageDialog(msg, c4d.GEMB_OK)
-            return False
-        # check for existing scene controller
-        scene_ctrl, scene_tag, info = scene.Scene.getSceneStatus()
-        if (info == error.SCENE_OK):
-            scene_ctrl.Remove()
-        # create new scene controller
-        scene_ctrl, scene_tag = scene.Scene.makeSceneCtrl()
-        annotation = "Production: {0}\nProject: {1}\nScene: {2}\nFramerate: {3}\nVersion: {4}"
-        annotation = annotation.format(prod_name, proj_name, scene_name, str(framerate), str(1))
-        scene_tag[c4d.ANNOTATIONTAG_TEXT] = annotation
-        # setup project and save
-        scn = scene.Scene()
-        scn.makeFolders()
-        #scn.setTakes()
-        scn.setOutput()
-        #auto.relinkTextures(migrate=True)
-        scn.saveWithBackup()
->>>>>>> master
         return True
 
     def setEmptyDropdowns(self, prod=False, proj=False, pres=False):
