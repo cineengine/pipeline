@@ -23,7 +23,7 @@ reload(auto)
 
 debug.info(
     "Loaded ESPN frontend plug-in for C4D", 
-    "Version {0}: {1}".format("1.1", "2/16/17")
+    "Version {0}: {1}".format("1.1.2", "2/17/17")
     )
 
 PLUGIN_ID = 1037160
@@ -110,7 +110,6 @@ class ESPNMenu(gui.GeDialog):
     def __init__(self):
         self.null_scene = scene.MetaScene(null=True)
         self.live_scene = scene.MetaScene()
-        self.live_doc   = c4d.documents.GetActiveDocument()
         self.setEmptyDropdowns(
             prod=True, 
             proj=True, 
@@ -119,18 +118,21 @@ class ESPNMenu(gui.GeDialog):
 
     ### GeDialog Overrides ###################################################
     def CreateLayout(self):
+        self.live_doc = c4d.documents.GetActiveDocument()        
         self.LoadDialogResource(ESPNPipelineMenu)
         self.setDefaultState()
-        
         self.pullProductionList()
         self.populateFromScene()
         self.SetTimer(500)
         return True
 
     def Timer(self, msg):
+        print "Timer:"
         if not (c4d.documents.GetActiveDocument() == self.live_doc):
+            print "Trigger!"
             self.populateFromScene()
             self.live_doc = c4d.documents.GetActiveDocument()
+        print "No trigger..."
 
     def Command(self, id, msg):
         # "Use existing project" checkbox
