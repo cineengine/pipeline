@@ -108,18 +108,22 @@ DRP_PROD_NAME_START_ID=90000
 
 class ESPNMenu(gui.GeDialog):
     def __init__(self):
+        pass
+
+    ### GeDialog Overrides ###################################################
+    def CreateLayout(self):
+        # attach MetaScene and BaseDocument
         self.null_scene = scene.MetaScene(null=True)
         self.live_scene = scene.MetaScene()
+        self.live_doc   = c4d.documents.GetActiveDocument()  
+        # initialize UI
+        self.LoadDialogResource(ESPNPipelineMenu)
         self.setEmptyDropdowns(
             prod=True, 
             proj=True, 
             pres=True
             )
 
-    ### GeDialog Overrides ###################################################
-    def CreateLayout(self):
-        self.live_doc = c4d.documents.GetActiveDocument()        
-        self.LoadDialogResource(ESPNPipelineMenu)
         self.setDefaultState()
         self.pullProductionList()
         self.populateFromScene()
@@ -127,12 +131,9 @@ class ESPNMenu(gui.GeDialog):
         return True
 
     def Timer(self, msg):
-        print "Timer:"
         if not (c4d.documents.GetActiveDocument() == self.live_doc):
-            print "Trigger!"
             self.populateFromScene()
             self.live_doc = c4d.documents.GetActiveDocument()
-        print "No trigger..."
 
     def Command(self, id, msg):
         # "Use existing project" checkbox
