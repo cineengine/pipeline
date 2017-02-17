@@ -7,8 +7,6 @@ import c4d
 import os
 from c4d import gui, bitmaps, plugins
 # custom libraries
-from pipeline.c4d import __version__
-from pipeline.c4d import __date__
 from pipeline.c4d import core 
 from pipeline.c4d import scene
 from pipeline.c4d import debug
@@ -25,7 +23,7 @@ reload(auto)
 
 debug.info(
     "Loaded ESPN frontend plug-in for C4D", 
-    "Version {0}: {1}".format(__version__, __date__)
+    "Version {0}: {1}".format("1.1", "2/16/17")
     )
 
 PLUGIN_ID = 1037160

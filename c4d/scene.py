@@ -251,6 +251,11 @@ class MetaScene(object):
     ## Set operations (virtual scene)
     def _set_vscene_path(self):
         ''' Update internal path data for the scene when it is moved or renamed. '''
+        try:
+            project_folder = self.prod_data['project']
+        except KeyError:
+            debug.info('', self.prod_data)
+            raise debug.FileError(1)
         self.file_name     = '{0}_{1}.c4d'.format(self.project_name, self.scene_name)
         self.file_folder   = os.path.join(self.prod_data['project'], self.project_name, 'c4d')
         self.backup_folder = os.path.join(self.file_folder, 'backup')
