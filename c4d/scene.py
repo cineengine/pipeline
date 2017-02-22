@@ -82,6 +82,8 @@ class MetaScene(object):
         this_scene.framerate    = data['framerate']
         this_scene.version      = data['version']
 
+        this_scene.prod_data    = database.getProduction(this_scene.production)
+
         this_scene._bld_rscene_hook()
         this_scene._set_rscene_data()
         this_scene._set_vscene_path()
@@ -317,7 +319,6 @@ class MetaScene(object):
             preset (str): the name of a production render preset '''
         doc        = c4d.documents.GetActiveDocument()
         preset_loc = PRESETS_PATH.format(self.production, preset)
-        print preset_loc
         preset_doc = c4d.documents.LoadDocument(preset_loc, c4d.SCENEFILTER_0)
         new_rd     = preset_doc.GetFirstRenderData()
 
