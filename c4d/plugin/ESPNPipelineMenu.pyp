@@ -23,7 +23,7 @@ reload(auto)
 
 debug.info(
     "Loaded ESPN frontend plug-in for C4D", 
-    "Version {0}: {1}".format("1.1.2", "2/17/17")
+    "Version {0}: {1}".format(gvars.__version__, gvars.__date__)
     )
 
 PLUGIN_ID = 1037160
