@@ -46,5 +46,15 @@
         "teams"     : "Y:\\Workspace\\MASTER_PROJECTS\\E60\\TOOLBOX\\002_3D_TEAMS",
         "team_db"   : "teams_nba",
         "presets"   : ["Default"]
+    },
+    "CBB_2016":{
+        "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\CBB_2016\\001_PROJECTS",
+        "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\CBB_2016\\003_TOOLBOX",
+        "presets"   : ["Default"]
+    },
+    "We The Fans": {
+        "project"   : "Y:\\Workspace\\MASTER_PROJECTS\\WE_THE_FANS\\PROJECTS\\Animation",
+        "assets"    : "Y:\\Workspace\\MASTER_PROJECTS\\WE_THE_FANS\\TOOLKIT",
+        "presets"   : ["Default"]
     }
 }
