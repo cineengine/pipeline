@@ -75,6 +75,70 @@ def lookupID( id ):
         if c4d.__dict__[k] == id:
             print k
 
+# OBJECT-PARSING / SELECTION UTILITIES ############################################################
+def ls( obj=None, typ=c4d.BaseObject, name=None ):
+    ''' Returns a list of BaseObjects of specified type that are either currently selected,
+        or passed by object reference. Both types are validated before being returned as a list.'''
+    # Get selection if no object reference is passed
+    if not (name or obj):
+        obj = doc().GetSelection()
+
+    # If a string is passed to name, the command will attempt to locate it by exact name.
+    # Since C4D allows objects to have the same name, it will always return a list
+    elif (isinstance(name, str)):
+        start = doc().GetFirstObject()
+        obj   = []
+        for o in ObjectIterator(start):
+            if o.GetName() == name:
+                obj.append(o)
+
+    # If a passed object is not already a list, we force the recast
+    if not (isinstance(obj, list)):
+        obj = [obj]
+    
+    # Cull any selected elements that don't match the specified object type
+    for o in obj:
+        if not (isinstance(o, typ)):
+            obj.remove(o)
+        else: continue
+
+    # Returns a list of the specified object type, or none for an empty list
+    if obj == []:
+        obj = None
+    return obj
+
+def lsTags( obj=None, name=None, typ=None ):
+    ''' Returns a list of tags in the scene.  Search parameters based on tag type or tag name.  At
+    least one must be included in the command. '''
+    if (name==None) and (typ==None):
+        return
+    return_tags = []
+    # If an object reference is passed, search only its heirarchy
+    if not (obj): obj = doc().GetFirstObject()
+
+    for o in ObjectIterator(obj):
+        # Search each object for tags
+        for tag in TagIterator(o):
+            # Compare the tag to requirements
+            if (tag.GetName() == name) and (tag.GetType() == typ):
+                return_tags.append(tag)
+            elif (tag.GetName() == None) and (tag.GetType() == typ):
+                return_tags.append(tag)
+            elif (tag.GetName() == name) and (tag.GetType() == None):
+                return_tags.append(tag)
+
+    return return_tags
+
+# REFERENCING & ASSET MANAGEMENT ##################################################################
+def xref( ref, namespace ):
+    doc = c4d.documents.GetActiveDocument()
+    op  = c4d.BaseObject(c4d.Oxref)
+    doc.InsertObject(op)
+    op.SetParameter(c4d.ID_CA_XREF_FILE, ref, c4d.DESCFLAGS_SET_USERINTERACTION)
+    op.SetParameter(c4d.ID_CA_XREF_NAMESPACE, namespace, c4d.DESCFLAGS_SET_USERINTERACTION)
+    c4d.EventAdd()
+    return op
+
 # FLAGS & TAGS ####################################################################################
 def visibility( obj_=None, v=None, r=None ):
     ''' Sets the visibility of an object. 'v' for viewport, and 'r' for rendering. '''
@@ -463,60 +527,6 @@ def createChildRenderData( rd, suffix=False, set_active=False ):
     doc.EndUndo()
     return child_rdata
         
-# OBJECT-PARSING / SELECTION UTILITIES ############################################################
-def ls( obj=None, typ=c4d.BaseObject, name=None ):
-    ''' Returns a list of BaseObjects of specified type that are either currently selected,
-        or passed by object reference. Both types are validated before being returned as a list.'''
-    # Get selection if no object reference is passed
-    if not (name or obj):
-        obj = doc().GetSelection()
-
-    # If a string is passed to name, the command will attempt to locate it by exact name.
-    # Since C4D allows objects to have the same name, it will always return a list
-    elif (isinstance(name, str)):
-        start = doc().GetFirstObject()
-        obj   = []
-        for o in ObjectIterator(start):
-            if o.GetName() == name:
-                obj.append(o)
-
-    # If a passed object is not already a list, we force the recast
-    if not (isinstance(obj, list)):
-        obj = [obj]
-    
-    # Cull any selected elements that don't match the specified object type
-    for o in obj:
-        if not (isinstance(o, typ)):
-            obj.remove(o)
-        else: continue
-
-    # Returns a list of the specified object type, or none for an empty list
-    if obj == []:
-        obj = None
-    return obj
-
-def lsTags( obj=None, name=None, typ=None ):
-    ''' Returns a list of tags in the scene.  Search parameters based on tag type or tag name.  At
-    least one must be included in the command. '''
-    if (name==None) and (typ==None):
-        return
-    return_tags = []
-    # If an object reference is passed, search only its heirarchy
-    if not (obj): obj = doc().GetFirstObject()
-
-    for o in ObjectIterator(obj):
-        # Search each object for tags
-        for tag in TagIterator(o):
-            # Compare the tag to requirements
-            if (tag.GetName() == name) and (tag.GetType() == typ):
-                return_tags.append(tag)
-            elif (tag.GetName() == None) and (tag.GetType() == typ):
-                return_tags.append(tag)
-            elif (tag.GetName() == name) and (tag.GetType() == None):
-                return_tags.append(tag)
-
-    return return_tags
-
 ### The following iterators were borrowed directly from Martin Weber via cgrebel.com.
 ### All credit goes to him -- thank you Martin! -- I could not find any license usage for this code.
 ### http://cgrebel.com/2015/03/c4d-python-scene-iterator/
