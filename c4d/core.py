@@ -130,14 +130,24 @@ def lsTags( obj=None, name=None, typ=None ):
     return return_tags
 
 # REFERENCING & ASSET MANAGEMENT ##################################################################
-def xref( ref, namespace ):
+def xref( namespace, ref, proxy=None ):
     doc = c4d.documents.GetActiveDocument()
     op  = c4d.BaseObject(c4d.Oxref)
     doc.InsertObject(op)
     op.SetParameter(c4d.ID_CA_XREF_FILE, ref, c4d.DESCFLAGS_SET_USERINTERACTION)
     op.SetParameter(c4d.ID_CA_XREF_NAMESPACE, namespace, c4d.DESCFLAGS_SET_USERINTERACTION)
+    if proxy:
+        op.SetParameter(c4d.ID_CA_XREF_PROXY_FILE, proxy, c4d.DESCFLAGS_SET_USERINTERACTION)
     c4d.EventAdd()
     return op
+
+def swapXref( ref, new_ref_path ):
+    try:
+        ref.SetParameter(c4d.ID_CA_XREF_FILE, new_ref_path, c4d.DESCFLAGS_SET_USERINTERACTION)
+        c4d.EventAdd()
+    except: 
+        debug.warning('The passed object is not a reference, or an invalid path was specified.')
+    return True
 
 # FLAGS & TAGS ####################################################################################
 def visibility( obj_=None, v=None, r=None ):
