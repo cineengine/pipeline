@@ -168,6 +168,7 @@ class SubmissionDialog(gui.GeDialog):
   def run(self):
     ''' New for R17: Iterate through checked takes to submit each individually. If no
         checked takes are found, it will submit the old-fashioned way.'''
+    # Check for "Save Project File" .. aka the .aec contingency
     # Check for active takes in the scene
     takes = core.getCheckedTakes()
     # None found -- submit without specifying takes
@@ -181,6 +182,21 @@ class SubmissionDialog(gui.GeDialog):
         self.submit_dict['package']['-take'] = take.GetName()
         self.submit_dict['name'] += ' - {}'.format(take.GetName())
         self.submit()
+
+  def aecSanityCheck(self):
+    doc = c4d.documents.GetActiveDocument()
+    rd  = doc.GetActiveRenderData()
+
+    if (rd[c4d.RDATA_PROJECTFILE]):
+      chk = gui.QuestionDialog(
+        "Your scene is set to export a comp to After Effects -- this feature will be disabled for the farm submission. Would you like to export it now instead?"
+        )
+      if (chk):
+        c4d.CallButton( rd, c4d.RDATA_PROJECTFILESAVE )
+
+      rd[c4d.RDATA_PROJECTFILE] = False
+      return
+
 
   def gather(self, init=False, *a):
     # INITIALIZATION

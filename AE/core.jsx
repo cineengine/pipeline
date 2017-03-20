@@ -1,6 +1,6 @@
-#include "json2.js"
+﻿#include "json2.js"
 
-var DATABASE_FOLDER = "Y:\\Workspace\\SCRIPTS\\pipeline\\database\\";
+var DATABASE_FOLDER = "V:\\dev\\pipeline\\c4d\\";
 
 function getItem(item_name, class_){
     /* Gets an item from the project window by name.  Looks for CompItem by default,
@@ -52,7 +52,7 @@ function getProduction(){
             break;
         }
     }
-    if (production !=== undefined){
+    if (production !== undefined){
         return production;
     } else {
         return false;
@@ -100,85 +100,27 @@ function getTeamDatabase(production_){
     return stream;
 }
 
+function getTeamList(production_){
+    var team_db = getTeamDatabase(production_);
+    if (!team_db){ return false; }
+    var teams = [];
+    for (var t in team_db){
+        teams.push(t);
+    }
+    return teams.sort();
+}
+
 function getTeam(production_, tricode){
     // Searches a team DB for a given tricode
     var team_db = getTeamDatabase(production_);
     var team = null;
     for (var key in team_db){
-        if (key === tricode){
+        if (team_db[key]['TRICODE'] === tricode){
             team = team_db[key];
         }
     }
     //alert(team.toSource());
     return team;
-}
-
-function createTeamSwatches(){
-    // Creates team swatches for an entire production's worth of teams
-    var prod_ = getProduction();
-    var teams = getTeamDatabase(prod_);
-    var colors = ['primary', 'secondary', 'tertiary'];
-    var all = '';
-    // Comp defaults 
-    var name  = "{0}_COLORS".format(tricode);
-    var xres  = 1920;
-    var yres  = 1080;
-    var par   = 1.0; // pixel aspect ratio
-    var dur   = 60; // duration
-    var frate = 59.94; // frame rate
-
-    // Check for an existing TEAM_COLORS folder in the project window
-    var team_folder = getItem('TEAM_COLORS', ItemCollection);
-    if (team_folder === undefined){
-        team_folder = app.project.items.addFolder('TEAM_COLORS');
-    }
-    // Iterate over all teams
-    for (var key in teams){
-        var tricode   = key;
-        var team_data = getTeam(getProduction(), tricode);
-        var team_comp = app.project.items.addComp("{0}_COLORS".format(tricode), xres, yres, par, dur, frate);
-        var team_null = team_comp.layers.addNull();
-
-        team_null.name = "{0}_COLORS".format(tricode);
-        team_null.source.name = "{0}_COLORS".format(tricode);
-
-        for (var color in colors){
-            color_ctrl = team_null.property("Effects").addProperty("Color Control");
-            color_ctrl.name = colors[color];
-            color_ctrl.property("Color").setValue(convertColor(team_data[colors[color]]));
-        }
-
-        team_comp.parentFolder = team_folder;
-    }
-}
-
-function setTeamColors(team_){
-    // Sets team colors on 3 solids in a comp, all of which are named with a team tricode
-    // container variables
-    var comp;
-
-    var primary;
-    var secondary;
-    var tertiary;
-
-    var primary_solid;
-    var secondary_solid;
-    var tertiary_solid;
-    // Get team comp & team data
-    comp = getItem('{0}_COLORS'.format(team_));
-    team = getTeam(getProduction(), team_);
-
-    primary   = team['primary'];
-    secondary = team['secondary'];
-    tertiary  = team['tertiary'];
-    // Get color solids from comp
-    primary_solid   = getLayer(comp, '{0}_PRIMARY'.format(team_))
-    secondary_solid = getLayer(comp, '{0}_SECONDARY'.format(team_))
-    tertiary_solid  = getLayer(comp, '{0}_TERTIARY'.format(team_))
-    // Change colors on solids
-    primary_solid.source.mainSource.color = convertColor(primary);
-    secondary_solid.source.mainSource.color = convertColor(secondary);
-    tertiary_solid.source.mainSource.color = convertColor(tertiary);
 }
 
 function convertColor(color){
@@ -211,5 +153,3 @@ String.prototype.format = function() {
     }
     return formatted;
 };
-
-createTeamSwatches();
